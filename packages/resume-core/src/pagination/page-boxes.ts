@@ -7,5 +7,4 @@ export interface PageBox {
 
 export const PAGE_BOXES: Record<PageSize, PageBox> = {
   A4: { width: 595, height: 842 },
-  Letter: { width: 612, height: 792 },
 };

@@ -19,16 +19,13 @@ import type { ResumeDocument } from "@resume-builder/core";
 
 const STYLE_ID = "resume-print-page-box";
 
-const PAGE_DIMENSIONS: Record<ResumeDocument["design"]["pageSize"], string> = {
-  A4: "210mm 297mm",
-  Letter: "8.5in 11in",
-};
+const A4_PAGE_SIZE = "210mm 297mm";
 
 export function printResume(resume: ResumeDocument): void {
   const style = document.createElement("style");
 
   style.id = STYLE_ID;
-  style.textContent = `@page { size: ${PAGE_DIMENSIONS[resume.design.pageSize]}; margin: 0; }`;
+  style.textContent = `@page { size: ${A4_PAGE_SIZE}; margin: 0; }`;
 
   document.getElementById(STYLE_ID)?.remove();
   document.head.append(style);

@@ -19,7 +19,7 @@ export function createBlankResume(): ResumeDocument {
     },
     design: {
       templateId: "atlas",
-      pageSize: defaultPageSize(),
+      pageSize: "A4",
       fontPairing: "source",
       typeScale: "normal",
       density: "normal",
@@ -44,24 +44,6 @@ export function createBlankResume(): ResumeDocument {
       references: { mode: "omitted", items: [] },
     },
   };
-}
-
-/**
- * Letter is used in the US, Canada and a couple of other markets; A4 is the
- * default essentially everywhere else. Guessing from locale is better than
- * defaulting everyone to one and making most of the world change it — and the
- * control stays visible either way.
- */
-const LETTER_REGIONS = new Set(["US", "CA", "MX", "PH", "CL", "CO", "VE"]);
-
-export function defaultPageSize(): ResumeDocument["design"]["pageSize"] {
-  try {
-    const locale = new Intl.Locale(navigator.language);
-    const region = locale.region ?? locale.maximize().region;
-    return region && LETTER_REGIONS.has(region) ? "Letter" : "A4";
-  } catch {
-    return "A4";
-  }
 }
 
 /** True when nothing has been entered — used to decide whether to prompt on import. */

@@ -13,7 +13,6 @@ import {
 } from "./index";
 
 const a4 = PAGE_BOXES.A4;
-const letter = PAGE_BOXES.Letter;
 
 const measureFixtureBlock: MeasureBlock = (block, pageBox) => {
   const lineHeight = block.kind === "header" ? 18 : 14;
@@ -55,35 +54,28 @@ describe("resume pagination primitives", () => {
     expect(extractResumeBlocks(resume).map((block) => block.id)).toEqual(["header"]);
   });
 
-  it("keeps the baseline fixture on one A4 and Letter page", () => {
-    for (const pageBox of [a4, letter]) {
-      const blocks = extractResumeBlocks(fixture1Page as ResumeDocument);
-      const result = paginateBlocks(blocks, pageBox, measureFixtureBlock);
+  it("keeps the baseline fixture on one A4 page", () => {
+    const blocks = extractResumeBlocks(fixture1Page as ResumeDocument);
+    const result = paginateBlocks(blocks, a4, measureFixtureBlock);
 
-      expect(result.pages).toHaveLength(1);
-      expect(result.breakBlockIds).toEqual([]);
-    }
+    expect(result.pages).toHaveLength(1);
+    expect(result.breakBlockIds).toEqual([]);
   });
 
   it("produces stable multi-page breaks for the hostile fixture", () => {
     const blocks = extractResumeBlocks(fixture3Page as ResumeDocument);
     const a4Result = paginateBlocks(blocks, a4, measureFixtureBlock);
-    const letterResult = paginateBlocks(blocks, letter, measureFixtureBlock);
 
     expect(a4Result.pages.length).toBe(3);
-    expect(letterResult.pages.length).toBe(3);
     expect(a4Result.breakBlockIds).toHaveLength(2);
-    expect(letterResult.breakBlockIds).toHaveLength(2);
   });
 
   it("keeps item titles with their first child block", () => {
     const blocks = extractResumeBlocks(fixture3Page as ResumeDocument);
 
-    for (const pageBox of [a4, letter]) {
-      const result = paginateBlocks(blocks, pageBox, measureFixtureBlock);
+    const result = paginateBlocks(blocks, a4, measureFixtureBlock);
 
-      expect(findItemIntroOrphan(result.pages)).toBeNull();
-    }
+    expect(findItemIntroOrphan(result.pages)).toBeNull();
   });
 
   it("lets density alter breaks without rendering", () => {

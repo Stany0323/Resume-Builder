@@ -1,4 +1,26 @@
-/* Append to apps/web/src/styles.css — DesignPanel controls */
+/* DesignPanel controls */
+
+.design-panel {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 2px 4px;
+  scrollbar-gutter: stable;
+}
+
+.design-select {
+  flex: 0 1 150px;
+  min-width: 128px;
+  display: grid;
+  gap: 4px;
+  color: var(--text-strong, #14191f);
+  font-size: 12px;
+  font-weight: 700;
+}
 
 .template-choice {
   display: grid;
@@ -42,31 +64,11 @@
   line-height: 1.35;
 }
 
-.design-control {
-  margin-top: 0.78rem;
-}
-
-.design-control .segmented-control {
-  margin-top: 0.3rem;
-}
-
-.accent-choice {
-  margin: 0.9rem 0 0;
-  padding: 0;
-  border: none;
-}
-
-.accent-choice legend {
-  padding: 0;
-  font-size: 0.82rem;
-  font-weight: 600;
-}
-
 .swatches {
   display: flex;
   flex-wrap: wrap;
   gap: 0.42rem;
-  margin-top: 0.45rem;
+  margin-top: 0.35rem;
 }
 
 .swatch {
@@ -116,4 +118,10 @@
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+@media (max-width: 800px) {
+  .design-select {
+    flex-basis: 140px;
+  }
 }

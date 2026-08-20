@@ -14,7 +14,7 @@ export {
   type PaginationResult,
 } from "./pagination/paginate";
 
-export type PageSize = "A4" | "Letter";
+export type PageSize = "A4";
 export type TemplateId = "atlas" | "meridian" | "quill" | "slate" | "lumen";
 export type ProfileType = "general" | "earlyCareer" | "experienced" | "changer";
 export type LinkType = "email" | "phone" | "url" | "linkedin" | "github" | "custom";
@@ -255,10 +255,20 @@ export function extractResumeBlocks(resume: ResumeDocument): ResumeBlock[] {
 
 export function migrateResumeDocument(document: ResumeDocument | LegacyResumeDocumentV1): ResumeDocument {
   if (document.schemaVersion === 2) {
-    return document;
+    return normalizeResumeDocument(document);
   }
 
-  return migrateV1ToV2(document);
+  return normalizeResumeDocument(migrateV1ToV2(document));
+}
+
+export function normalizeResumeDocument(document: ResumeDocument): ResumeDocument {
+  return {
+    ...document,
+    design: {
+      ...document.design,
+      pageSize: "A4",
+    },
+  };
 }
 
 function getSummarySection(resume: ResumeDocument): SummarySection {

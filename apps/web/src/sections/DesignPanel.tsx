@@ -1,13 +1,9 @@
 import type { ResumeDocument } from "@resume-builder/core";
-import type { CSSProperties } from "react";
 import {
   ACCENTS,
   FONT_PAIRINGS,
-  TEMPLATES,
-  applyTemplate,
   type Accent,
   type FontPairing,
-  type TemplateId,
 } from "@resume-builder/render";
 
 type Design = ResumeDocument["design"];
@@ -38,11 +34,6 @@ const MARGINS: Array<{ label: string; value: Design["margins"] }> = [
   { label: "Wide", value: "wide" },
 ];
 
-const PAGE_SIZES: Array<{ label: string; value: Design["pageSize"] }> = [
-  { label: "A4", value: "A4" },
-  { label: "Letter", value: "Letter" },
-];
-
 export function DesignPanel({
   design,
   onChange,
@@ -51,94 +42,48 @@ export function DesignPanel({
   onChange: (patch: Partial<Design>) => void;
 }) {
   return (
-    <>
-      <div className="template-choice">
-        {(Object.keys(TEMPLATES) as TemplateId[]).map((id) => (
-          <button
-            aria-pressed={design.templateId === id}
-            className="template-option"
-            key={id}
-            onClick={() => onChange(applyTemplate(design, id))}
-            type="button"
-          >
-            <span className="template-name">
-              {TEMPLATES[id].label}
-              <span className="template-tagline">{TEMPLATES[id].tagline}</span>
-              {TEMPLATES[id].supportsPhoto ? <span className="photo-badge">Photo</span> : null}
-            </span>
-            <span className="template-description">{TEMPLATES[id].description}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Switching templates never loses content — order and headings are
-          template-owned, everything you typed stays in the document. */}
-      <p className="form-note">
-        Switching templates keeps everything you’ve written, and brings that template’s typeface with it.
-      </p>
-
-      <Segmented
-        label="Page size"
-        onChange={(pageSize) => onChange({ pageSize })}
-        options={PAGE_SIZES}
-        value={design.pageSize}
+    <div className="design-panel">
+      <SelectControl
+        label="Typeface"
+        onChange={(fontPairing) => onChange({ fontPairing })}
+        options={(Object.keys(FONT_PAIRINGS) as FontPairing[]).map((key) => ({
+          label: FONT_PAIRINGS[key].label,
+          value: key,
+        }))}
+        value={design.fontPairing}
       />
-
-      <label>
-        Typeface
-        <select
-          onChange={(event) => onChange({ fontPairing: event.target.value })}
-          value={design.fontPairing}
-        >
-          {(Object.keys(FONT_PAIRINGS) as FontPairing[]).map((key) => (
-            <option key={key} value={key}>
-              {FONT_PAIRINGS[key].label}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <Segmented
+      <SelectControl
         label="Text size"
         onChange={(typeScale) => onChange({ typeScale })}
         options={TYPE_SCALES}
         value={design.typeScale}
       />
-      <Segmented
+      <SelectControl
         label="Spacing"
         onChange={(density) => onChange({ density })}
         options={DENSITIES}
         value={design.density}
       />
-      <Segmented
+      <SelectControl
         label="Margins"
         onChange={(margins) => onChange({ margins })}
         options={MARGINS}
         value={design.margins}
       />
-
-      <fieldset className="accent-choice">
-        <legend>Accent</legend>
-        <div className="swatches">
-          {(Object.keys(ACCENTS) as Accent[]).map((key) => (
-            <button
-              aria-label={ACCENTS[key].label}
-              aria-pressed={design.accent === key}
-              className="swatch"
-              key={key}
-              onClick={() => onChange({ accent: key })}
-              style={{ backgroundColor: ACCENTS[key].value }}
-              title={`${ACCENTS[key].label} — ${ACCENTS[key].contrast}:1 contrast`}
-              type="button"
-            />
-          ))}
-        </div>
-      </fieldset>
-    </>
+      <SelectControl
+        label="Accent"
+        onChange={(accent) => onChange({ accent })}
+        options={(Object.keys(ACCENTS) as Accent[]).map((key) => ({
+          label: ACCENTS[key].label,
+          value: key,
+        }))}
+        value={design.accent}
+      />
+    </div>
   );
 }
 
-function Segmented<T extends string>({
+function SelectControl<T extends string>({
   label,
   onChange,
   options,
@@ -150,27 +95,15 @@ function Segmented<T extends string>({
   value: T;
 }) {
   return (
-    <div className="design-control">
-      <span className="field-group-label" id={`${label}-label`}>
-        {label}
-      </span>
-      <div
-        aria-labelledby={`${label}-label`}
-        className="segmented-control"
-        role="group"
-        style={{ "--segment-count": options.length } as CSSProperties}
-      >
+    <label className="design-select">
+      <span>{label}</span>
+      <select onChange={(event) => onChange(event.target.value as T)} value={value}>
         {options.map((option) => (
-          <button
-            aria-pressed={value === option.value}
-            key={option.value}
-            onClick={() => onChange(option.value)}
-            type="button"
-          >
+          <option key={option.value} value={option.value}>
             {option.label}
-          </button>
+          </option>
         ))}
-      </div>
-    </div>
+      </select>
+    </label>
   );
 }

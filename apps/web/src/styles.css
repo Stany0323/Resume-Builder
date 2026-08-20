@@ -41,6 +41,17 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  overflow: hidden;
+  padding: 8px;
+}
+
 button,
 input,
 select,
@@ -58,29 +69,124 @@ button {
 }
 
 .app-shell {
-  min-height: 100vh;
+  height: calc(100vh - 16px);
+  min-height: 0;
   display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
   grid-template-columns: minmax(360px, 440px) minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 18px 48px rgba(24, 34, 45, 0.08);
+}
+
+.dashboard-header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  min-width: 0;
+  padding: 26px 20px 24px 28px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 98%, var(--app-bg));
+}
+
+.dashboard-brand {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dashboard-brand-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid color-mix(in srgb, var(--accent) 12%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+  color: var(--accent);
+}
+
+.dashboard-brand h1 {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: 20px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.dashboard-brand p {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.dashboard-template-button {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex: 0 0 auto;
+  padding: 0 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text-strong);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+
+.dashboard-template-button:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border-strong));
+  background: var(--surface-subtle);
+}
+
+.dashboard-template-button:focus {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 14%, transparent);
+  outline: none;
 }
 
 .toolbar {
+  grid-column: 1;
+  grid-row: 2 / 4;
   border-right: 1px solid var(--border);
   background: var(--surface);
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  max-height: 100vh;
-  overflow: auto;
+  display: grid;
+  grid-template-rows: var(--topbar-height, 88px) minmax(0, 1fr) auto;
+  min-height: 0;
+  overflow: hidden;
   scrollbar-gutter: stable;
 }
 
-.toolbar h1 {
-  margin: 0;
-  color: var(--text-strong);
-  font-size: 21px;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
+.toolbar::before {
+  content: "";
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 98%, var(--app-bg));
+}
+
+.toolbar-content {
+  min-height: 0;
+  display: grid;
+  gap: 18px;
+  overflow: auto;
+  padding: 18px 24px 24px;
+  scrollbar-gutter: stable;
+}
+
+.toolbar-content .form-section:first-child {
+  padding-top: 0;
+  border-top: 0;
 }
 
 .toolbar label {
@@ -94,6 +200,7 @@ button {
 .toolbar select,
 .toolbar input,
 .toolbar textarea,
+.topbar select,
 .segmented-control button {
   min-height: 36px;
   border: 1px solid var(--border-strong);
@@ -104,7 +211,8 @@ button {
 
 .toolbar select,
 .toolbar input,
-.toolbar textarea {
+.toolbar textarea,
+.topbar select {
   width: 100%;
   border-radius: var(--radius-control);
   padding: 0 10px;
@@ -113,13 +221,15 @@ button {
 .toolbar select:hover,
 .toolbar input:hover,
 .toolbar textarea:hover,
+.topbar select:hover,
 .segmented-control button:hover {
   border-color: color-mix(in srgb, var(--accent) 45%, var(--border-strong));
 }
 
 .toolbar select:focus,
 .toolbar input:focus,
-.toolbar textarea:focus {
+.toolbar textarea:focus,
+.topbar select:focus {
   border-color: var(--focus);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 14%, transparent);
   outline: none;
@@ -128,6 +238,7 @@ button {
 .toolbar select:disabled,
 .toolbar input:disabled,
 .toolbar textarea:disabled,
+.topbar select:disabled,
 .segmented-control button:disabled {
   background: var(--surface-quiet);
   color: var(--text-soft);
@@ -299,11 +410,6 @@ button {
   line-height: 1.32;
 }
 
-.resume-page[data-page-size="Letter"] {
-  width: 816px;
-  min-height: 1056px;
-}
-
 .resume-header {
   border-bottom: 2px solid #1f4f46;
   padding-bottom: 12px;
@@ -376,7 +482,33 @@ button {
   margin: 2px 0;
 }
 
+.workspace {
+  grid-column: 2;
+  grid-row: 2 / 4;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.topbar {
+  position: relative;
+  z-index: 1;
+  min-height: var(--topbar-height, 88px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 96%, var(--app-bg));
+  box-shadow: 0 1px 0 rgba(24, 34, 45, 0.02);
+}
+
 .preview-stage {
+  min-height: 0;
   padding: clamp(24px, 3vw, 40px);
   overflow: auto;
   background:
@@ -400,15 +532,77 @@ button {
 }
 
 @media (max-width: 800px) {
+  body {
+    padding: 0;
+  }
+
   .app-shell {
     grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 48vh) minmax(0, 1fr);
+    height: 100vh;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .dashboard-header {
+    padding: 16px 14px;
+  }
+
+  .dashboard-brand {
+    gap: 10px;
+  }
+
+  .dashboard-brand-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+  }
+
+  .dashboard-brand h1 {
+    font-size: 18px;
+  }
+
+  .dashboard-brand p {
+    display: none;
+  }
+
+  .dashboard-template-button {
+    min-height: 36px;
+    padding: 0 11px;
+  }
+
+  .dashboard-template-button span {
+    display: none;
   }
 
   .toolbar {
+    grid-column: 1;
+    grid-row: 2;
+    grid-template-rows: minmax(0, 1fr) auto;
     border-right: 0;
     border-bottom: 1px solid var(--border);
-    max-height: none;
-    overflow: visible;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .toolbar::before {
+    content: none;
+  }
+
+  .toolbar-content {
+    padding: 16px 18px 18px;
+  }
+
+  .workspace {
+    grid-column: 1;
+    grid-row: 3;
+    min-height: 0;
+  }
+
+  .topbar {
+    align-items: flex-start;
+    overflow-x: auto;
+    padding: 10px 12px;
   }
 
   .preview-stage {
@@ -416,8 +610,7 @@ button {
     overflow-x: auto;
   }
 
-  .resume-page,
-  .resume-page[data-page-size="Letter"] {
+  .resume-page {
     width: var(--resume-page-width);
     min-height: auto;
     padding: 28px;

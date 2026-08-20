@@ -98,7 +98,7 @@ No component, no form change, no schema change, no migration.
 
 ## Testing a new template
 
-1. `npm run test:spike-a` — parity holds for the new template at A4 and Letter
+1. `npm run test:spike-a` — parity holds for the new template at A4
 2. Conformance test — passes automatically once the registries typecheck
 3. Switch through every template and back, assert content-schema invariance
 4. Render `fixture-3page.v2` and confirm no orphaned section headers or stranded bullets

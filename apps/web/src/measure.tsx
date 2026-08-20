@@ -1,5 +1,6 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
+import { flushSync } from "react-dom";
 import { extractResumeBlocks, PAGE_BOXES, paginateBlocks, type PageSize, type ResumeDocument } from "@resume-builder/core";
 import { ResumePreview } from "@resume-builder/render";
 import "./styles.css";
@@ -41,20 +42,22 @@ const root = createRoot(rootElement!);
 
 window.__resumeMeasure = {
   async measure(resume) {
-    root.render(
-      <React.StrictMode>
-        <div className="measure-stage">
-          <ResumePreview resume={resume} />
-        </div>
-      </React.StrictMode>,
-    );
+    flushSync(() => {
+      root.render(
+        <React.StrictMode>
+          <div className="measure-stage">
+            <ResumePreview resume={resume} />
+          </div>
+        </React.StrictMode>,
+      );
+    });
 
     await document.fonts.ready;
     await nextFrame();
 
     const measuredBlocks = measureBlocks();
     const heights = new Map(measuredBlocks.map((block) => [block.id, block.height]));
-    const pageBox = PAGE_BOXES[resume.design.pageSize];
+    const pageBox = PAGE_BOXES.A4;
     const pagination = paginateBlocks(
       extractResumeBlocks(resume),
       pageBox,
@@ -62,7 +65,7 @@ window.__resumeMeasure = {
     );
 
     return {
-      pageSize: resume.design.pageSize,
+      pageSize: "A4",
       blocks: measuredBlocks,
       pages: pagination.pages.map((page) => ({
         index: page.index,

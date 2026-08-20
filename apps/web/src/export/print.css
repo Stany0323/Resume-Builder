@@ -52,13 +52,16 @@
 /* Export controls at the foot of the form panel. "Your data is never trapped"
    is a stated product bet — these stay visible rather than living in a menu. */
 
+.export-section {
+  padding: 14px 24px 16px;
+  border-top: 1px solid var(--border, #e2e5ea);
+  background: var(--surface, #fff);
+}
+
 .export-bar {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  padding-top: 0.9rem;
-  margin-top: 0.6rem;
-  border-top: 1px solid var(--border, #e2e5ea);
 }
 
 .export-bar button {

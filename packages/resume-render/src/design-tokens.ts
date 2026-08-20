@@ -99,7 +99,6 @@ const MARGINS = {
 
 export const PAGE_DIMENSIONS = {
   A4: { width: "210mm", height: "297mm" },
-  Letter: { width: "8.5in", height: "11in" },
 } as const satisfies Record<Design["pageSize"], { height: string; width: string }>;
 
 /* ------------------------------------------------------------------ page */
@@ -114,7 +113,7 @@ export function designTokenStyle(design: Design): CSSProperties {
   const accent = ACCENTS[design.accent as Accent] ?? ACCENTS.slate;
   const type = TYPE_SCALES[design.typeScale] ?? TYPE_SCALES.normal;
   const density = DENSITIES[design.density] ?? DENSITIES.normal;
-  const page = PAGE_DIMENSIONS[design.pageSize] ?? PAGE_DIMENSIONS.A4;
+  const page = PAGE_DIMENSIONS.A4;
 
   return {
     "--resume-font-heading": font.heading,
@@ -198,7 +197,7 @@ export type TemplateId = keyof typeof TEMPLATES;
 
 /**
  * Applies a template together with the pairing it was designed around.
- * Keeps the user's accent, page size, spacing and margin choices intact —
+ * Keeps the user's accent, spacing and margin choices intact —
  * switching template is a look change, not a reset.
  */
 export function applyTemplate(design: Design, templateId: TemplateId): Design {

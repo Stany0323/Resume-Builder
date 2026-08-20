@@ -124,7 +124,7 @@ export function TemplateThumbnail({
     ),
   };
 
-  const page = PAGE_DIMENSIONS[resume.design.pageSize];
+  const page = PAGE_DIMENSIONS.A4;
 
   return (
     <span

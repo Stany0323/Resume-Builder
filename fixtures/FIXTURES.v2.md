@@ -9,8 +9,8 @@ Two fixtures, authored directly against schema v2. These replace the migrate-at-
 
 | File | Purpose |
 |---|---|
-| `fixture-1page.v2.json` | Baseline. Fits one page at `normal` tokens on both A4 and Letter. |
-| `fixture-3page.v2.json` | Hostile. **3 pages, two break boundaries**, breaking differently at A4 vs Letter. |
+| `fixture-1page.v2.json` | Baseline. Fits one A4 page at `normal` tokens. |
+| `fixture-3page.v2.json` | Hostile. **3 A4 pages, two break boundaries**. |
 
 ## Retuned for real DOM measurement
 
@@ -21,22 +21,20 @@ Measured baseline that drove the retune:
 | Size | Total block height | Page box | Pages | Break |
 |---|---:|---:|---:|---|
 | A4 | 1258.44 | 842 | 2 | `experience:item:x5` |
-| Letter | 1241.28 | 792 | 2 | `experience:item:x4:bullet:x4b2` |
 
-Page 1 packed at 98.4% efficiency, so the 3-page band is `1684 < total < 2526` at A4 and `1584 < total < 2376` at Letter. Target chosen: **~1900**, central in both bands rather than near either edge.
+The current 3-page band is `1684 < total < 2526` at A4. Target chosen: **~1900**, central in the A4 band rather than near either edge.
 
 **26 blocks added** (51 → 77), by deepening existing entries rather than inventing jobs — three more roles would have made a fourteen-year timeline implausible, and extra bullets exercise the hazards better anyway. Added: bullets on both education items, more bullets on `x2`/`x3`/`x4`/`x5`/`x7`, one new advisory role `x8`, a fifth skills group, two more hobbies.
 
-Estimated total **1778–2038** depending on how many added bullets wrap to two lines. Every point in that range sits inside the 3-page band at both page sizes, so the retune should be robust rather than knife-edge.
+Estimated total **1778–2038** depending on how many added bullets wrap to two lines. Every point in that range sits inside the A4 3-page band, so the retune should be robust rather than knife-edge.
 
 **Unverified without the real measurer:** whether a break lands near `skills`/`hobbies`/`references` and therefore actually exercises **H3**. The arithmetic suggests page 3 begins inside `skills`, which would put the skills section header at risk of stranding at the foot of page 2 — the intended H3 condition. Confirm from `pages[].usedHeight` on the next `npm run test:spike-a`; if the boundary lands elsewhere, this needs one more small pass.
 
 Prior synthetic-measurement result, kept for reference only — these break IDs are not expected to reproduce:
 
 ```
-fixture-1page.v2  A4: 1p   LT: 1p   orphans=0  widows=0
+fixture-1page.v2  A4: 1p   orphans=0  widows=0
 fixture-3page.v2  A4: 3p   breaks=[experience:item:x7, hobbies:item:h2]
-                  LT: 3p   breaks=[experience:item:x6:bullet:x6b1, hobbies:header]
 ```
 
 ---
@@ -46,7 +44,7 @@ fixture-3page.v2  A4: 3p   breaks=[experience:item:x7, hobbies:item:h2]
 | v1 | v2 | Status |
 |---|---|---|
 | **H1** six-bullet entry that must split | `experience.x1` — six bullets, several long | ✅ carried over intact |
-| **H2** long bullets near the wrap boundary | `x1b1` (258 chars) and `x3b1` (189 chars) — **texts carried over verbatim** | ✅ this is the A4/Letter divergence probe; it must not drift |
+| **H2** long bullets near the wrap boundary | `x1b1` (258 chars) and `x3b1` (189 chars) — **texts carried over verbatim** | ✅ this is the text-wrap probe; it must not drift |
 | **H3** short trailing sections stranding headers | `hobbies` (3 short items) and `references` (one line) at document end | ✅ **restored** — these now play the role awards/volunteer did |
 | **H4** single- and two-bullet entries after long ones | `x5` (two bullets), `x6` and `x7` (one each) | ✅ carried over |
 | **H5** many links incl. a long custom label | four links, one `custom` labelled "Work authorisation" | ✅ carried over |
@@ -83,7 +81,7 @@ Two things worth acting on. Neither is caused by the rebuild — the rebuild exp
 
 `getMinimumKeepRunHeight` keeps an item together with its **first following block**. When an item has a `summary`, that first block *is* the summary — so the keep-run is satisfied by heading + summary, and every bullet can still be pushed to the next page.
 
-Reproduced on Letter, at `experience.x6`:
+Originally reproduced before A4-only page sizing, at `experience.x6`:
 
 ```
 page 1 ends  : x6 heading + x6 summary

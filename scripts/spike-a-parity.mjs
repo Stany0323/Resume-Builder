@@ -4,15 +4,14 @@ import process from "node:process";
 import fixture1Page from "../fixtures/fixture-1page.v2.json" with { type: "json" };
 import fixture3Page from "../fixtures/fixture-3page.v2.json" with { type: "json" };
 
-const webUrl = "http://127.0.0.1:5173/?measure=1";
+const webUrl = "http://127.0.0.1:51730/?measure=1";
 const renderUrl = "http://127.0.0.1:4300/render/measure";
 const fixtures = [
   ["fixture-1page", fixture1Page],
   ["fixture-3page", fixture3Page],
 ];
-const pageSizes = ["A4", "Letter"];
 
-const web = spawn("npm", ["run", "dev", "--workspace", "@resume-builder/web"], {
+const web = spawn("npm", ["run", "dev", "--workspace", "@resume-builder/web", "--", "--port", "51730", "--strictPort"], {
   stdio: "pipe",
   shell: false,
 });
@@ -23,7 +22,7 @@ const render = spawn("npm", ["run", "dev:once", "--workspace", "@resume-builder/
 
 try {
   await Promise.all([
-    waitForUrl("http://127.0.0.1:5173/"),
+    waitForUrl("http://127.0.0.1:51730/"),
     waitForUrl("http://127.0.0.1:4300/health"),
   ]);
 
@@ -36,37 +35,35 @@ try {
   const results = [];
 
   for (const [fixtureName, fixture] of fixtures) {
-    for (const pageSize of pageSizes) {
-      const resume = withPageSize(fixture, pageSize);
-      const browserMeasure = await page.evaluate(async (document) => {
-        return window.__resumeMeasure.measure(document);
-      }, resume);
-      const serviceMeasure = await fetchJson(renderUrl, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ resume, measureUrl: webUrl }),
-      });
+    const resume = withA4PageSize(fixture);
+    const browserMeasure = await page.evaluate(async (document) => {
+      return window.__resumeMeasure.measure(document);
+    }, resume);
+    const serviceMeasure = await fetchJson(renderUrl, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ resume, measureUrl: webUrl }),
+    });
 
-      const row = {
-        fixtureName,
-        pageSize,
-        browserBreaks: browserMeasure.breakBlockIds,
-        serviceBreaks: serviceMeasure.breakBlockIds,
-        browserPages: browserMeasure.pages,
-        pageBox: browserMeasure.pageBox,
-        totalBlockHeight: browserMeasure.totalBlockHeight,
-        browserFontHash: browserMeasure.fontHash,
-        serviceFontHash: serviceMeasure.fontHash,
-      };
-      results.push(row);
+    const row = {
+      fixtureName,
+      pageSize: "A4",
+      browserBreaks: browserMeasure.breakBlockIds,
+      serviceBreaks: serviceMeasure.breakBlockIds,
+      browserPages: browserMeasure.pages,
+      pageBox: browserMeasure.pageBox,
+      totalBlockHeight: browserMeasure.totalBlockHeight,
+      browserFontHash: browserMeasure.fontHash,
+      serviceFontHash: serviceMeasure.fontHash,
+    };
+    results.push(row);
 
-      if (JSON.stringify(row.browserBreaks) !== JSON.stringify(row.serviceBreaks)) {
-        failures.push(`${fixtureName} ${pageSize}: break mismatch`);
-      }
+    if (JSON.stringify(row.browserBreaks) !== JSON.stringify(row.serviceBreaks)) {
+      failures.push(`${fixtureName} A4: break mismatch`);
+    }
 
-      if (row.browserFontHash !== row.serviceFontHash) {
-        failures.push(`${fixtureName} ${pageSize}: font hash mismatch`);
-      }
+    if (row.browserFontHash !== row.serviceFontHash) {
+      failures.push(`${fixtureName} A4: font hash mismatch`);
     }
   }
 
@@ -90,12 +87,12 @@ try {
   render.kill();
 }
 
-function withPageSize(resume, pageSize) {
+function withA4PageSize(resume) {
   return {
     ...resume,
     design: {
       ...resume.design,
-      pageSize,
+      pageSize: "A4",
     },
   };
 }

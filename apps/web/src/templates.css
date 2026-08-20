@@ -100,7 +100,9 @@
 
 .resume-photo {
   flex: 0 0 auto;
-  object-fit: cover;
+  display: block;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
   background: #eceef1;
 }
 
@@ -289,16 +291,15 @@
   min-width: 0;
 }
 
-/* Square and modest — a portrait plate rather than an avatar. */
+/* The committed image is already the user's square crop; do not crop it again. */
 .resume-page[data-template="quill"] .resume-photo {
   align-self: flex-start;
   width: 78px;
-  height: 96px;
+  height: 78px;
   border-radius: 1px;
 }
 
 .resume-page[data-template="quill"] .resume-photo[data-shape="circle"] {
-  height: 78px;
   border-radius: 50%;
 }
 

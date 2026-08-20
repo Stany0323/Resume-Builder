@@ -2,7 +2,7 @@
 
 **Owner:** Claude (schema & content) · **Consumer:** Codex (Spike A parity, Spike B measured layout, Sprint 1 CI parity test)
 
-Two committed JSON fixtures conforming to schema v1. They are inputs to the pagination parity test and, from Sprint 1 onward, to the CI parity check.
+Two committed JSON fixtures conforming to schema v1. They are retained as migration-test inputs; schema v2 fixtures are the active render/pagination fixtures.
 
 > **Do not "clean up" these fixtures.** Several blocks are deliberately awkward. Each hazard below exists to force a specific break condition. If a fixture looks like it has a typo or an oddly long sentence, check this document before editing — you are probably looking at the test.
 
@@ -12,10 +12,10 @@ Two committed JSON fixtures conforming to schema v1. They are inputs to the pagi
 
 | File | Purpose |
 |---|---|
-| `fixture-1page.json` | Baseline. Should fit one page at `normal` tokens on both A4 and Letter. Proves the simple case and catches gross regressions. |
-| `fixture-3page.json` | Hostile. Engineered to force breaks in the worst available places and to break *differently* at A4 vs Letter. |
+| `fixture-1page.json` | Legacy baseline migration input. |
+| `fixture-3page.json` | Legacy hostile migration input. |
 
-Both must be rendered at **A4 and Letter** in every run. Parity on one page size proves nothing about the other (see plan §3).
+The product is now A4-only. Do not use these v1 fixtures to reintroduce a page-size matrix.
 
 ---
 
@@ -27,7 +27,7 @@ Both must be rendered at **A4 and Letter** in every run. Parity on one page size
 ### H2 — Very long bullets near the wrap boundary
 `b1` and `b12` are ~230 and ~200 characters. At normal type scale these wrap to 3 and 2–3 lines respectively.
 
-**This is the A4/Letter divergence probe.** A4 is 6mm narrower than Letter, so these bullets wrap to a different line count on each. Different line count → different block height → different break position downstream. If your parity test passes at both sizes with *identical* break indices, either the test is not actually varying page size, or the page box is not being propagated to the renderer.
+This used to be the page-width divergence probe. With A4-only output, it remains a long-text wrapping probe and should not drift.
 
 ### H3 — Sections short enough to strand their headers
 `s8` (Awards, one item), `s9` (Volunteer), `s10` (Languages) are deliberately short and sequenced late, where accumulated content pushes them near page boundaries. **Tests:** orphaned section header rule — a header must never render as the last element on a page.
@@ -48,7 +48,7 @@ The header carries six contacts, one with `type: "custom"` and a long label (`Wo
 `s11` has `visible: false` and contains the string **"If this text appears in any rendered output, section visibility is broken."** Grep the rendered output and the extracted PDF text for it. It must appear in neither. **Tests:** visibility is respected in *both* render paths — a class of bug that otherwise ships silently.
 
 ### H9 — Hyphenated surname and long headline
-`Tendai Mukamuri-Nyathi`, `Principal Engineer, Distributed Systems`. **Tests:** name wrapping and hyphenation behaviour in the header, which differs between the two page widths.
+`Tendai Mukamuri-Nyathi`, `Principal Engineer, Distributed Systems`. **Tests:** name wrapping and hyphenation behaviour in the header.
 
 ### H10 — Null-vs-absent optional fields
 `summary: null` on several items, `credentialId: null`, `url: null`, `photo: null`, empty `bullets: []`. **Tests:** the renderer distinguishes "absent" from "empty" and emits no stray separators, empty rules, or orphaned punctuation.
@@ -80,15 +80,15 @@ Common to every item: `id`, `order`, `visible`.
 
 ## What Spike A should assert
 
-1. Break positions (index of the first block on each page) are **identical between browser preview and headless-Chromium export**, for both fixtures, at both page sizes, across Chrome/Safari/Firefox previews.
-2. Break positions **differ between A4 and Letter** on `fixture-3page` — if they don't, page size is not reaching the renderer (see H2).
-3. `fixture-1page` occupies exactly one page at `normal` tokens on both page sizes.
+1. Break positions (index of the first block on each page) are **identical between browser preview and headless-Chromium export**, for active v2 fixtures at A4, across Chrome/Safari/Firefox previews.
+2. `fixture-1page.v2` occupies exactly one A4 page at `normal` tokens.
+3. `fixture-3page.v2` occupies exactly three A4 pages with two break boundaries.
 4. The H8 sentinel string appears in no rendered output and no extracted PDF text.
 5. Embedded font hashes match between client and render service.
 
 ## What Spike B should assert
 
-`paginate(blocks, pageBox)` reproduces Spike A's **export** break positions on `fixture-3page` at both page sizes, and a speculative re-run across three density values returns differing page counts in under 50ms without rendering.
+`paginate(blocks, pageBox)` reproduces Spike A's **export** break positions on `fixture-3page.v2` at A4, and a speculative re-run across three density values returns differing page counts in under 50ms without rendering.
 
 Per plan §12.1: cache measurements by block identity + content hash + template + font + page width + type scale + density + margin. Do not assume measurements transform arithmetically across density or type-scale changes — H2 is precisely the case where that assumption fails.
 

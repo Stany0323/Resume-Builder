@@ -256,7 +256,7 @@ function CropStage({
         style={{
           width: drawnWidth,
           height: drawnHeight,
-          transform: `translate(${offset.x * slackX}px, ${offset.y * slackY}px)`,
+          transform: `translate(calc(-50% + ${offset.x * slackX}px), calc(-50% + ${offset.y * slackY}px))`,
         }}
       />
       <span className="crop-hint">Drag to reposition</span>

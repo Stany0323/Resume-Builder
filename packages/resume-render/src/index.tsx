@@ -21,7 +21,6 @@ export function ResumePreview({ resume }: { resume: ResumeDocument }) {
   return (
     <article
       className="resume-page"
-      data-page-size={resume.design.pageSize}
       data-template={resume.design.templateId}
       style={designTokenStyle(resume.design)}
     >

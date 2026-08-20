@@ -8,6 +8,7 @@ import {
   type ExperienceItem,
   type ResumeDocument,
 } from "@resume-builder/core";
+import { FileText, LayoutGrid } from "lucide-react";
 import { ResumePreview, applyTemplate, type Accent, type TemplateId } from "@resume-builder/render";
 
 import { TemplateChooser } from "./onboarding/TemplateChooser";
@@ -171,153 +172,167 @@ function Editor({
 
   return (
     <main className="app-shell">
+      <header className="dashboard-header">
+        <div className="dashboard-brand">
+          <span className="dashboard-brand-icon" aria-hidden="true">
+            <FileText size={22} strokeWidth={1.8} />
+          </span>
+          <div>
+            <h1>Resume Builder</h1>
+            <p>Create a professional resume that gets you hired</p>
+          </div>
+        </div>
+        <button className="dashboard-template-button" onClick={onChooseTemplate} type="button">
+          <LayoutGrid size={16} strokeWidth={2} />
+          <span>Browse templates</span>
+        </button>
+      </header>
+
       <aside className="toolbar" aria-label="Resume controls">
-        <h1>Resume Builder</h1>
+        <div className="toolbar-content">
+          <section className="form-section" aria-labelledby="personal-heading">
+            <FormSectionHeader id="personal-heading" title="Personal Info" />
+            <PersonalPanel
+              onChange={(patch) => setResume({ ...resume, personal: { ...resume.personal, ...patch } })}
+              personal={resume.personal}
+              templateId={resume.design.templateId}
+            />
+          </section>
 
-        <section className="form-section" aria-labelledby="design-heading">
-          <FormSectionHeader id="design-heading" title="Design" />
-          <DesignPanel
-            design={resume.design}
-            onChange={(patch) => setResume({ ...resume, design: { ...resume.design, ...patch } })}
-          />
-          <button className="link-button" onClick={onChooseTemplate} type="button">
-            Browse templates
-          </button>
-        </section>
+          <section className="form-section" aria-labelledby="summary-heading">
+            <FormSectionHeader id="summary-heading" title="Summary" />
+            <SummaryPanel onChange={(text) => setContent("summary", { text })} text={resume.content.summary.text} />
+          </section>
 
-        <section className="form-section" aria-labelledby="personal-heading">
-          <FormSectionHeader id="personal-heading" title="Personal Info" />
-          <PersonalPanel
-            onChange={(patch) => setResume({ ...resume, personal: { ...resume.personal, ...patch } })}
-            personal={resume.personal}
-            templateId={resume.design.templateId}
-          />
-        </section>
-
-        <section className="form-section" aria-labelledby="summary-heading">
-          <FormSectionHeader id="summary-heading" title="Summary" />
-          <SummaryPanel onChange={(text) => setContent("summary", { text })} text={resume.content.summary.text} />
-        </section>
-
-        <section className="form-section" aria-labelledby="experience-heading">
-          <FormSectionHeader count={orderedExperience.length} id="experience-heading" title="Experience" />
-          {orderedExperience.length > 0 ? (
-            <p className="form-note">Ordered automatically, most recent first.</p>
-          ) : (
-            <p className="form-note">
-              No roles yet. Add your most recent position first — the rest sort themselves.
-            </p>
-          )}
-          {orderedExperience.map((item) => (
-            <div className="item-editor" key={item.id}>
-              <div className="item-editor-header">
+          <section className="form-section" aria-labelledby="experience-heading">
+            <FormSectionHeader count={orderedExperience.length} id="experience-heading" title="Experience" />
+            {orderedExperience.length > 0 ? (
+              <p className="form-note">Ordered automatically, most recent first.</p>
+            ) : (
+              <p className="form-note">
+                No roles yet. Add your most recent position first — the rest sort themselves.
+              </p>
+            )}
+            {orderedExperience.map((item) => (
+              <div className="item-editor" key={item.id}>
+                <div className="item-editor-header">
+                  <TextField
+                    label="Role"
+                    onChange={(value) => experience.update(item.id, { role: value })}
+                    value={item.role}
+                  />
+                  <RemoveButton
+                    label={`Remove ${item.role || "role"}`}
+                    onRemove={() => experience.remove(item.id)}
+                  />
+                </div>
                 <TextField
-                  label="Role"
-                  onChange={(value) => experience.update(item.id, { role: value })}
-                  value={item.role}
+                  label="Organisation"
+                  onChange={(value) => experience.update(item.id, { organization: value })}
+                  value={item.organization}
                 />
-                <RemoveButton
-                  label={`Remove ${item.role || "role"}`}
-                  onRemove={() => experience.remove(item.id)}
+                <TextField
+                  label="Location"
+                  onChange={(value) => experience.update(item.id, { location: emptyToUndefined(value) })}
+                  value={item.location ?? ""}
+                />
+                <DateRangeFields
+                  endDate={item.endDate}
+                  onEndDateChange={(value) => experience.update(item.id, { endDate: value })}
+                  onStartDateChange={(value) => experience.update(item.id, { startDate: value })}
+                  startDate={item.startDate}
+                />
+                <DateValidationMessage endDate={item.endDate} startDate={item.startDate} />
+                <BulletsField
+                  bullets={item.bullets}
+                  onChange={(value) =>
+                    experience.update(item.id, { bullets: reconcileLines(item.bullets, value, makeBulletId) })}
                 />
               </div>
-              <TextField
-                label="Organisation"
-                onChange={(value) => experience.update(item.id, { organization: value })}
-                value={item.organization}
-              />
-              <TextField
-                label="Location"
-                onChange={(value) => experience.update(item.id, { location: emptyToUndefined(value) })}
-                value={item.location ?? ""}
-              />
-              <DateRangeFields
-                endDate={item.endDate}
-                onEndDateChange={(value) => experience.update(item.id, { endDate: value })}
-                onStartDateChange={(value) => experience.update(item.id, { startDate: value })}
-                startDate={item.startDate}
-              />
-              <DateValidationMessage endDate={item.endDate} startDate={item.startDate} />
-              <BulletsField
-                bullets={item.bullets}
-                onChange={(value) =>
-                  experience.update(item.id, { bullets: reconcileLines(item.bullets, value, makeBulletId) })}
-              />
-            </div>
-          ))}
-          <UndoRow removal={experience.removal} what="Role" />
-          <AddButton label="Add a role" onClick={addExperience} />
-        </section>
+            ))}
+            <UndoRow removal={experience.removal} what="Role" />
+            <AddButton label="Add a role" onClick={addExperience} />
+          </section>
 
-        <section className="form-section" aria-labelledby="education-heading">
-          <FormSectionHeader count={orderedEducation.length} id="education-heading" title="Education" />
-          {orderedEducation.length === 0 ? (
-            <p className="form-note">Add your highest qualification.</p>
-          ) : null}
-          {orderedEducation.map((item) => (
-            <div className="item-editor" key={item.id}>
-              <div className="item-editor-header">
+          <section className="form-section" aria-labelledby="education-heading">
+            <FormSectionHeader count={orderedEducation.length} id="education-heading" title="Education" />
+            {orderedEducation.length === 0 ? (
+              <p className="form-note">Add your highest qualification.</p>
+            ) : null}
+            {orderedEducation.map((item) => (
+              <div className="item-editor" key={item.id}>
+                <div className="item-editor-header">
+                  <TextField
+                    label="Qualification"
+                    onChange={(value) => education.update(item.id, { degree: value })}
+                    value={item.degree}
+                  />
+                  <RemoveButton
+                    label={`Remove ${item.degree || "qualification"}`}
+                    onRemove={() => education.remove(item.id)}
+                  />
+                </div>
                 <TextField
-                  label="Qualification"
-                  onChange={(value) => education.update(item.id, { degree: value })}
-                  value={item.degree}
+                  label="Institution"
+                  onChange={(value) => education.update(item.id, { institution: value })}
+                  value={item.institution}
                 />
-                <RemoveButton
-                  label={`Remove ${item.degree || "qualification"}`}
-                  onRemove={() => education.remove(item.id)}
+                <DateRangeFields
+                  endDate={item.endDate}
+                  onEndDateChange={(value) => education.update(item.id, { endDate: value })}
+                  onStartDateChange={(value) => education.update(item.id, { startDate: value })}
+                  startDate={item.startDate}
+                />
+                <DateValidationMessage endDate={item.endDate} startDate={item.startDate} />
+                <BulletsField
+                  bullets={item.bullets}
+                  onChange={(value) =>
+                    education.update(item.id, { bullets: reconcileLines(item.bullets, value, makeBulletId) })}
                 />
               </div>
-              <TextField
-                label="Institution"
-                onChange={(value) => education.update(item.id, { institution: value })}
-                value={item.institution}
-              />
-              <DateRangeFields
-                endDate={item.endDate}
-                onEndDateChange={(value) => education.update(item.id, { endDate: value })}
-                onStartDateChange={(value) => education.update(item.id, { startDate: value })}
-                startDate={item.startDate}
-              />
-              <DateValidationMessage endDate={item.endDate} startDate={item.startDate} />
-              <BulletsField
-                bullets={item.bullets}
-                onChange={(value) =>
-                  education.update(item.id, { bullets: reconcileLines(item.bullets, value, makeBulletId) })}
-              />
-            </div>
-          ))}
-          <UndoRow removal={education.removal} what="Qualification" />
-          <AddButton label="Add a qualification" onClick={addEducation} />
-        </section>
+            ))}
+            <UndoRow removal={education.removal} what="Qualification" />
+            <AddButton label="Add a qualification" onClick={addEducation} />
+          </section>
 
-        <section className="form-section" aria-labelledby="skills-heading">
-          <FormSectionHeader count={resume.content.skills.items.length} id="skills-heading" title="Skills" />
-          <SkillsPanel items={resume.content.skills.items} onChange={(items) => setContent("skills", { items })} />
-        </section>
+          <section className="form-section" aria-labelledby="skills-heading">
+            <FormSectionHeader count={resume.content.skills.items.length} id="skills-heading" title="Skills" />
+            <SkillsPanel items={resume.content.skills.items} onChange={(items) => setContent("skills", { items })} />
+          </section>
 
-        <section className="form-section" aria-labelledby="hobbies-heading">
-          <FormSectionHeader count={resume.content.hobbies.items.length} id="hobbies-heading" title="Hobbies" />
-          <HobbiesPanel items={resume.content.hobbies.items} onChange={(items) => setContent("hobbies", { items })} />
-        </section>
+          <section className="form-section" aria-labelledby="hobbies-heading">
+            <FormSectionHeader count={resume.content.hobbies.items.length} id="hobbies-heading" title="Hobbies" />
+            <HobbiesPanel items={resume.content.hobbies.items} onChange={(items) => setContent("hobbies", { items })} />
+          </section>
 
-        <section className="form-section" aria-labelledby="references-heading">
-          <FormSectionHeader
-            count={resume.content.references.mode === "listed" ? resume.content.references.items.length : 0}
-            id="references-heading"
-            title="References"
-          />
-          <ReferencesPanel
-            items={resume.content.references.items}
-            mode={resume.content.references.mode}
-            onChange={(references) => setContent("references", references)}
-          />
-        </section>
+          <section className="form-section" aria-labelledby="references-heading">
+            <FormSectionHeader
+              count={resume.content.references.mode === "listed" ? resume.content.references.items.length : 0}
+              id="references-heading"
+              title="References"
+            />
+            <ReferencesPanel
+              items={resume.content.references.items}
+              mode={resume.content.references.mode}
+              onChange={(references) => setContent("references", references)}
+            />
+          </section>
+        </div>
 
         <ExportBar onImport={setResume} resume={resume} saveStatus={saveStatus} />
       </aside>
 
-      <section className="preview-stage" aria-label="Resume preview">
-        <ResumePreview resume={resume} />
+      <section className="workspace" aria-label="Resume workspace">
+        <div className="topbar">
+          <DesignPanel
+            design={resume.design}
+            onChange={(patch) => setResume({ ...resume, design: { ...resume.design, ...patch } })}
+          />
+        </div>
+
+        <section className="preview-stage" aria-label="Resume preview">
+          <ResumePreview resume={resume} />
+        </section>
       </section>
     </main>
   );
