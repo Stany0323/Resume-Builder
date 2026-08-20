@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 2,
+  "meta": {
+    "id": "f1a70000-0000-4000-8000-000000000001",
+    "title": "FIXTURE — 1 page (v2)",
+    "updatedAt": "2026-08-20T08:00:00.000Z",
+    "profileType": "experienced"
+  },
+  "design": {
+    "templateId": "atlas",
+    "pageSize": "A4",
+    "fontPairing": "source",
+    "typeScale": "normal",
+    "density": "normal",
+    "margins": "normal",
+    "accent": "slate",
+    "dateFormat": "MMM yyyy"
+  },
+  "personal": {
+    "firstName": "Amara",
+    "lastName": "Chikafu",
+    "headline": "Senior Product Manager",
+    "location": "Harare, Zimbabwe",
+    "email": "amara.chikafu@example.com",
+    "phone": "+263 77 000 0000",
+    "links": [
+      { "id": "l1", "type": "linkedin", "label": "LinkedIn", "value": "linkedin.com/in/example-amara" },
+      { "id": "l2", "type": "url", "label": "Portfolio", "value": "amarachikafu.example.com" }
+    ],
+    "photo": null
+  },
+  "content": {
+    "summary": {
+      "text": "Product manager with eight years building payments and lending products for emerging markets. Led the team that took a mobile wallet from pilot to 400,000 monthly active users."
+    },
+    "education": {
+      "items": [
+        {
+          "id": "e1",
+          "order": 0,
+          "degree": "BSc Computer Science",
+          "institution": "University of Zimbabwe",
+          "location": "Harare, ZW",
+          "startDate": "2014-02",
+          "endDate": "2017-11",
+          "detail": "First Class Honours",
+          "bullets": []
+        }
+      ]
+    },
+    "experience": {
+      "items": [
+        {
+          "id": "x1",
+          "order": 0,
+          "role": "Senior Product Manager",
+          "organization": "Kopa Financial",
+          "location": "Harare, ZW",
+          "startDate": "2023-02",
+          "endDate": "present",
+          "bullets": [
+            { "id": "x1b1", "order": 0, "text": "Grew mobile wallet from 90,000 to 400,000 monthly active users in 19 months." },
+            { "id": "x1b2", "order": 1, "text": "Cut onboarding drop-off from 61% to 28% by rebuilding identity verification around offline-capable capture." },
+            { "id": "x1b3", "order": 2, "text": "Led a team of six engineers, one designer, and two analysts across three release trains." }
+          ]
+        },
+        {
+          "id": "x2",
+          "order": 1,
+          "role": "Product Manager",
+          "organization": "Sable Commerce",
+          "location": "Cape Town, ZA",
+          "startDate": "2020-06",
+          "endDate": "2023-01",
+          "bullets": [
+            { "id": "x2b1", "order": 0, "text": "Launched merchant settlement reporting used by 2,300 sellers at launch." },
+            { "id": "x2b2", "order": 1, "text": "Reduced support tickets on refunds by 44% after redesigning the dispute flow." }
+          ]
+        }
+      ]
+    },
+    "skills": {
+      "items": [
+        { "id": "k1", "order": 0, "groupLabel": "Product", "entries": ["Discovery research", "Roadmapping", "Experiment design", "Pricing"] },
+        { "id": "k2", "order": 1, "groupLabel": "Technical", "entries": ["SQL", "Python", "Amplitude", "Figma"] }
+      ]
+    },
+    "hobbies": {
+      "items": [
+        { "id": "h1", "order": 0, "text": "Long-distance trail running" },
+        { "id": "h2", "order": 1, "text": "Chess" }
+      ]
+    },
+    "references": {
+      "mode": "onRequest",
+      "items": []
+    }
+  }
+}

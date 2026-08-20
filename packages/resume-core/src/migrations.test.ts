@@ -10,9 +10,9 @@ describe("resume document migrations", () => {
     expect(migrated.schemaVersion).toBe(2);
     expect(migrated.personal.firstName).toBe("Tendai");
     expect(migrated.personal.email).toBe("tendai.mukamuri.nyathi@example.com");
-    expect(sectionTypes).toEqual(["summary", "education", "experience", "skills", "hobbies", "references"]);
+    expect(sectionTypes).toEqual(["summary", "experience", "education", "skills", "hobbies"]);
     expect(migrated.content.experience.items[0]?.bullets[0]?.text).toContain("Redesigned the settlement ledger");
-    expect(migrated.content.references.mode).toBe("onRequest");
+    expect(migrated.content.references.mode).toBe("omitted");
   });
 
   it("does not migrate items from hidden v1 sections", () => {

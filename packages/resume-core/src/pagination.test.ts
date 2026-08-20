@@ -1,17 +1,15 @@
 import { describe, expect, it } from "vitest";
-import fixture1Page from "../../../fixtures/fixture-1page.json";
-import fixture3Page from "../../../fixtures/fixture-3page.json";
+import fixture1Page from "../../../fixtures/fixture-1page.v2.json";
+import fixture3Page from "../../../fixtures/fixture-3page.v2.json";
 import {
   extractResumeBlocks,
   hasVisibleSectionContent,
-  migrateResumeDocument,
   PAGE_BOXES,
   paginateBlocks,
   type MeasureBlock,
   type PageBox,
   type ResumeBlock,
   type ResumeDocument,
-  type LegacyResumeDocumentV1,
 } from "./index";
 
 const a4 = PAGE_BOXES.A4;
@@ -21,7 +19,7 @@ const measureFixtureBlock: MeasureBlock = (block, pageBox) => {
   const lineHeight = block.kind === "header" ? 18 : 14;
   const baseHeight = baseHeightByKind(block);
   const usableWidth = pageBox.width - 112;
-  const charsPerLine = Math.max(24, Math.floor(usableWidth / 6.1));
+  const charsPerLine = Math.max(24, Math.floor(usableWidth / 5.8));
   const lines = Math.max(1, Math.ceil(block.content.length / charsPerLine));
 
   return baseHeight + lines * lineHeight;
@@ -29,11 +27,11 @@ const measureFixtureBlock: MeasureBlock = (block, pageBox) => {
 
 describe("resume pagination primitives", () => {
   it("extracts visible blocks in render order", () => {
-    const blocks = extractResumeBlocks(migrateResumeDocument(fixture3Page as LegacyResumeDocumentV1));
+    const blocks = extractResumeBlocks(fixture3Page as ResumeDocument);
 
     expect(blocks[0]?.id).toBe("header");
-    expect(blocks.map((block) => block.id)).toContain("section:experience:item:i2:bullet:b1");
-    expect(blocks.map((block) => block.id)).not.toContain("section:hobbies:item:i22");
+    expect(blocks.map((block) => block.id)).toContain("section:experience:item:x1:bullet:x1b1");
+    expect(blocks.map((block) => block.content).join(" ")).not.toContain("SENTINEL");
     expect(blocks.map((block) => block.content).join(" ")).not.toContain(
       "If this text appears in any rendered output",
     );
@@ -41,15 +39,15 @@ describe("resume pagination primitives", () => {
 
   it("skips visible sections that have no visible items", () => {
     const resume: ResumeDocument = {
-      ...migrateResumeDocument(fixture1Page as LegacyResumeDocumentV1),
+      ...fixture1Page as ResumeDocument,
       content: {
-        ...migrateResumeDocument(fixture1Page as LegacyResumeDocumentV1).content,
+        ...(fixture1Page as ResumeDocument).content,
         summary: { text: "" },
         education: { items: [] },
         experience: { items: [] },
         skills: { items: [] },
         hobbies: { items: [] },
-        references: { mode: "listed", items: [] },
+        references: { mode: "omitted", items: [] },
       },
     };
 
@@ -59,7 +57,7 @@ describe("resume pagination primitives", () => {
 
   it("keeps the baseline fixture on one A4 and Letter page", () => {
     for (const pageBox of [a4, letter]) {
-      const blocks = extractResumeBlocks(migrateResumeDocument(fixture1Page as LegacyResumeDocumentV1));
+      const blocks = extractResumeBlocks(fixture1Page as ResumeDocument);
       const result = paginateBlocks(blocks, pageBox, measureFixtureBlock);
 
       expect(result.pages).toHaveLength(1);
@@ -68,7 +66,7 @@ describe("resume pagination primitives", () => {
   });
 
   it("produces width-sensitive breaks for the hostile fixture", () => {
-    const blocks = extractResumeBlocks(migrateResumeDocument(fixture3Page as LegacyResumeDocumentV1));
+    const blocks = extractResumeBlocks(fixture3Page as ResumeDocument);
     const a4Result = paginateBlocks(blocks, a4, measureFixtureBlock);
     const letterResult = paginateBlocks(blocks, letter, measureFixtureBlock);
 
@@ -78,17 +76,17 @@ describe("resume pagination primitives", () => {
   });
 
   it("keeps item titles with their first child block", () => {
-    const blocks = extractResumeBlocks(migrateResumeDocument(fixture3Page as LegacyResumeDocumentV1));
+    const blocks = extractResumeBlocks(fixture3Page as ResumeDocument);
 
     for (const pageBox of [a4, letter]) {
       const result = paginateBlocks(blocks, pageBox, measureFixtureBlock);
 
-      expect(findItemTitleOrphan(result.pages)).toBeNull();
+      expect(findItemIntroOrphan(result.pages)).toBeNull();
     }
   });
 
   it("lets density alter breaks without rendering", () => {
-    const blocks = extractResumeBlocks(migrateResumeDocument(fixture3Page as LegacyResumeDocumentV1));
+    const blocks = extractResumeBlocks(fixture3Page as ResumeDocument);
     const densityBreaks = ["compact", "normal", "relaxed"].map((density) => {
       const densityMeasure = (block: ResumeBlock, pageBox: PageBox) => {
         const multiplier = density === "compact" ? 0.72 : density === "relaxed" ? 1.34 : 1;
@@ -130,13 +128,15 @@ function baseHeightByKind(block: ResumeBlock) {
   }
 }
 
-function findItemTitleOrphan(pages: Array<{ blocks: ResumeBlock[] }>) {
+function findItemIntroOrphan(pages: Array<{ blocks: ResumeBlock[] }>) {
   for (let index = 0; index < pages.length - 1; index += 1) {
     const lastBlock = pages[index].blocks.at(-1);
     const firstNextBlock = pages[index + 1].blocks[0];
 
     if (
-      lastBlock?.kind === "item" &&
+      lastBlock &&
+      ["item", "item-summary", "item-detail"].includes(lastBlock.kind) &&
+      firstNextBlock?.kind === "bullet" &&
       firstNextBlock?.itemId === lastBlock.itemId &&
       firstNextBlock.sectionId === lastBlock.sectionId
     ) {

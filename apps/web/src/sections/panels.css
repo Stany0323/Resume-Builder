@@ -1,0 +1,152 @@
+/* Append to apps/web/src/styles.css — styles for Skills, Hobbies, References */
+
+.item-editor-header {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.item-editor-header > label {
+  flex: 1;
+}
+
+.add-button {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  margin-top: 0.5rem;
+  border: 1px dashed var(--border, #c8ccd4);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted, #4a5160);
+  font: inherit;
+  cursor: pointer;
+}
+
+.add-button:hover {
+  border-color: var(--accent, #47506b);
+  color: var(--accent, #47506b);
+}
+
+.remove-button {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted, #6b7280);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.remove-button:hover {
+  border-color: #d9534f;
+  color: #b33a36;
+}
+
+.empty-state {
+  padding: 0.85rem;
+  border: 1px dashed var(--border, #c8ccd4);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.015);
+}
+
+.empty-state p {
+  margin: 0 0 0.5rem;
+  color: var(--text-muted, #4a5160);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.empty-state .add-button {
+  margin-top: 0;
+}
+
+.undo-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.7rem;
+  margin-top: 0.5rem;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.05);
+  font-size: 0.875rem;
+}
+
+.undo-row button {
+  border: none;
+  background: transparent;
+  color: var(--accent, #47506b);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Chips ------------------------------------------------------------------ */
+
+.chips-field .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.45rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chips button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--border, #c8ccd4);
+  border-radius: 999px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.chips button:hover {
+  border-color: #d9534f;
+}
+
+.chips button span {
+  color: var(--text-muted, #8a8f9a);
+  font-size: 0.9em;
+}
+
+/* Mode choice ------------------------------------------------------------ */
+
+.mode-choice {
+  margin: 0 0 0.75rem;
+  padding: 0;
+  border: none;
+}
+
+.radio-field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.radio-field input {
+  width: auto;
+  margin: 0;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

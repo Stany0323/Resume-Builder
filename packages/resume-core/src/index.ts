@@ -1,5 +1,6 @@
 import { SECTION_BLOCK_EXTRACTORS } from "./blocks/registry";
 export { SECTION_BLOCK_EXTRACTORS, SECTION_TYPES, type SectionBlockExtractor, type SectionType } from "./blocks/registry";
+export { bulletsToText, normaliseBulletLine, reconcileLines, splitBulletLines } from "./form/reconcile-lines";
 export { PAGE_BOXES, type PageBox } from "./pagination/page-boxes";
 export {
   paginateBlocks,
@@ -67,7 +68,7 @@ export interface ResumeContent {
   skills: { items: SkillsItem[] };
   hobbies: { items: HobbyItem[] };
   references: {
-    mode: "onRequest" | "listed";
+    mode: "omitted" | "onRequest" | "listed";
     items: ReferenceItem[];
   };
 }
@@ -193,14 +194,33 @@ export function hasVisibleSectionContent(section: ResumeSection): boolean {
 }
 
 export function getRenderableSections(resume: ResumeDocument): ResumeSection[] {
-  return [
-    getSummarySection(resume),
-    getEducationSection(resume),
-    getExperienceSection(resume),
-    getSkillsSection(resume),
-    getHobbiesSection(resume),
-    getReferencesSection(resume),
-  ].filter(hasVisibleSectionContent);
+  const order = getSectionOrder(resume);
+  const sectionsByType: Record<ResumeSection["type"], ResumeSection> = {
+    summary: getSummarySection(resume),
+    education: getEducationSection(resume),
+    experience: getExperienceSection(resume),
+    skills: getSkillsSection(resume),
+    hobbies: getHobbiesSection(resume),
+    references: getReferencesSection(resume),
+  };
+
+  return order.map((type) => sectionsByType[type]).filter(hasVisibleSectionContent);
+}
+
+function getSectionOrder(resume: ResumeDocument): Array<ResumeSection["type"]> {
+  if (resume.meta.profileType === "earlyCareer") {
+    return ["summary", "education", "experience", "skills", "hobbies", "references"];
+  }
+
+  switch (resume.design.templateId) {
+    case "atlas":
+    case "meridian":
+      return ["summary", "experience", "education", "skills", "hobbies", "references"];
+  }
+}
+
+export function getTemplateSectionOrder(resume: ResumeDocument): Array<ResumeSection["type"]> {
+  return getSectionOrder(resume);
 }
 
 export function extractResumeBlocks(resume: ResumeDocument): ResumeBlock[] {
@@ -281,6 +301,15 @@ function getHobbiesSection(resume: ResumeDocument): HobbiesSection {
 }
 
 function getReferencesSection(resume: ResumeDocument): ReferencesSection {
+  if (resume.content.references.mode === "omitted") {
+    return {
+      id: "references",
+      type: "references",
+      title: "References",
+      items: [],
+    };
+  }
+
   if (resume.content.references.mode === "onRequest") {
     return {
       id: "references",
@@ -339,7 +368,7 @@ function migrateV1ToV2(document: LegacyResumeDocumentV1): ResumeDocument {
       experience: { items: sectionItems<ExperienceItem>(document, "experience") },
       skills: { items: sectionItems<SkillsItem>(document, "skills") },
       hobbies: { items: customTextItems(document).map((item) => ({ id: item.id, order: item.order, text: item.text })) },
-      references: { mode: "onRequest", items: [] },
+      references: { mode: "omitted", items: [] },
     },
   };
 }
@@ -403,6 +432,6 @@ export const sampleResume: ResumeDocument = {
     experience: { items: [] },
     skills: { items: [] },
     hobbies: { items: [] },
-    references: { mode: "onRequest", items: [] },
+    references: { mode: "omitted", items: [] },
   },
 };

@@ -1,0 +1,236 @@
+{
+  "schemaVersion": 2,
+  "meta": {
+    "id": "f1a70000-0000-4000-8000-000000000003",
+    "title": "FIXTURE — 3 page, hostile (v2, retuned for real DOM measurement)",
+    "updatedAt": "2026-08-20T08:00:00.000Z",
+    "profileType": "experienced"
+  },
+  "design": {
+    "templateId": "atlas",
+    "pageSize": "A4",
+    "fontPairing": "source",
+    "typeScale": "normal",
+    "density": "normal",
+    "margins": "normal",
+    "accent": "slate",
+    "dateFormat": "MMM yyyy"
+  },
+  "personal": {
+    "firstName": "Tendai",
+    "lastName": "Mukamuri-Nyathi",
+    "headline": "Principal Engineer, Distributed Systems",
+    "dateOfBirth": "1990-03-14",
+    "location": "Harare, Zimbabwe",
+    "email": "tendai.mukamuri.nyathi@example.com",
+    "phone": "+263 77 000 0000",
+    "links": [
+      { "id": "l1", "type": "github", "label": "GitHub", "value": "github.com/example-tendai" },
+      { "id": "l2", "type": "linkedin", "label": "LinkedIn", "value": "linkedin.com/in/example-tendai" },
+      { "id": "l3", "type": "url", "label": "Site", "value": "tmn.example.com" },
+      { "id": "l4", "type": "custom", "label": "Work authorisation", "value": "EU + ZW" }
+    ],
+    "photo": null
+  },
+  "content": {
+    "summary": {
+      "text": "Principal engineer with fourteen years designing high-throughput distributed systems for payments, logistics, and telecommunications infrastructure across sub-Saharan Africa and Western Europe. Repeatedly hired to stabilise systems that had outgrown their original architecture, and to build the engineering practices that keep them stable afterwards. Comfortable operating from board-level technical strategy down to the profiler."
+    },
+    "education": {
+      "items": [
+        {
+          "id": "e1",
+          "order": 0,
+          "degree": "MSc Distributed Computing",
+          "institution": "Delft University of Technology",
+          "location": "Delft, NL",
+          "startDate": "2017-09",
+          "endDate": "2019-02",
+          "detail": "Thesis on consensus under partial network partitions, supervised within the Distributed Systems group",
+          "bullets": [
+            { "id": "e1b1", "order": 0, "text": "Thesis established a lower bound on recovery time for quorum systems under asymmetric partition, subsequently cited in two follow-on papers." },
+            { "id": "e1b2", "order": 1, "text": "Graduate teaching assistant for the distributed algorithms course across three cohorts." },
+            { "id": "e1b3", "order": 2, "text": "Selected coursework: consensus protocols, storage systems, formal verification, queueing theory." }
+          ]
+        },
+        {
+          "id": "e2",
+          "order": 1,
+          "degree": "BSc Computer Science",
+          "institution": "National University of Science and Technology",
+          "location": "Bulawayo, ZW",
+          "startDate": "2008-02",
+          "endDate": "2011-11",
+          "detail": "First Class Honours",
+          "bullets": [
+            { "id": "e2b1", "order": 0, "text": "Final-year project built a fault-tolerant message queue for intermittent rural network links." },
+            { "id": "e2b2", "order": 1, "text": "Faculty prize for best final-year systems project." }
+          ]
+        }
+      ]
+    },
+    "experience": {
+      "items": [
+        {
+          "id": "x1",
+          "order": 0,
+          "role": "Principal Engineer, Platform",
+          "organization": "Ndoro Infrastructure Group",
+          "location": "Harare, ZW",
+          "startDate": "2022-09",
+          "endDate": "present",
+          "summary": "Technical lead for the settlement platform processing interbank transfers for nine institutions.",
+          "bullets": [
+            { "id": "x1b1", "order": 0, "text": "Redesigned the settlement ledger from a single-writer Postgres instance to a partitioned append-only log with deterministic replay, lifting sustained throughput from 1,400 to 22,000 transactions per second while reducing p99 write latency from 840ms to 31ms." },
+            { "id": "x1b2", "order": 1, "text": "Eliminated a class of double-settlement defects that had cost the business approximately $2.1M in manual reconciliation over three years." },
+            { "id": "x1b3", "order": 2, "text": "Introduced deterministic replay testing across the settlement path, raising defect detection before release from 34% to 91%." },
+            { "id": "x1b4", "order": 3, "text": "Mentored eleven engineers across three teams; four have since been promoted to senior or staff level." },
+            { "id": "x1b5", "order": 4, "text": "Authored the platform's architectural decision record practice, now used by every team in the engineering organisation." },
+            { "id": "x1b6", "order": 5, "text": "Negotiated a phased migration with three partner banks that avoided any settlement downtime during a fourteen-month cutover." }
+          ]
+        },
+        {
+          "id": "x2",
+          "order": 1,
+          "role": "Staff Software Engineer",
+          "organization": "Meridian Logistics Systems",
+          "location": "Amsterdam, NL",
+          "startDate": "2019-03",
+          "endDate": "2022-08",
+          "bullets": [
+            { "id": "x2b1", "order": 0, "text": "Built the routing optimisation service handling 180,000 daily consignments across eleven European distribution hubs." },
+            { "id": "x2b2", "order": 1, "text": "Reduced average route computation time from 47 seconds to 2.3 seconds by replacing the constraint solver with a domain-specific heuristic and a warm-start cache." },
+            { "id": "x2b3", "order": 2, "text": "Led the incident review practice after a nine-hour outage; the resulting changes reduced mean time to recovery by 62% over the following year." },
+            { "id": "x2b4", "order": 3, "text": "Owned the service's SLO framework and error budget policy." },
+            { "id": "x2b5", "order": 4, "text": "Represented engineering in quarterly planning with commercial and operations leadership." },
+            { "id": "x2b6", "order": 5, "text": "Migrated the hub scheduling data model off a shared relational schema onto per-hub partitions, removing a contention hotspot that had capped peak-season throughput for three consecutive years." },
+            { "id": "x2b7", "order": 6, "text": "Introduced load shedding and backpressure at the API edge, eliminating cascading failures during seasonal demand spikes." },
+            { "id": "x2b8", "order": 7, "text": "Ran the hiring loop for eight backend roles and rewrote the systems design interview." }
+          ]
+        },
+        {
+          "id": "x3",
+          "order": 2,
+          "role": "Senior Software Engineer",
+          "organization": "Chiedza Telecommunications",
+          "location": "Harare, ZW",
+          "startDate": "2016-01",
+          "endDate": "2019-02",
+          "bullets": [
+            { "id": "x3b1", "order": 0, "text": "Rebuilt the prepaid billing pipeline to process 40 million call detail records nightly within a four-hour window, down from an eleven-hour window that regularly overran into business hours." },
+            { "id": "x3b2", "order": 1, "text": "Introduced schema migration tooling that removed the need for scheduled maintenance downtime." },
+            { "id": "x3b3", "order": 2, "text": "Diagnosed and fixed a long-standing rounding defect that had under-billed roaming traffic by an estimated $340,000 annually." },
+            { "id": "x3b4", "order": 3, "text": "Ran the internal engineering guild on data modelling for two years." },
+            { "id": "x3b5", "order": 4, "text": "Designed the reconciliation service that cross-checks operator settlement files against internal ledgers, cutting month-end close from nine days to two." },
+            { "id": "x3b6", "order": 5, "text": "Established on-call rotation, runbooks, and severity definitions for a team that previously had none." },
+            { "id": "x3b7", "order": 6, "text": "Reduced cloud spend on the batch tier by 38% through right-sizing and spot capacity." }
+          ]
+        },
+        {
+          "id": "x4",
+          "order": 3,
+          "role": "Software Engineer",
+          "organization": "Rusape Analytics",
+          "location": "Harare, ZW",
+          "startDate": "2013-07",
+          "endDate": "2015-12",
+          "bullets": [
+            { "id": "x4b1", "order": 0, "text": "Built ETL pipelines aggregating agricultural yield data from 1,200 smallholder cooperatives across seven provinces." },
+            { "id": "x4b2", "order": 1, "text": "Developed the reporting API consumed by three government ministries and two NGO partners." },
+            { "id": "x4b3", "order": 2, "text": "Cut monthly report generation from six hours to under twenty minutes." },
+            { "id": "x4b4", "order": 3, "text": "Designed an offline-first field collection format that tolerated multi-day connectivity gaps and reconciled conflicting submissions deterministically on sync." },
+            { "id": "x4b5", "order": 4, "text": "Trained sixteen field officers on the data collection tooling." }
+          ]
+        },
+        {
+          "id": "x5",
+          "order": 4,
+          "role": "Junior Developer",
+          "organization": "Kariba Software Works",
+          "location": "Bulawayo, ZW",
+          "startDate": "2012-02",
+          "endDate": "2013-06",
+          "bullets": [
+            { "id": "x5b1", "order": 0, "text": "Maintained inventory management software deployed at forty-three retail sites." },
+            { "id": "x5b2", "order": 1, "text": "Wrote the company's first automated test suite, covering the stock reconciliation module." },
+            { "id": "x5b3", "order": 2, "text": "Automated the nightly stock export that had previously been assembled by hand each morning." },
+            { "id": "x5b4", "order": 3, "text": "Supported point-of-sale rollout across nine new sites." }
+          ]
+        },
+        {
+          "id": "x6",
+          "order": 5,
+          "role": "Open Source Maintainer",
+          "organization": "ledgerkit",
+          "startDate": "2021-04",
+          "endDate": "present",
+          "summary": "Append-only ledger primitives for financial systems; 1,900 GitHub stars.",
+          "bullets": [
+            { "id": "x6b1", "order": 0, "text": "Maintains a formal specification of the replay determinism guarantee, verified with property-based tests across nine supported storage backends." }
+          ]
+        },
+        {
+          "id": "x7",
+          "order": 6,
+          "role": "Curriculum Advisor",
+          "organization": "CodeZW Youth Programme",
+          "location": "Harare, ZW",
+          "startDate": "2020-01",
+          "endDate": "2022-12",
+          "bullets": [
+            { "id": "x7b1", "order": 0, "text": "Advised on the backend curriculum for a programme that has trained 600 students." },
+            { "id": "x7b2", "order": 1, "text": "Mentored four students per cohort through their capstone projects." },
+            { "id": "x7b3", "order": 2, "text": "Rewrote the databases module around practical query planning and indexing." }
+          ]
+        },
+        {
+          "id": "x8",
+          "order": 7,
+          "role": "Technical Advisory Board Member",
+          "organization": "Zambezi Payments Council",
+          "location": "Harare, ZW",
+          "startDate": "2023-05",
+          "endDate": "present",
+          "summary": "Independent technical advisor on regional interbank settlement standards.",
+          "bullets": [
+            { "id": "x8b1", "order": 0, "text": "Reviewed the draft regional settlement message specification and contributed the idempotency and replay sections adopted in the published version." },
+            { "id": "x8b2", "order": 1, "text": "Advised four member institutions on migration sequencing and rollback planning." },
+            { "id": "x8b3", "order": 2, "text": "Chaired the working group on outage communication standards." },
+            { "id": "x8b4", "order": 3, "text": "Presented on settlement determinism at two regional banking forums." }
+          ]
+        }
+      ]
+    },
+    "skills": {
+      "items": [
+        { "id": "k1", "order": 0, "groupLabel": "Languages", "entries": ["Go", "Rust", "Python", "Java", "SQL", "TypeScript", "C"] },
+        { "id": "k2", "order": 1, "groupLabel": "Infrastructure", "entries": ["Kubernetes", "Kafka", "PostgreSQL", "Terraform", "ClickHouse", "Redis"] },
+        { "id": "k3", "order": 2, "groupLabel": "Practices", "entries": ["Distributed systems design", "Incident response", "Property-based testing", "Technical mentorship", "Architecture review"] },
+        { "id": "k4", "order": 3, "groupLabel": "Domains", "entries": ["Interbank settlement", "Prepaid billing", "Route optimisation", "Regulatory reporting"] },
+        { "id": "k5", "order": 4, "groupLabel": "Spoken", "entries": ["Shona (native)", "English (native)", "Dutch (professional working)", "Ndebele (conversational)"] }
+      ]
+    },
+    "hobbies": {
+      "items": [
+        { "id": "h1", "order": 0, "text": "Long-distance trail running" },
+        { "id": "h2", "order": 1, "text": "Amateur radio" },
+        { "id": "h3", "order": 2, "text": "Restoring mechanical keyboards" },
+        { "id": "h4", "order": 3, "text": "Choral singing" },
+        { "id": "h5", "order": 4, "text": "Woodworking" }
+      ]
+    },
+    "references": {
+      "mode": "onRequest",
+      "items": [
+        {
+          "id": "r1",
+          "order": 0,
+          "name": "SENTINEL — if this name appears in any rendered output, references.mode is not being respected",
+          "role": "Should Never Render",
+          "organization": "Sentinel Ltd",
+          "email": "sentinel@example.com"
+        }
+      ]
+    }
+  }
+}

@@ -76,6 +76,47 @@ body {
   line-height: 1.2;
 }
 
+.form-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.form-section-header span {
+  min-width: 24px;
+  border-radius: 999px;
+  background: #e8eef2;
+  color: #53606a;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 24px;
+  text-align: center;
+}
+
+.form-note,
+.field-message {
+  margin: 0;
+  color: #66727d;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.field-message {
+  color: #9a4a1f;
+}
+
+.counter-line {
+  color: #66727d;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.bullets-textarea {
+  line-height: 1.4;
+}
+
 .field-grid {
   display: grid;
   gap: 10px;
@@ -92,6 +133,44 @@ body {
   border: 1px solid #dde3e8;
   border-radius: 6px;
   background: #f8fafb;
+}
+
+.date-range-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.month-year-field {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(72px, 0.75fr);
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.month-year-field legend {
+  grid-column: 1 / -1;
+  padding: 0;
+  color: #1d232a;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.checkbox-field {
+  grid-column: 1 / -1;
+  display: flex !important;
+  grid-template-columns: none !important;
+  align-items: center;
+  gap: 8px !important;
+  color: #39434d;
+}
+
+.checkbox-field input {
+  width: 16px;
+  min-height: 16px;
 }
 
 .segmented-control {
@@ -211,6 +290,20 @@ body {
 .preview-stage {
   padding: 32px;
   overflow: auto;
+}
+
+.measure-stage {
+  position: fixed;
+  inset: 0 auto auto 0;
+  width: max-content;
+  min-height: 100vh;
+  padding: 0;
+  background: #ffffff;
+}
+
+.measure-stage .resume-page {
+  margin: 0;
+  box-shadow: none;
 }
 
 @media (max-width: 800px) {

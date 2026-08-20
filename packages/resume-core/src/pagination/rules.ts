@@ -37,11 +37,25 @@ function getFirstItemChildHeight(
   measureBlock: MeasureBlock,
 ) {
   const item = blocks[itemIndex];
-  const child = blocks[itemIndex + 1];
+  let height = 0;
 
-  if (!item.itemId || child?.itemId !== item.itemId || child.sectionId !== item.sectionId) {
+  if (!item.itemId) {
     return 0;
   }
 
-  return measureBlock(child, pageBox);
+  for (let index = itemIndex + 1; index < blocks.length; index += 1) {
+    const child = blocks[index];
+
+    if (child.itemId !== item.itemId || child.sectionId !== item.sectionId) {
+      return height;
+    }
+
+    height += measureBlock(child, pageBox);
+
+    if (child.kind === "bullet") {
+      return height;
+    }
+  }
+
+  return height;
 }

@@ -1,14 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import fixture3Page from "../../../../fixtures/fixture-3page.json";
+import fixture3Page from "../../../../fixtures/fixture-3page.v2.json";
 import {
   extractResumeBlocks,
-  migrateResumeDocument,
   SECTION_BLOCK_EXTRACTORS,
   SECTION_TYPES,
   getRenderableSections,
   hasVisibleSectionContent,
-  type LegacyResumeDocumentV1,
   type ResumeDocument,
 } from "@resume-builder/core";
 import { ResumePreview } from "../index";
@@ -21,7 +19,7 @@ describe("section render/block conformance", () => {
   });
 
   it("renders the same data-block-id sequence that core extracts", () => {
-    const resume = migrateResumeDocument(fixture3Page as LegacyResumeDocumentV1);
+    const resume = fixture3Page as ResumeDocument;
     const visibleSections = getRenderableSections(resume).filter(hasVisibleSectionContent);
 
     expect(new Set(visibleSections.map((section) => section.type))).toEqual(new Set(SECTION_TYPES));
@@ -40,12 +38,20 @@ describe("section render/block conformance", () => {
   });
 
   it("renders the same document-level data-block-id sequence that core extracts", () => {
-    const resume = migrateResumeDocument(fixture3Page as LegacyResumeDocumentV1);
+    const resume = fixture3Page as ResumeDocument;
     const renderedMarkup = renderToStaticMarkup(<ResumePreview resume={resume} />);
 
     expect(extractDataBlockIds(renderedMarkup)).toEqual(
       extractResumeBlocks(resume).map((block) => block.id),
     );
+  });
+
+  it("does not render listed reference items when references are on request", () => {
+    const resume = fixture3Page as ResumeDocument;
+    const renderedMarkup = renderToStaticMarkup(<ResumePreview resume={resume} />);
+
+    expect(renderedMarkup).not.toContain("SENTINEL");
+    expect(renderedMarkup).toContain("References available upon request.");
   });
 });
 

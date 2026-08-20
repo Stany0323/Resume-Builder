@@ -12,7 +12,8 @@
     "dev:render": "npm run dev --workspace @resume-builder/render",
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "test:spike-a": "node scripts/spike-a-parity.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",

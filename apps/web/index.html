@@ -7,6 +7,12 @@
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module">
+      if (new URLSearchParams(window.location.search).has("measure")) {
+        await import("/src/measure.tsx");
+      } else {
+        await import("/src/main.tsx");
+      }
+    </script>
   </body>
 </html>
