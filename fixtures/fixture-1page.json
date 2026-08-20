@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "meta": {
+    "id": "f1a70000-0000-4000-8000-000000000001",
+    "title": "FIXTURE — 1 page",
+    "updatedAt": "2026-08-20T08:00:00Z",
+    "profileType": "experienced"
+  },
+  "design": {
+    "templateId": "atlas",
+    "pageSize": "A4",
+    "fontPairing": "source",
+    "typeScale": "normal",
+    "density": "normal",
+    "margins": "normal",
+    "accent": "slate",
+    "dateFormat": "MMM yyyy"
+  },
+  "header": {
+    "fullName": "Amara Chikafu",
+    "headline": "Senior Product Manager",
+    "location": "Harare, Zimbabwe",
+    "photo": null,
+    "contacts": [
+      { "id": "c1", "type": "email", "value": "amara.chikafu@example.com", "order": 0 },
+      { "id": "c2", "type": "phone", "value": "+263 77 000 0000", "order": 1 },
+      { "id": "c3", "type": "linkedin", "label": "LinkedIn", "value": "linkedin.com/in/example-amara", "order": 2 },
+      { "id": "c4", "type": "url", "label": "Portfolio", "value": "amarachikafu.example.com", "order": 3 }
+    ]
+  },
+  "sections": [
+    {
+      "id": "s1",
+      "type": "summary",
+      "title": "Summary",
+      "order": 0,
+      "visible": true,
+      "items": [
+        {
+          "id": "i1",
+          "order": 0,
+          "visible": true,
+          "text": "Product manager with eight years building payments and lending products for emerging markets. Led the team that took a mobile wallet from pilot to 400,000 monthly active users."
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "type": "experience",
+      "title": "Experience",
+      "order": 1,
+      "visible": true,
+      "items": [
+        {
+          "id": "i2",
+          "order": 0,
+          "visible": true,
+          "role": "Senior Product Manager",
+          "organization": "Kopa Financial",
+          "location": "Harare, ZW",
+          "startDate": "2023-02",
+          "endDate": "present",
+          "summary": null,
+          "bullets": [
+            { "id": "b1", "order": 0, "text": "Grew mobile wallet from 90,000 to 400,000 monthly active users in 19 months." },
+            { "id": "b2", "order": 1, "text": "Cut onboarding drop-off from 61% to 28% by rebuilding identity verification around offline-capable capture." },
+            { "id": "b3", "order": 2, "text": "Led a team of six engineers, one designer, and two analysts across three release trains." }
+          ]
+        },
+        {
+          "id": "i3",
+          "order": 1,
+          "visible": true,
+          "role": "Product Manager",
+          "organization": "Sable Commerce",
+          "location": "Cape Town, ZA",
+          "startDate": "2020-06",
+          "endDate": "2023-01",
+          "summary": null,
+          "bullets": [
+            { "id": "b4", "order": 0, "text": "Launched merchant settlement reporting used by 2,300 sellers at launch." },
+            { "id": "b5", "order": 1, "text": "Reduced support tickets on refunds by 44% after redesigning the dispute flow." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s3",
+      "type": "education",
+      "title": "Education",
+      "order": 2,
+      "visible": true,
+      "items": [
+        {
+          "id": "i4",
+          "order": 0,
+          "visible": true,
+          "degree": "BSc Computer Science",
+          "institution": "University of Zimbabwe",
+          "location": "Harare, ZW",
+          "startDate": "2014-02",
+          "endDate": "2017-11",
+          "detail": "First Class Honours",
+          "bullets": []
+        }
+      ]
+    },
+    {
+      "id": "s4",
+      "type": "skills",
+      "title": "Skills",
+      "order": 3,
+      "visible": true,
+      "items": [
+        {
+          "id": "i5",
+          "order": 0,
+          "visible": true,
+          "groupLabel": "Product",
+          "entries": ["Discovery research", "Roadmapping", "Experiment design", "Pricing"]
+        },
+        {
+          "id": "i6",
+          "order": 1,
+          "visible": true,
+          "groupLabel": "Technical",
+          "entries": ["SQL", "Python", "Amplitude", "Figma"]
+        }
+      ]
+    },
+    {
+      "id": "s5",
+      "type": "certifications",
+      "title": "Certifications",
+      "order": 4,
+      "visible": true,
+      "items": [
+        {
+          "id": "i7",
+          "order": 0,
+          "visible": true,
+          "name": "Certified Scrum Product Owner",
+          "issuer": "Scrum Alliance",
+          "date": "2021-05",
+          "credentialId": null
+        }
+      ]
+    }
+  ]
+}

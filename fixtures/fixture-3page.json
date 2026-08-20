@@ -1,0 +1,383 @@
+{
+  "schemaVersion": 1,
+  "meta": {
+    "id": "f1a70000-0000-4000-8000-000000000003",
+    "title": "FIXTURE — 3 page, hostile",
+    "updatedAt": "2026-08-20T08:00:00Z",
+    "profileType": "experienced"
+  },
+  "design": {
+    "templateId": "atlas",
+    "pageSize": "A4",
+    "fontPairing": "source",
+    "typeScale": "normal",
+    "density": "normal",
+    "margins": "normal",
+    "accent": "slate",
+    "dateFormat": "MMM yyyy"
+  },
+  "header": {
+    "fullName": "Tendai Mukamuri-Nyathi",
+    "headline": "Principal Engineer, Distributed Systems",
+    "location": "Harare, Zimbabwe",
+    "photo": null,
+    "contacts": [
+      { "id": "c1", "type": "email", "value": "tendai.mukamuri.nyathi@example.com", "order": 0 },
+      { "id": "c2", "type": "phone", "value": "+263 77 000 0000", "order": 1 },
+      { "id": "c3", "type": "github", "label": "GitHub", "value": "github.com/example-tendai", "order": 2 },
+      { "id": "c4", "type": "linkedin", "label": "LinkedIn", "value": "linkedin.com/in/example-tendai", "order": 3 },
+      { "id": "c5", "type": "url", "label": "Site", "value": "tmn.example.com", "order": 4 },
+      { "id": "c6", "type": "custom", "label": "Work authorisation", "value": "EU + ZW", "order": 5 }
+    ]
+  },
+  "sections": [
+    {
+      "id": "s1",
+      "type": "summary",
+      "title": "Professional Summary",
+      "order": 0,
+      "visible": true,
+      "items": [
+        {
+          "id": "i1",
+          "order": 0,
+          "visible": true,
+          "text": "Principal engineer with fourteen years designing high-throughput distributed systems for payments, logistics, and telecommunications infrastructure across sub-Saharan Africa and Western Europe. Repeatedly hired to stabilise systems that had outgrown their original architecture, and to build the engineering practices that keep them stable afterwards. Comfortable operating from board-level technical strategy down to the profiler."
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "type": "experience",
+      "title": "Experience",
+      "order": 1,
+      "visible": true,
+      "items": [
+        {
+          "id": "i2",
+          "order": 0,
+          "visible": true,
+          "role": "Principal Engineer, Platform",
+          "organization": "Ndoro Infrastructure Group",
+          "location": "Harare, ZW",
+          "startDate": "2022-09",
+          "endDate": "present",
+          "summary": "Technical lead for the settlement platform processing interbank transfers for nine institutions.",
+          "bullets": [
+            { "id": "b1", "order": 0, "text": "Redesigned the settlement ledger from a single-writer Postgres instance to a partitioned append-only log with deterministic replay, lifting sustained throughput from 1,400 to 22,000 transactions per second while reducing p99 write latency from 840ms to 31ms." },
+            { "id": "b2", "order": 1, "text": "Eliminated a class of double-settlement defects that had cost the business approximately $2.1M in manual reconciliation over three years." },
+            { "id": "b3", "order": 2, "text": "Introduced deterministic replay testing across the settlement path, raising defect detection before release from 34% to 91%." },
+            { "id": "b4", "order": 3, "text": "Mentored eleven engineers across three teams; four have since been promoted to senior or staff level." },
+            { "id": "b5", "order": 4, "text": "Authored the platform's architectural decision record practice, now used by every team in the engineering organisation." },
+            { "id": "b6", "order": 5, "text": "Negotiated a phased migration with three partner banks that avoided any settlement downtime during a fourteen-month cutover." }
+          ]
+        },
+        {
+          "id": "i3",
+          "order": 1,
+          "visible": true,
+          "role": "Staff Software Engineer",
+          "organization": "Meridian Logistics Systems",
+          "location": "Amsterdam, NL",
+          "startDate": "2019-03",
+          "endDate": "2022-08",
+          "summary": null,
+          "bullets": [
+            { "id": "b7", "order": 0, "text": "Built the routing optimisation service handling 180,000 daily consignments across eleven European distribution hubs." },
+            { "id": "b8", "order": 1, "text": "Reduced average route computation time from 47 seconds to 2.3 seconds by replacing the constraint solver with a domain-specific heuristic and a warm-start cache." },
+            { "id": "b9", "order": 2, "text": "Led the incident review practice after a nine-hour outage; the resulting changes reduced mean time to recovery by 62% over the following year." },
+            { "id": "b10", "order": 3, "text": "Owned the service's SLO framework and error budget policy." },
+            { "id": "b11", "order": 4, "text": "Represented engineering in quarterly planning with commercial and operations leadership." }
+          ]
+        },
+        {
+          "id": "i4",
+          "order": 2,
+          "visible": true,
+          "role": "Senior Software Engineer",
+          "organization": "Chiedza Telecommunications",
+          "location": "Harare, ZW",
+          "startDate": "2016-01",
+          "endDate": "2019-02",
+          "summary": null,
+          "bullets": [
+            { "id": "b12", "order": 0, "text": "Rebuilt the prepaid billing pipeline to process 40 million call detail records nightly within a four-hour window, down from an eleven-hour window that regularly overran into business hours." },
+            { "id": "b13", "order": 1, "text": "Introduced schema migration tooling that removed the need for scheduled maintenance downtime." },
+            { "id": "b14", "order": 2, "text": "Diagnosed and fixed a long-standing rounding defect that had under-billed roaming traffic by an estimated $340,000 annually." },
+            { "id": "b15", "order": 3, "text": "Ran the internal engineering guild on data modelling for two years." }
+          ]
+        },
+        {
+          "id": "i5",
+          "order": 3,
+          "visible": true,
+          "role": "Software Engineer",
+          "organization": "Rusape Analytics",
+          "location": "Harare, ZW",
+          "startDate": "2013-07",
+          "endDate": "2015-12",
+          "summary": null,
+          "bullets": [
+            { "id": "b16", "order": 0, "text": "Built ETL pipelines aggregating agricultural yield data from 1,200 smallholder cooperatives." },
+            { "id": "b17", "order": 1, "text": "Developed the reporting API consumed by three government ministries and two NGO partners." },
+            { "id": "b18", "order": 2, "text": "Cut monthly report generation from six hours to under twenty minutes." }
+          ]
+        },
+        {
+          "id": "i6",
+          "order": 4,
+          "visible": true,
+          "role": "Junior Developer",
+          "organization": "Kariba Software Works",
+          "location": "Bulawayo, ZW",
+          "startDate": "2012-02",
+          "endDate": "2013-06",
+          "summary": null,
+          "bullets": [
+            { "id": "b19", "order": 0, "text": "Maintained inventory management software deployed at forty-three retail sites." },
+            { "id": "b20", "order": 1, "text": "Wrote the company's first automated test suite, covering the stock reconciliation module." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s3",
+      "type": "projects",
+      "title": "Selected Projects",
+      "order": 2,
+      "visible": true,
+      "items": [
+        {
+          "id": "i7",
+          "order": 0,
+          "visible": true,
+          "name": "ledgerkit",
+          "role": "Author and maintainer",
+          "url": "github.com/example-tendai/ledgerkit",
+          "startDate": "2021-04",
+          "endDate": "present",
+          "summary": "Open-source append-only ledger primitives for financial systems.",
+          "bullets": [
+            { "id": "b21", "order": 0, "text": "1,900 GitHub stars; adopted in production by four fintech companies." },
+            { "id": "b22", "order": 1, "text": "Maintains a formal specification of the replay determinism guarantee, verified with property-based tests." }
+          ]
+        },
+        {
+          "id": "i8",
+          "order": 1,
+          "visible": true,
+          "name": "Harare Engineering Meetup",
+          "role": "Co-organiser",
+          "url": null,
+          "startDate": "2018-03",
+          "endDate": "2022-08",
+          "summary": null,
+          "bullets": [
+            { "id": "b23", "order": 0, "text": "Ran a monthly meetup that grew from 12 to 240 regular attendees." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s4",
+      "type": "publications",
+      "title": "Publications & Talks",
+      "order": 3,
+      "visible": true,
+      "items": [
+        {
+          "id": "i9",
+          "order": 0,
+          "visible": true,
+          "title": "Deterministic Replay as a Testing Strategy for Settlement Systems",
+          "venue": "ACM Queue",
+          "date": "2024-06",
+          "url": "example.com/queue-deterministic-replay"
+        },
+        {
+          "id": "i10",
+          "order": 1,
+          "visible": true,
+          "title": "What Breaks When Payments Scale: Lessons From Nine Interbank Integrations",
+          "venue": "QCon London",
+          "date": "2023-04",
+          "url": null
+        },
+        {
+          "id": "i11",
+          "order": 2,
+          "visible": true,
+          "title": "Partitioned Ledgers Without Distributed Transactions",
+          "venue": "Strange Loop",
+          "date": "2022-09",
+          "url": null
+        }
+      ]
+    },
+    {
+      "id": "s5",
+      "type": "education",
+      "title": "Education",
+      "order": 4,
+      "visible": true,
+      "items": [
+        {
+          "id": "i12",
+          "order": 0,
+          "visible": true,
+          "degree": "MSc Distributed Computing",
+          "institution": "Delft University of Technology",
+          "location": "Delft, NL",
+          "startDate": "2017-09",
+          "endDate": "2019-02",
+          "detail": "Thesis on consensus under partial network partitions",
+          "bullets": []
+        },
+        {
+          "id": "i13",
+          "order": 1,
+          "visible": true,
+          "degree": "BSc Computer Science",
+          "institution": "National University of Science and Technology",
+          "location": "Bulawayo, ZW",
+          "startDate": "2008-02",
+          "endDate": "2011-11",
+          "detail": "First Class Honours",
+          "bullets": []
+        }
+      ]
+    },
+    {
+      "id": "s6",
+      "type": "skills",
+      "title": "Technical Skills",
+      "order": 5,
+      "visible": true,
+      "items": [
+        {
+          "id": "i14",
+          "order": 0,
+          "visible": true,
+          "groupLabel": "Languages",
+          "entries": ["Go", "Rust", "Python", "Java", "SQL", "TypeScript"]
+        },
+        {
+          "id": "i15",
+          "order": 1,
+          "visible": true,
+          "groupLabel": "Infrastructure",
+          "entries": ["Kubernetes", "Kafka", "PostgreSQL", "Terraform", "ClickHouse"]
+        },
+        {
+          "id": "i16",
+          "order": 2,
+          "visible": true,
+          "groupLabel": "Practices",
+          "entries": ["Distributed systems design", "Incident response", "Property-based testing", "Technical mentorship"]
+        }
+      ]
+    },
+    {
+      "id": "s7",
+      "type": "certifications",
+      "title": "Certifications",
+      "order": 6,
+      "visible": true,
+      "items": [
+        {
+          "id": "i17",
+          "order": 0,
+          "visible": true,
+          "name": "Certified Kubernetes Administrator",
+          "issuer": "Cloud Native Computing Foundation",
+          "date": "2021-08",
+          "credentialId": "CKA-0000-EXAMPLE"
+        },
+        {
+          "id": "i18",
+          "order": 1,
+          "visible": true,
+          "name": "AWS Solutions Architect — Professional",
+          "issuer": "Amazon Web Services",
+          "date": "2020-03",
+          "credentialId": null
+        }
+      ]
+    },
+    {
+      "id": "s8",
+      "type": "awards",
+      "title": "Awards",
+      "order": 7,
+      "visible": true,
+      "items": [
+        {
+          "id": "i19",
+          "order": 0,
+          "visible": true,
+          "name": "Engineering Excellence Award",
+          "issuer": "Ndoro Infrastructure Group",
+          "date": "2024-11",
+          "detail": "For the settlement ledger redesign"
+        }
+      ]
+    },
+    {
+      "id": "s9",
+      "type": "volunteer",
+      "title": "Volunteer",
+      "order": 8,
+      "visible": true,
+      "items": [
+        {
+          "id": "i20",
+          "order": 0,
+          "visible": true,
+          "role": "Curriculum Advisor",
+          "organization": "CodeZW Youth Programme",
+          "location": "Harare, ZW",
+          "startDate": "2020-01",
+          "endDate": "present",
+          "bullets": [
+            { "id": "b24", "order": 0, "text": "Advise on the backend curriculum for a programme that has trained 600 students." },
+            { "id": "b25", "order": 1, "text": "Mentor four students per cohort through their capstone projects." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s10",
+      "type": "custom",
+      "title": "Languages",
+      "order": 9,
+      "visible": true,
+      "items": [
+        {
+          "id": "i21",
+          "order": 0,
+          "visible": true,
+          "title": null,
+          "text": "Shona (native) · English (native) · Dutch (professional working) · Ndebele (conversational)",
+          "bullets": []
+        }
+      ]
+    },
+    {
+      "id": "s11",
+      "type": "custom",
+      "title": "Hidden Section — Must Not Render",
+      "order": 10,
+      "visible": false,
+      "items": [
+        {
+          "id": "i22",
+          "order": 0,
+          "visible": true,
+          "title": null,
+          "text": "If this text appears in any rendered output, section visibility is broken.",
+          "bullets": []
+        }
+      ]
+    }
+  ]
+}
