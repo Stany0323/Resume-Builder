@@ -1,0 +1,72 @@
+/* Append to apps/web/src/sections/fields.css — photo upload and crop */
+
+.photo-field { margin-top: 0.85rem; }
+
+.crop-stage {
+  position: relative;
+  overflow: hidden;
+  margin: 0.5rem 0;
+  border: 1px solid var(--border, #c8ccd4);
+  background: #f3f4f6;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.crop-stage:active { cursor: grabbing; }
+.crop-stage[data-shape="circle"] { border-radius: 50%; }
+.crop-stage[data-shape="square"] { border-radius: 4px; }
+
+.crop-stage img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -50%;
+  margin-left: -50%;
+  transform-origin: center;
+  pointer-events: none;
+}
+
+.crop-hint {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 0.2rem 0;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 0.68rem;
+  text-align: center;
+}
+
+.photo-controls { display: grid; gap: 0.5rem; }
+
+.zoom-control { display: grid; gap: 0.2rem; font-size: 0.8rem; }
+.zoom-control input { width: 100%; }
+
+.photo-actions { display: flex; align-items: center; gap: 0.75rem; }
+
+.photo-actions .primary {
+  padding: 0.45rem 1rem;
+  border: 1px solid var(--accent, #47506b);
+  border-radius: 6px;
+  background: var(--accent, #47506b);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.photo-current { display: flex; align-items: center; gap: 0.8rem; margin: 0.5rem 0; }
+
+.photo-preview {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border: 1px solid var(--border, #dfe2e8);
+}
+
+.photo-preview[data-shape="circle"] { border-radius: 50%; }
+.photo-preview[data-shape="square"] { border-radius: 3px; }
+
+.photo-current-actions { display: flex; flex-direction: column; gap: 0.15rem; align-items: flex-start; }

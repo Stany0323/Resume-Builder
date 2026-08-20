@@ -6,28 +6,24 @@ type Design = ResumeDocument["design"];
 /**
  * Design tokens → CSS custom properties.
  *
- * Every visual choice the user can make resolves to a custom property on the
- * `.resume-page` element. Templates then read those properties. This keeps
- * ONE render path (commitment A2): there is no per-token stylesheet and no
- * JavaScript layout branch, so preview and export cannot diverge on tokens.
- *
- * No hex input, no px input, no per-element overrides — every control is a
- * choice from a curated set (plan §6).
+ * Every visual choice resolves to a custom property on `.resume-page`.
+ * Templates read those properties. One render path (A2): no per-token
+ * stylesheet, no JS layout branch, so preview and export cannot diverge.
  */
 
 /* --------------------------------------------------------- font pairings */
 
 /**
- * Web-safe stacks only, deliberately. Self-hosted, licence-cleared webfonts
- * are still the plan, but until they land these keep the font-hash parity
- * check meaningful and add no dependency. Swapping a stack for a real family
- * later is a one-line change per pairing.
+ * Web-safe stacks only, deliberately. Self-hosted licence-cleared webfonts are
+ * still the plan; until they land these keep the font-hash parity check
+ * meaningful and add no dependency. Swapping in a real family later is one
+ * line per pairing.
  */
 export const FONT_PAIRINGS = {
   source: {
     label: "Georgia",
-    heading: 'Georgia, "Times New Roman", serif',
-    body: 'Georgia, "Times New Roman", serif',
+    heading: 'Georgia, "Iowan Old Style", "Times New Roman", serif',
+    body: 'Georgia, "Iowan Old Style", "Times New Roman", serif',
   },
   neue: {
     label: "Helvetica",
@@ -36,13 +32,18 @@ export const FONT_PAIRINGS = {
   },
   contrast: {
     label: "Georgia + Helvetica",
-    heading: 'Georgia, "Times New Roman", serif',
+    heading: 'Georgia, "Iowan Old Style", "Times New Roman", serif',
     body: '"Helvetica Neue", Helvetica, Arial, sans-serif',
   },
   inverse: {
     label: "Helvetica + Georgia",
     heading: '"Helvetica Neue", Helvetica, Arial, sans-serif',
-    body: 'Georgia, "Times New Roman", serif',
+    body: 'Georgia, "Iowan Old Style", "Times New Roman", serif',
+  },
+  didone: {
+    label: "Didone",
+    heading: '"Playfair Display", "Bodoni MT", Didot, "Times New Roman", serif',
+    body: 'Georgia, "Iowan Old Style", "Times New Roman", serif',
   },
   system: {
     label: "System",
@@ -53,12 +54,15 @@ export const FONT_PAIRINGS = {
 
 export type FontPairing = keyof typeof FONT_PAIRINGS;
 
+/** Used for date rails and micro-labels. Token-driven so templates never hardcode a family. */
+const MONO_STACK = 'ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace';
+
 /* ---------------------------------------------------------------- accents */
 
 /**
- * All eight verified at ≥ 4.5:1 against white — AA for normal text, not just
- * large text, because the accent is used on section headings and rules.
- * Ratios are recorded so a future edit can't quietly regress one.
+ * All verified ≥ 4.5:1 against white — AA for normal text, not just large,
+ * because accents land on section headings. Ratios recorded so a future edit
+ * can't quietly regress one.
  */
 export const ACCENTS = {
   slate: { label: "Slate", value: "#3f4a5a", contrast: 8.98 },
@@ -75,14 +79,12 @@ export type Accent = keyof typeof ACCENTS;
 
 /* ------------------------------------------------------------ type scales */
 
-/** Scales the whole ramp proportionally — never individual elements. */
 const TYPE_SCALES = {
   compact: { base: "12px", ratio: "1.16" },
   normal: { base: "13px", ratio: "1.2" },
   relaxed: { base: "14px", ratio: "1.25" },
 } as const satisfies Record<Design["typeScale"], { base: string; ratio: string }>;
 
-/** Affects section and item spacing only — not type size. */
 const DENSITIES = {
   compact: { line: "1.28", section: "0.7rem", item: "0.42rem", bullet: "0.14rem" },
   normal: { line: "1.38", section: "1rem", item: "0.62rem", bullet: "0.22rem" },
@@ -95,19 +97,17 @@ const MARGINS = {
   wide: "76px",
 } as const satisfies Record<Design["margins"], string>;
 
-/* ------------------------------------------------------------------ page */
-
 export const PAGE_DIMENSIONS = {
   A4: { width: "210mm", height: "297mm" },
   Letter: { width: "8.5in", height: "11in" },
 } as const satisfies Record<Design["pageSize"], { height: string; width: string }>;
 
+/* ------------------------------------------------------------------ page */
+
 /**
- * Builds the inline custom-property style for `.resume-page`.
- *
- * Unknown token values fall back to the `normal`/default entry rather than
- * throwing — an imported document with a token this build doesn't know about
- * should render slightly differently, not fail to render at all.
+ * Unknown token values fall back to the default entry rather than throwing —
+ * an imported document carrying a token this build doesn't know about should
+ * render slightly differently, not fail to render.
  */
 export function designTokenStyle(design: Design): CSSProperties {
   const font = FONT_PAIRINGS[design.fontPairing as FontPairing] ?? FONT_PAIRINGS.source;
@@ -119,6 +119,7 @@ export function designTokenStyle(design: Design): CSSProperties {
   return {
     "--resume-font-heading": font.heading,
     "--resume-font-body": font.body,
+    "--resume-font-mono": MONO_STACK,
     "--resume-font-size": type.base,
     "--resume-type-ratio": type.ratio,
     "--resume-line-height": density.line,
@@ -134,15 +135,76 @@ export function designTokenStyle(design: Design): CSSProperties {
 
 /* ------------------------------------------------------------- templates */
 
+/**
+ * Five templates, each a distinct typographic system rather than a colour
+ * change. `recommendedPairing` is applied when the template is chosen — the
+ * look it was designed for — but the user can change it afterwards, so the
+ * Typeface control stays honest.
+ */
 export const TEMPLATES = {
   atlas: {
     label: "Atlas",
-    description: "US-style résumé. Serif, dense, ruled sections.",
+    tagline: "Classic",
+    description: "Centred masthead, ruled section labels, serif throughout. The one you send to a bank.",
+    recommendedPairing: "source",
     supportsPhoto: false,
+    atsSafety: "excellent",
   },
   meridian: {
     label: "Meridian",
-    description: "International CV. Sans-serif, generous spacing, optional photo.",
+    tagline: "Editorial",
+    description: "Large light display name, dates in a left rail, generous air. Optional photo.",
+    recommendedPairing: "neue",
     supportsPhoto: true,
+    atsSafety: "excellent",
   },
-} as const satisfies Record<Design["templateId"], { description: string; label: string; supportsPhoto: boolean }>;
+  quill: {
+    label: "Quill",
+    tagline: "Literary",
+    description: "High-contrast serif, letterspaced small caps, no rules anywhere. Academic and unhurried.",
+    recommendedPairing: "didone",
+    supportsPhoto: true,
+    atsSafety: "excellent",
+  },
+  slate: {
+    label: "Slate",
+    tagline: "Technical",
+    description: "Numbered sections, monospaced date rail, tight rhythm. Reads like good documentation.",
+    recommendedPairing: "contrast",
+    supportsPhoto: false,
+    atsSafety: "excellent",
+  },
+  lumen: {
+    label: "Lumen",
+    tagline: "Executive",
+    description: "Near-empty. One hairline, one enormous name, and a great deal of silence.",
+    recommendedPairing: "inverse",
+    supportsPhoto: true,
+    atsSafety: "excellent",
+  },
+} as const satisfies Record<
+  Design["templateId"],
+  {
+    atsSafety: string;
+    description: string;
+    label: string;
+    recommendedPairing: FontPairing;
+    supportsPhoto: boolean;
+    tagline: string;
+  }
+>;
+
+export type TemplateId = keyof typeof TEMPLATES;
+
+/**
+ * Applies a template together with the pairing it was designed around.
+ * Keeps the user's accent, page size, spacing and margin choices intact —
+ * switching template is a look change, not a reset.
+ */
+export function applyTemplate(design: Design, templateId: TemplateId): Design {
+  return {
+    ...design,
+    templateId,
+    fontPairing: TEMPLATES[templateId].recommendedPairing,
+  };
+}

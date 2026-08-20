@@ -76,7 +76,7 @@ export async function readResumeFile(file: File): Promise<ResumeDocument> {
   }
 
   try {
-    return migrateResumeDocument(parsed as Parameters<typeof migrateResumeDocument>[0]);
+    return migrateResumeDocument(parsed as unknown as Parameters<typeof migrateResumeDocument>[0]);
   } catch {
     throw new ResumeImportError("That resume couldn’t be upgraded to the current format.");
   }

@@ -58,7 +58,7 @@ export async function loadWorkingDocument(): Promise<ResumeDocument | null> {
     }
 
     // Anything already on disk may predate the current schema.
-    return migrateResumeDocument(stored as Parameters<typeof migrateResumeDocument>[0]);
+    return migrateResumeDocument(stored as unknown as Parameters<typeof migrateResumeDocument>[0]);
   } catch {
     // A corrupt or unreadable store must never block startup — the user gets a
     // blank document rather than a broken app.

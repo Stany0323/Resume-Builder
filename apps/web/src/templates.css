@@ -1,11 +1,19 @@
-/* apps/web/src/templates.css — or packages/resume-render if you prefer it
-   packaged with the components. Import once; it must be loaded by BOTH the
-   editor and the measurement route, or preview/export parity breaks.
+/* apps/web/src/templates.css
+   Imported by BOTH main.tsx and measure.tsx. If only one loads it, the
+   measurement route renders unstyled and every parity number is wrong.
 
-   Everything here reads from the custom properties emitted by
-   designTokenStyle(). No template defines its own sizes — that is what keeps
-   the token surface honest and the render path single.
+   Five templates, each a distinct typographic system. Rules they all obey:
+     · read the custom properties, never hardcode a size
+     · never change block-level DOM order (pagination + ATS both depend on it)
+     · no @media print overrides (plan §9.2)
+     · render every section type (A9)
+
+   Intra-block visual placement — floating a date, putting it in a gutter — is
+   fine. Pagination measures at block granularity and ATS reads the DOM, so
+   moving a span inside its own paragraph changes neither.
    --------------------------------------------------------------------------- */
+
+/* ════════════════════════════════════════════════════════════ base layer */
 
 .resume-page {
   box-sizing: border-box;
@@ -13,17 +21,27 @@
   min-height: var(--resume-page-height);
   padding: var(--resume-margin);
   background: #fff;
-  color: #14161a;
+  color: #16181d;
   font-family: var(--resume-font-body);
   font-size: var(--resume-font-size);
   line-height: var(--resume-line-height);
+  font-kerning: normal;
+  font-variant-ligatures: common-ligatures;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 .resume-page h2,
 .resume-page h3 {
   margin: 0;
   font-family: var(--resume-font-heading);
-  line-height: 1.2;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.resume-page p {
+  margin: 0;
+  text-wrap: pretty;
 }
 
 .resume-section {
@@ -42,8 +60,11 @@
   margin-top: 0;
 }
 
-.resume-item p {
-  margin: 0;
+/* Dates always align on the digit — the single most-noticed typographic
+   detail on a resume, and the cheapest to get right. */
+.resume-item > p:first-child > span {
+  font-variant-numeric: tabular-nums lining-nums;
+  white-space: nowrap;
 }
 
 .resume-bullets {
@@ -59,8 +80,14 @@
   margin-top: 0;
 }
 
-/* Typesetting rules. These are the CSS half of the orphan/widow story — the
-   measured engine decides breaks, but print needs to agree. */
+.resume-header ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* CSS half of the orphan/widow story. The measured engine decides breaks;
+   print has to agree. */
 .resume-section h3,
 .resume-item p:first-child {
   break-after: avoid;
@@ -71,63 +98,101 @@
   break-inside: avoid-page;
 }
 
-/* ═══════════════════════════════════════════════════════════ atlas
-   US-style résumé: serif, dense, ruled section headings, compact header.
+.resume-photo {
+  flex: 0 0 auto;
+  object-fit: cover;
+  background: #eceef1;
+}
+
+.resume-photo[data-shape="circle"] { border-radius: 50%; }
+.resume-photo[data-shape="square"] { border-radius: 2px; }
+
+/* Only templates that opt in show a photo, whatever the document holds. */
+.resume-page:not([data-template="meridian"]):not([data-template="lumen"]):not([data-template="quill"]) .resume-photo {
+  display: none;
+}
+
+/* ══════════════════════════════════════════════════════════════════ ATLAS
+   Classic. Centred masthead, double rule, ruled section labels. Restrained
+   and deliberately conventional — prestige comes from precision, not novelty.
    ═══════════════════════════════════════════════════════════════════════ */
 
 .resume-page[data-template="atlas"] .resume-header {
-  padding-bottom: 0.5rem;
-  margin-bottom: var(--resume-gap-section);
-  border-bottom: 2px solid var(--resume-accent);
+  padding-bottom: 0.7rem;
+  margin-bottom: calc(var(--resume-gap-section) * 1.1);
+  border-bottom: 3px double var(--resume-accent);
+  text-align: center;
 }
 
 .resume-page[data-template="atlas"] .resume-header h2 {
-  font-size: calc(var(--resume-font-size) * var(--resume-type-ratio) * 1.6);
-  letter-spacing: -0.005em;
+  font-size: calc(var(--resume-font-size) * var(--resume-type-ratio) * 1.45);
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
-.resume-page[data-template="atlas"] .resume-header > p {
-  margin: 0.1rem 0 0;
-  font-size: calc(var(--resume-font-size) * 1.05);
+.resume-page[data-template="atlas"] .resume-header-text > p {
+  margin-top: 0.3rem;
+  font-size: calc(var(--resume-font-size) * 1.02);
+  font-style: italic;
 }
 
 .resume-page[data-template="atlas"] .resume-header ul {
   display: flex;
   flex-wrap: wrap;
-  gap: 0 0.75rem;
-  margin: 0.35rem 0 0;
-  padding: 0;
-  list-style: none;
-  font-size: calc(var(--resume-font-size) * 0.92);
+  justify-content: center;
+  margin-top: 0.5rem;
+  font-size: calc(var(--resume-font-size) * 0.9);
 }
 
+.resume-page[data-template="atlas"] .resume-header li + li::before {
+  margin: 0 0.5em;
+  color: color-mix(in srgb, var(--resume-accent) 45%, transparent);
+  content: "·";
+}
+
+/* Label centred inside a rule that runs the full width. */
 .resume-page[data-template="atlas"] .resume-section h3 {
-  padding-bottom: 0.15rem;
-  border-bottom: 1px solid var(--resume-accent);
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  margin-bottom: 0.45rem;
   color: var(--resume-accent);
-  font-size: calc(var(--resume-font-size) * var(--resume-type-ratio));
-  letter-spacing: 0.06em;
+  font-size: calc(var(--resume-font-size) * 0.88);
+  font-weight: 700;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
-.resume-page[data-template="atlas"] .resume-item > p:first-child {
-  margin-top: 0.25rem;
+.resume-page[data-template="atlas"] .resume-section h3::before,
+.resume-page[data-template="atlas"] .resume-section h3::after {
+  flex: 1 1 auto;
+  height: 1px;
+  background: color-mix(in srgb, var(--resume-accent) 30%, transparent);
+  content: "";
 }
 
-/* ═══════════════════════════════════════════════════════════ meridian
-   International CV: sans, generous whitespace, no rules, strong header
-   hierarchy, optional photo.
+.resume-page[data-template="atlas"] .resume-item > p:first-child > span {
+  float: right;
+  margin-left: 1em;
+  color: color-mix(in srgb, currentColor 65%, transparent);
+}
+
+.resume-page[data-template="atlas"] .resume-item > p:nth-child(2) {
+  font-style: italic;
+  color: color-mix(in srgb, currentColor 75%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════════ MERIDIAN
+   Editorial. Large light display name, dates in a left gutter, no rules.
+   The whitespace is the design.
    ═══════════════════════════════════════════════════════════════════════ */
-
-.resume-page[data-template="meridian"] {
-  font-family: var(--resume-font-body);
-}
 
 .resume-page[data-template="meridian"] .resume-header {
   display: flex;
   align-items: flex-start;
-  gap: 1.25rem;
-  margin-bottom: calc(var(--resume-gap-section) * 1.4);
+  gap: 1.4rem;
+  margin-bottom: calc(var(--resume-gap-section) * 1.6);
 }
 
 .resume-page[data-template="meridian"] .resume-header-text {
@@ -135,62 +200,375 @@
   min-width: 0;
 }
 
-.resume-page[data-template="meridian"] .resume-header h2 {
-  font-size: calc(var(--resume-font-size) * var(--resume-type-ratio) * 2.1);
-  font-weight: 300;
-  letter-spacing: -0.015em;
+.resume-page[data-template="meridian"] .resume-photo {
+  width: 86px;
+  height: 86px;
 }
 
-.resume-page[data-template="meridian"] .resume-header > div > p:first-of-type {
-  margin: 0.25rem 0 0;
+.resume-page[data-template="meridian"] .resume-header h2 {
+  font-size: calc(var(--resume-font-size) * var(--resume-type-ratio) * 2.25);
+  font-weight: 250;
+  letter-spacing: -0.022em;
+}
+
+.resume-page[data-template="meridian"] .resume-header-text > p:first-of-type {
+  margin-top: 0.3rem;
   color: var(--resume-accent);
-  font-size: calc(var(--resume-font-size) * 1.15);
+  font-size: calc(var(--resume-font-size) * 1.12);
   font-weight: 500;
+  letter-spacing: 0.01em;
 }
 
 .resume-page[data-template="meridian"] .resume-header ul {
   display: flex;
   flex-wrap: wrap;
-  gap: 0 1rem;
-  margin: 0.6rem 0 0;
-  padding: 0;
-  list-style: none;
-  font-size: calc(var(--resume-font-size) * 0.9);
+  gap: 0 1.1rem;
+  margin-top: 0.7rem;
+  font-size: calc(var(--resume-font-size) * 0.88);
+  color: color-mix(in srgb, currentColor 70%, transparent);
 }
 
 .resume-page[data-template="meridian"] .resume-section h3 {
+  margin-bottom: 0.55rem;
   color: var(--resume-accent);
-  font-size: calc(var(--resume-font-size) * 0.92);
+  font-size: calc(var(--resume-font-size) * 0.74);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* Date gutter. Absolute so the inline flow of the heading line is untouched;
+   the item's own padding reserves the space. */
+.resume-page[data-template="meridian"] .resume-section[data-section-type="experience"] .resume-item,
+.resume-page[data-template="meridian"] .resume-section[data-section-type="education"] .resume-item {
+  position: relative;
+  padding-left: 7.5rem;
+  margin-top: calc(var(--resume-gap-item) * 1.5);
+}
+
+.resume-page[data-template="meridian"] .resume-section[data-section-type="experience"] .resume-item > p:first-child > span,
+.resume-page[data-template="meridian"] .resume-section[data-section-type="education"] .resume-item > p:first-child > span {
+  position: absolute;
+  top: 0.15em;
+  left: 0;
+  width: 6.5rem;
+  color: color-mix(in srgb, currentColor 55%, transparent);
+  font-size: calc(var(--resume-font-size) * 0.85);
+}
+
+.resume-page[data-template="meridian"] .resume-item > p:first-child strong {
+  font-weight: 600;
+}
+
+.resume-page[data-template="meridian"] .resume-bullets {
+  padding-left: 0.95em;
+}
+
+.resume-page[data-template="meridian"] .resume-bullets li::marker {
+  color: color-mix(in srgb, var(--resume-accent) 55%, transparent);
+}
+
+/* ══════════════════════════════════════════════════════════════════ QUILL
+   Literary. High-contrast serif, true small caps, no rules anywhere, italic
+   organisations. Reads like a monograph rather than a form.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.resume-page[data-template="quill"] {
+  line-height: calc(var(--resume-line-height) * 1.06);
+}
+
+.resume-page[data-template="quill"] .resume-header {
+  display: flex;
+  align-items: baseline;
+  gap: 1.3rem;
+  margin-bottom: calc(var(--resume-gap-section) * 1.5);
+}
+
+.resume-page[data-template="quill"] .resume-header-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Square and modest — a portrait plate rather than an avatar. */
+.resume-page[data-template="quill"] .resume-photo {
+  align-self: flex-start;
+  width: 78px;
+  height: 96px;
+  border-radius: 1px;
+}
+
+.resume-page[data-template="quill"] .resume-photo[data-shape="circle"] {
+  height: 78px;
+  border-radius: 50%;
+}
+
+.resume-page[data-template="quill"] .resume-header h2 {
+  font-size: calc(var(--resume-font-size) * var(--resume-type-ratio) * 2);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.resume-page[data-template="quill"] .resume-header-text > p:first-of-type {
+  margin-top: 0.35rem;
+  font-size: calc(var(--resume-font-size) * 1.08);
+  font-style: italic;
+  color: color-mix(in srgb, currentColor 78%, transparent);
+}
+
+.resume-page[data-template="quill"] .resume-header ul {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 0.6rem;
+  font-size: calc(var(--resume-font-size) * 0.9);
+}
+
+.resume-page[data-template="quill"] .resume-header li + li::before {
+  margin: 0 0.55em;
+  content: "—";
+  color: color-mix(in srgb, currentColor 35%, transparent);
+}
+
+.resume-page[data-template="quill"] .resume-section h3 {
+  margin-bottom: 0.5rem;
+  color: var(--resume-accent);
+  font-size: calc(var(--resume-font-size) * 1.02);
+  font-weight: 400;
+  font-variant-caps: small-caps;
+  letter-spacing: 0.1em;
+}
+
+.resume-page[data-template="quill"] .resume-item > p:first-child > span {
+  float: right;
+  margin-left: 1em;
+  font-style: italic;
+  color: color-mix(in srgb, currentColor 60%, transparent);
+}
+
+.resume-page[data-template="quill"] .resume-item > p:first-child strong {
+  font-weight: 400;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.06em;
+}
+
+.resume-page[data-template="quill"] .resume-item > p:nth-child(2) {
+  font-style: italic;
+}
+
+/* Em-dash markers instead of discs — quieter, and unmistakably editorial. */
+.resume-page[data-template="quill"] .resume-bullets {
+  padding-left: 1.2em;
+  list-style: none;
+}
+
+.resume-page[data-template="quill"] .resume-bullets li {
+  text-indent: -1.2em;
+}
+
+.resume-page[data-template="quill"] .resume-bullets li::before {
+  margin-right: 0.5em;
+  color: color-mix(in srgb, var(--resume-accent) 60%, transparent);
+  content: "—";
+}
+
+/* ══════════════════════════════════════════════════════════════════ SLATE
+   Technical. Numbered sections, monospaced date rail, hairline grid, tight
+   rhythm. Reads like well-kept documentation.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.resume-page[data-template="slate"] {
+  counter-reset: resume-section;
+}
+
+.resume-page[data-template="slate"] .resume-header {
+  padding-bottom: 0.8rem;
+  margin-bottom: calc(var(--resume-gap-section) * 1.15);
+  border-bottom: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+}
+
+.resume-page[data-template="slate"] .resume-header h2 {
+  font-size: calc(var(--resume-font-size) * var(--resume-type-ratio) * 1.7);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.resume-page[data-template="slate"] .resume-header-text > p:first-of-type {
+  margin-top: 0.2rem;
+  color: var(--resume-accent);
+  font-family: var(--resume-font-mono);
+  font-size: calc(var(--resume-font-size) * 0.88);
+  letter-spacing: 0.02em;
+}
+
+.resume-page[data-template="slate"] .resume-header ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1rem;
+  margin-top: 0.55rem;
+  font-family: var(--resume-font-mono);
+  font-size: calc(var(--resume-font-size) * 0.8);
+  color: color-mix(in srgb, currentColor 68%, transparent);
+}
+
+.resume-page[data-template="slate"] .resume-section h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7em;
+  padding-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  color: var(--resume-accent);
+  font-size: calc(var(--resume-font-size) * 0.8);
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
-.resume-page[data-template="meridian"] .resume-item {
-  margin-top: calc(var(--resume-gap-item) * 1.3);
+/* Numbering is decorative — ::before content stays out of the DOM, so ATS
+   never sees "01" in the parsed text. */
+.resume-page[data-template="slate"] .resume-section {
+  counter-increment: resume-section;
 }
 
-.resume-page[data-template="meridian"] .resume-item > p:first-child {
-  margin-top: 0.4rem;
+.resume-page[data-template="slate"] .resume-section h3::before {
+  content: counter(resume-section, decimal-leading-zero);
+  font-family: var(--resume-font-mono);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: color-mix(in srgb, currentColor 40%, transparent);
 }
 
-/* Photo — meridian only. Square or circle, no filters, no positioning. */
-.resume-photo {
-  flex: 0 0 auto;
-  width: 84px;
-  height: 84px;
-  object-fit: cover;
-  background: #eceef1;
+.resume-page[data-template="slate"] .resume-section[data-section-type="experience"] .resume-item,
+.resume-page[data-template="slate"] .resume-section[data-section-type="education"] .resume-item {
+  position: relative;
+  padding-left: 6.75rem;
 }
 
-.resume-photo[data-shape="circle"] {
-  border-radius: 50%;
+.resume-page[data-template="slate"] .resume-section[data-section-type="experience"] .resume-item > p:first-child > span,
+.resume-page[data-template="slate"] .resume-section[data-section-type="education"] .resume-item > p:first-child > span {
+  position: absolute;
+  top: 0.2em;
+  left: 0;
+  width: 6rem;
+  font-family: var(--resume-font-mono);
+  font-size: calc(var(--resume-font-size) * 0.76);
+  color: color-mix(in srgb, currentColor 55%, transparent);
 }
 
-.resume-photo[data-shape="square"] {
-  border-radius: 3px;
+.resume-page[data-template="slate"] .resume-bullets {
+  padding-left: 1em;
+  list-style: none;
 }
 
-.resume-page[data-template="atlas"] .resume-photo {
-  display: none; /* atlas never shows a photo, whatever the document holds */
+.resume-page[data-template="slate"] .resume-bullets li {
+  text-indent: -1em;
+}
+
+.resume-page[data-template="slate"] .resume-bullets li::before {
+  margin-right: 0.45em;
+  color: color-mix(in srgb, var(--resume-accent) 70%, transparent);
+  content: "▸";
+  font-size: 0.85em;
+}
+
+.resume-page[data-template="slate"] .resume-section[data-section-type="skills"] strong {
+  font-family: var(--resume-font-mono);
+  font-size: calc(var(--resume-font-size) * 0.85);
+  font-weight: 600;
+}
+
+/* ══════════════════════════════════════════════════════════════════ LUMEN
+   Executive. One hairline, one enormous name, and a great deal of silence.
+   Everything not the name is deliberately quiet.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.resume-page[data-template="lumen"] {
+  color: #23262c;
+}
+
+.resume-page[data-template="lumen"] .resume-header {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5rem;
+  padding-bottom: 1.1rem;
+  margin-bottom: calc(var(--resume-gap-section) * 2);
+  border-bottom: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+}
+
+.resume-page[data-template="lumen"] .resume-header-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.resume-page[data-template="lumen"] .resume-photo {
+  width: 72px;
+  height: 72px;
+}
+
+.resume-page[data-template="lumen"] .resume-header h2 {
+  font-size: calc(var(--resume-font-size) * var(--resume-type-ratio) * 3);
+  font-weight: 200;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+
+.resume-page[data-template="lumen"] .resume-header-text > p:first-of-type {
+  margin-top: 0.5rem;
+  font-size: calc(var(--resume-font-size) * 0.92);
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, currentColor 62%, transparent);
+}
+
+.resume-page[data-template="lumen"] .resume-header ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.25rem;
+  margin-top: 0.75rem;
+  font-size: calc(var(--resume-font-size) * 0.82);
+  color: color-mix(in srgb, currentColor 55%, transparent);
+}
+
+.resume-page[data-template="lumen"] .resume-section {
+  margin-top: calc(var(--resume-gap-section) * 1.9);
+}
+
+.resume-page[data-template="lumen"] .resume-section h3 {
+  margin-bottom: 0.7rem;
+  font-size: calc(var(--resume-font-size) * 0.68);
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, currentColor 45%, transparent);
+}
+
+.resume-page[data-template="lumen"] .resume-item {
+  margin-top: calc(var(--resume-gap-item) * 1.7);
+}
+
+.resume-page[data-template="lumen"] .resume-item > p:first-child > span {
+  float: right;
+  margin-left: 1.25em;
+  font-size: calc(var(--resume-font-size) * 0.82);
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, currentColor 45%, transparent);
+}
+
+.resume-page[data-template="lumen"] .resume-item > p:first-child strong {
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+/* No markers at all — indentation alone carries the list. */
+.resume-page[data-template="lumen"] .resume-bullets {
+  padding-left: 0;
+  list-style: none;
+}
+
+.resume-page[data-template="lumen"] .resume-bullets li {
+  color: color-mix(in srgb, currentColor 82%, transparent);
+}
+
+.resume-page[data-template="lumen"] .resume-section[data-section-type="skills"] .resume-item > p {
+  color: color-mix(in srgb, currentColor 82%, transparent);
 }

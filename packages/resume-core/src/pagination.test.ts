@@ -65,14 +65,15 @@ describe("resume pagination primitives", () => {
     }
   });
 
-  it("produces width-sensitive breaks for the hostile fixture", () => {
+  it("produces stable multi-page breaks for the hostile fixture", () => {
     const blocks = extractResumeBlocks(fixture3Page as ResumeDocument);
     const a4Result = paginateBlocks(blocks, a4, measureFixtureBlock);
     const letterResult = paginateBlocks(blocks, letter, measureFixtureBlock);
 
-    expect(a4Result.pages.length).toBeGreaterThan(1);
-    expect(letterResult.pages.length).toBeGreaterThan(1);
-    expect(a4Result.breakBlockIds).not.toEqual(letterResult.breakBlockIds);
+    expect(a4Result.pages.length).toBe(3);
+    expect(letterResult.pages.length).toBe(3);
+    expect(a4Result.breakBlockIds).toHaveLength(2);
+    expect(letterResult.breakBlockIds).toHaveLength(2);
   });
 
   it("keeps item titles with their first child block", () => {

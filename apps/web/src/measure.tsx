@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { extractResumeBlocks, PAGE_BOXES, paginateBlocks, type PageSize, type ResumeDocument } from "@resume-builder/core";
 import { ResumePreview } from "@resume-builder/render";
 import "./styles.css";
+import "./templates.css";
 
 declare global {
   interface Window {

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import type { ResumeDocument } from "@resume-builder/core";
+import { TEMPLATES } from "@resume-builder/render";
 import { Disclosure, TextField } from "./fields";
+import { PhotoField } from "./PhotoField";
 import { AddButton, RemoveButton, UndoRow, makeId, useRemovalUndo } from "./list-controls";
 
 type Personal = ResumeDocument["personal"];
@@ -29,8 +31,13 @@ export function PersonalPanel({
   const setOptional = (field: "headline" | "location" | "dateOfBirth") => (value: string) =>
     onChange({ [field]: value.trim() === "" ? undefined : value } as Partial<Personal>);
 
+  const showsPhoto = TEMPLATES[templateId].supportsPhoto;
+
   return (
     <>
+      <PhotoField onChange={(photo) => onChange({ photo })} photo={personal.photo} />
+      <PhotoTemplateNote hasPhoto={Boolean(personal.photo)} showsPhoto={showsPhoto} templateId={templateId} />
+
       <div className="field-grid two-columns">
         <TextField label="First name" onChange={set("firstName")} value={personal.firstName} />
         <TextField label="Last name" onChange={set("lastName")} value={personal.lastName} />
@@ -60,6 +67,38 @@ export function PersonalPanel({
         <DateOfBirthNote dateOfBirth={personal.dateOfBirth} templateId={templateId} />
       </Disclosure>
     </>
+  );
+}
+
+/* ------------------------------------------------------- photo × template */
+
+/**
+ * A photo that silently vanishes when you switch template is the worst kind of
+ * bug — the user did something deliberate and the app quietly undid it. The
+ * data is kept either way; this just explains why it isn't showing.
+ */
+function PhotoTemplateNote({
+  hasPhoto,
+  showsPhoto,
+  templateId,
+}: {
+  hasPhoto: boolean;
+  showsPhoto: boolean;
+  templateId: ResumeDocument["design"]["templateId"];
+}) {
+  if (!hasPhoto || showsPhoto) {
+    return null;
+  }
+
+  const withPhoto = (Object.keys(TEMPLATES) as Array<ResumeDocument["design"]["templateId"]>)
+    .filter((id) => TEMPLATES[id].supportsPhoto)
+    .map((id) => TEMPLATES[id].label);
+
+  return (
+    <p className="advisory" role="status">
+      {TEMPLATES[templateId].label} doesn’t show a photo — it’s a résumé style where one is unusual. Your photo is
+      still saved. {withPhoto.join(", ")} all show it.
+    </p>
   );
 }
 

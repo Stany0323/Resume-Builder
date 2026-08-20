@@ -1,5 +1,13 @@
 import type { ResumeDocument } from "@resume-builder/core";
-import { ACCENTS, FONT_PAIRINGS, TEMPLATES, type Accent, type FontPairing } from "../design-tokens";
+import {
+  ACCENTS,
+  FONT_PAIRINGS,
+  TEMPLATES,
+  applyTemplate,
+  type Accent,
+  type FontPairing,
+  type TemplateId,
+} from "@resume-builder/render";
 
 type Design = ResumeDocument["design"];
 
@@ -44,15 +52,19 @@ export function DesignPanel({
   return (
     <>
       <div className="template-choice">
-        {(Object.keys(TEMPLATES) as Array<Design["templateId"]>).map((id) => (
+        {(Object.keys(TEMPLATES) as TemplateId[]).map((id) => (
           <button
             aria-pressed={design.templateId === id}
             className="template-option"
             key={id}
-            onClick={() => onChange({ templateId: id })}
+            onClick={() => onChange(applyTemplate(design, id))}
             type="button"
           >
-            <span className="template-name">{TEMPLATES[id].label}</span>
+            <span className="template-name">
+              {TEMPLATES[id].label}
+              <span className="template-tagline">{TEMPLATES[id].tagline}</span>
+              {TEMPLATES[id].supportsPhoto ? <span className="photo-badge">Photo</span> : null}
+            </span>
             <span className="template-description">{TEMPLATES[id].description}</span>
           </button>
         ))}
@@ -60,7 +72,9 @@ export function DesignPanel({
 
       {/* Switching templates never loses content — order and headings are
           template-owned, everything you typed stays in the document. */}
-      <p className="form-note">Switching templates keeps everything you’ve written.</p>
+      <p className="form-note">
+        Switching templates keeps everything you’ve written, and brings that template’s typeface with it.
+      </p>
 
       <Segmented
         label="Page size"

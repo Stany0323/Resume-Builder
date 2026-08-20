@@ -8,9 +8,11 @@ export {
   FONT_PAIRINGS,
   PAGE_DIMENSIONS,
   TEMPLATES,
+  applyTemplate,
   designTokenStyle,
   type Accent,
   type FontPairing,
+  type TemplateId,
 } from "./design-tokens";
 
 export function ResumePreview({ resume }: { resume: ResumeDocument }) {

@@ -8,7 +8,7 @@ import {
   type ExperienceItem,
   type ResumeDocument,
 } from "@resume-builder/core";
-import { ResumePreview, type Accent } from "@resume-builder/render";
+import { ResumePreview, applyTemplate, type Accent, type TemplateId } from "@resume-builder/render";
 
 import { TemplateChooser } from "./onboarding/TemplateChooser";
 import { DesignPanel } from "./sections/DesignPanel";
@@ -92,8 +92,10 @@ function Root() {
   if (phase === "choosing") {
     return (
       <TemplateChooser
-        onChoose={(templateId, accent: Accent) => {
-          setResume({ ...resume, design: { ...resume.design, templateId, accent } });
+        onChoose={(templateId: TemplateId, accent: Accent) => {
+          // applyTemplate also brings the pairing the template was designed
+          // around; everything else the user chose is preserved.
+          setResume({ ...resume, design: applyTemplate({ ...resume.design, accent }, templateId) });
           setPhase("editing");
         }}
         onSkip={() => setPhase("editing")}

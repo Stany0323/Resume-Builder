@@ -1,70 +1,97 @@
-/* Append to apps/web/src/styles.css — first-run template chooser */
+/* apps/web/src/onboarding/chooser.css — first-run template chooser */
 
 .chooser {
-  max-width: 62rem;
+  max-width: 78rem;
   min-height: 100vh;
-  padding: 3rem 1.5rem 4rem;
+  padding: 3.5rem 1.5rem 4rem;
   margin: 0 auto;
 }
 
 .chooser-header {
-  margin-bottom: 1.75rem;
+  margin-bottom: 2.25rem;
   text-align: center;
 }
 
 .chooser-header h1 {
   margin: 0;
-  font-size: 1.6rem;
+  font-size: 1.75rem;
+  font-weight: 300;
+  letter-spacing: -0.02em;
 }
 
 .chooser-header p {
-  max-width: 34rem;
-  margin: 0.5rem auto 0;
+  max-width: 40rem;
+  margin: 0.65rem auto 0;
   color: var(--text-muted, #4a5160);
   font-size: 0.92rem;
-  line-height: 1.5;
+  line-height: 1.55;
+  text-wrap: pretty;
 }
 
 .chooser-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.25rem;
-  justify-content: center;
+  display: grid;
+  gap: 1.1rem;
+  grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr));
+  align-items: start;
 }
 
 .chooser-card {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 0.85rem 0.85rem 1rem;
-  border: 1px solid var(--border, #c8ccd4);
+  align-items: stretch;
+  padding: 0.7rem 0.7rem 0.9rem;
+  border: 1px solid var(--border, #dfe2e8);
   border-radius: 10px;
   background: #fff;
   font: inherit;
+  text-align: left;
   cursor: pointer;
+  transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
 }
 
 .chooser-card:hover {
-  border-color: var(--accent, #47506b);
+  border-color: color-mix(in srgb, var(--accent, #47506b) 55%, transparent);
+  box-shadow: 0 6px 18px rgba(20, 24, 33, 0.08);
+  transform: translateY(-2px);
 }
 
 .chooser-card[aria-pressed="true"] {
   border-color: var(--accent, #47506b);
-  box-shadow: inset 0 0 0 2px var(--accent, #47506b);
+  box-shadow: inset 0 0 0 1px var(--accent, #47506b), 0 6px 18px rgba(20, 24, 33, 0.1);
+}
+
+.chooser-card:focus-visible {
+  outline: 2px solid var(--accent, #47506b);
+  outline-offset: 3px;
+}
+
+.chooser-card-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-top: 0.7rem;
 }
 
 .chooser-card-name {
-  margin-top: 0.75rem;
+  font-size: 0.98rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.chooser-card-tagline {
+  color: var(--text-muted, #8a8f9a);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .chooser-card-description {
-  max-width: 16rem;
-  margin-top: 0.15rem;
+  margin-top: 0.2rem;
   color: var(--text-muted, #6b7280);
-  font-size: 0.8rem;
-  line-height: 1.4;
-  text-align: center;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  text-wrap: pretty;
 }
 
 /* Scaled live render. The outer box carries the scaled dimensions so the grid
@@ -72,8 +99,10 @@
 .template-thumbnail {
   position: relative;
   display: block;
+  width: 100%;
   overflow: hidden;
-  border: 1px solid var(--border, #e2e5ea);
+  border: 1px solid var(--border, #e6e9ee);
+  border-radius: 4px;
   background: #fff;
 }
 
@@ -87,7 +116,7 @@
 }
 
 .chooser-accents {
-  margin: 1.75rem auto 0;
+  margin: 2rem auto 0;
   padding: 0;
   border: none;
   text-align: center;
@@ -95,24 +124,28 @@
 
 .chooser-accents legend {
   padding: 0;
-  font-size: 0.82rem;
+  color: var(--text-muted, #6b7280);
+  font-size: 0.72rem;
   font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .chooser-accents .swatches {
   justify-content: center;
+  margin-top: 0.5rem;
 }
 
 .chooser-actions {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
-  margin-top: 1.75rem;
+  gap: 0.85rem;
+  margin-top: 2rem;
 }
 
 .chooser-actions .primary {
-  padding: 0.7rem 1.6rem;
+  padding: 0.75rem 1.9rem;
   border: 1px solid var(--accent, #47506b);
   border-radius: 6px;
   background: var(--accent, #47506b);
@@ -122,12 +155,27 @@
   cursor: pointer;
 }
 
-@media (max-width: 40rem) {
+.chooser-actions .primary:hover {
+  filter: brightness(1.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chooser-card {
+    transition: none;
+  }
+
+  .chooser-card:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 44rem) {
   .chooser {
-    padding-top: 1.5rem;
+    padding-top: 1.75rem;
   }
 
   .chooser-grid {
-    gap: 0.85rem;
+    grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+    gap: 0.75rem;
   }
 }

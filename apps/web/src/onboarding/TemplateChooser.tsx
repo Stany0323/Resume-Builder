@@ -1,26 +1,31 @@
 import { useState } from "react";
 import type { ResumeDocument } from "@resume-builder/core";
-import { ResumePreview } from "@resume-builder/render";
-import { ACCENTS, PAGE_DIMENSIONS, TEMPLATES, type Accent } from "../design-tokens";
+import {
+  ACCENTS,
+  PAGE_DIMENSIONS,
+  ResumePreview,
+  TEMPLATES,
+  applyTemplate,
+  type Accent,
+  type TemplateId,
+} from "@resume-builder/render";
 import { TEMPLATE_SAMPLE } from "./sample-content";
-
-type TemplateId = ResumeDocument["design"]["templateId"];
 
 /**
  * First-run template picker.
  *
  * Thumbnails are LIVE RENDERS of the real templates, scaled down — not
- * screenshots. A screenshot is a second source of truth that silently drifts
- * the first time a template changes; a scaled render cannot.
+ * screenshots. A screenshot is a second source of truth that drifts the first
+ * time a template changes and nobody notices; a scaled render cannot.
  *
- * IMPORTANT: this mounts ResumePreview several times, which means several
- * copies of every `data-block-id` in the DOM. That is safe only because the
- * chooser and the editor are never mounted together, and the measurement route
- * (/?measure=1) renders neither. If that ever changes, measurement will start
- * reading the wrong nodes — so keep them mutually exclusive.
+ * IMPORTANT: this mounts ResumePreview once per template, so several copies of
+ * every `data-block-id` exist in the DOM while it's open. Safe only because the
+ * chooser and the editor are never mounted together, and /?measure=1 renders
+ * neither. Keep them mutually exclusive — otherwise measurement silently reads
+ * the wrong nodes.
  */
 
-const THUMBNAIL_SCALE = 0.3;
+const THUMBNAIL_SCALE = 0.26;
 
 export function TemplateChooser({
   onChoose,
@@ -29,14 +34,17 @@ export function TemplateChooser({
   onChoose: (templateId: TemplateId, accent: Accent) => void;
   onSkip?: () => void;
 }) {
-  const [selected, setSelected] = useState<TemplateId>("atlas");
+  const [selected, setSelected] = useState<TemplateId>("meridian");
   const [accent, setAccent] = useState<Accent>("slate");
 
   return (
     <main className="chooser">
       <header className="chooser-header">
         <h1>Pick a starting point</h1>
-        <p>You can change this at any time — switching templates never loses anything you’ve written.</p>
+        <p>
+          Five typographic systems, not five colour schemes. All of them parse cleanly in applicant tracking systems,
+          and you can switch at any time without losing a word.
+        </p>
       </header>
 
       <div className="chooser-grid">
@@ -49,14 +57,18 @@ export function TemplateChooser({
             type="button"
           >
             <TemplateThumbnail accent={accent} templateId={id} />
-            <span className="chooser-card-name">{TEMPLATES[id].label}</span>
+            <span className="chooser-card-meta">
+              <span className="chooser-card-name">{TEMPLATES[id].label}</span>
+              <span className="chooser-card-tagline">{TEMPLATES[id].tagline}</span>
+              {TEMPLATES[id].supportsPhoto ? <span className="photo-badge">Photo</span> : null}
+            </span>
             <span className="chooser-card-description">{TEMPLATES[id].description}</span>
           </button>
         ))}
       </div>
 
       <fieldset className="chooser-accents">
-        <legend>Accent colour</legend>
+        <legend>Accent</legend>
         <div className="swatches">
           {(Object.keys(ACCENTS) as Accent[]).map((key) => (
             <button
@@ -66,6 +78,7 @@ export function TemplateChooser({
               key={key}
               onClick={() => setAccent(key)}
               style={{ backgroundColor: ACCENTS[key].value }}
+              title={`${ACCENTS[key].label} — ${ACCENTS[key].contrast}:1 contrast`}
               type="button"
             />
           ))}
@@ -87,8 +100,12 @@ export function TemplateChooser({
 }
 
 /**
- * A real template render, scaled. The outer box is sized to the scaled
- * dimensions so surrounding layout doesn't have to know about the transform.
+ * A real template render, scaled. The outer box carries the scaled dimensions
+ * so surrounding layout needn't know a transform is happening.
+ *
+ * Uses applyTemplate() so each thumbnail shows the pairing the template was
+ * designed around — otherwise every card renders in whatever font the sample
+ * happens to carry, and they all look the same.
  */
 export function TemplateThumbnail({
   accent,
@@ -101,11 +118,10 @@ export function TemplateThumbnail({
 }) {
   const resume: ResumeDocument = {
     ...TEMPLATE_SAMPLE,
-    design: {
-      ...TEMPLATE_SAMPLE.design,
+    design: applyTemplate(
+      { ...TEMPLATE_SAMPLE.design, accent: accent ?? TEMPLATE_SAMPLE.design.accent },
       templateId,
-      accent: accent ?? TEMPLATE_SAMPLE.design.accent,
-    },
+    ),
   };
 
   const page = PAGE_DIMENSIONS[resume.design.pageSize];
