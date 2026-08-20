@@ -1,12 +1,19 @@
-import { useEffect, useRef, useState } from "react";
 import {
   bulletsToText,
   reconcileLines,
-  splitBulletLines,
   type HobbyItem,
   type ReferenceItem,
   type SkillsItem,
 } from "@resume-builder/core";
+import { ChipsField, LinesField, TextField } from "./fields";
+import {
+  AddButton,
+  EmptyState,
+  RemoveButton,
+  UndoRow,
+  makeId,
+  useItemList,
+} from "./list-controls";
 
 type ReferencesMode = "omitted" | "onRequest" | "listed";
 
@@ -19,25 +26,15 @@ export function SkillsPanel({
   items: SkillsItem[];
   onChange: (items: SkillsItem[]) => void;
 }) {
-  const removal = useRemovalUndo<SkillsItem>((restored, index) => {
-    const next = [...items];
-    next.splice(index, 0, restored);
-    onChange(reorder(next));
-  });
+  const list = useItemList(items, onChange);
 
-  const updateGroup = (id: string, patch: Partial<SkillsItem>) => {
-    onChange(items.map((item) => (item.id === id ? { ...item, ...patch } : item)));
-  };
+  const add = () => list.add({ id: makeId("k"), order: items.length, groupLabel: "", entries: [] });
 
-  const addGroup = () => {
-    onChange(reorder([...items, { id: makeId("k"), order: items.length, groupLabel: "", entries: [] }]));
-  };
-
-  if (items.length === 0 && !removal.pending) {
+  if (items.length === 0 && !list.removal.pending) {
     return (
       <EmptyState
         actionLabel="Add a skill group"
-        onAction={addGroup}
+        onAction={add}
         text="Group your skills — “Languages”, “Tools”, “Practices”. Two or three groups reads better than one long list."
       />
     );
@@ -45,31 +42,29 @@ export function SkillsPanel({
 
   return (
     <>
-      {items.map((item, index) => (
+      {items.map((item) => (
         <div className="item-editor" key={item.id}>
           <div className="item-editor-header">
             <TextField
               label="Group name"
-              onChange={(value) => updateGroup(item.id, { groupLabel: value })}
+              onChange={(groupLabel) => list.update(item.id, { groupLabel })}
               value={item.groupLabel}
             />
             <RemoveButton
               label={`Remove ${item.groupLabel || "skill group"}`}
-              onRemove={() => {
-                removal.remove(item, index);
-                onChange(reorder(items.filter((candidate) => candidate.id !== item.id)));
-              }}
+              onRemove={() => list.remove(item.id)}
             />
           </div>
           <ChipsField
             entries={item.entries}
             label="Skills"
-            onChange={(entries) => updateGroup(item.id, { entries })}
+            onChange={(entries) => list.update(item.id, { entries })}
+            placeholder="Type a skill, then press Enter"
           />
         </div>
       ))}
-      <UndoRow removal={removal} what="Skill group" />
-      <AddButton label="Add a skill group" onClick={addGroup} />
+      <UndoRow removal={list.removal} what="Skill group" />
+      <AddButton label="Add a skill group" onClick={add} />
     </>
   );
 }
@@ -85,38 +80,29 @@ export function HobbiesPanel({
 }) {
   // HobbyItem is structurally identical to Bullet, so the same line/ID
   // reconciliation applies — unchanged lines keep their ids.
-  const text = bulletsToText(items);
+  const handleChange = (value: string) => onChange(reconcileLines(items, value, () => makeId("h")));
 
-  if (items.length === 0) {
-    return (
-      <>
+  return (
+    <>
+      {items.length === 0 ? (
         <p className="form-note">
           Optional. A short line or two, if they say something a recruiter can’t get from your experience.
         </p>
-        <LinesField
-          label="Interests — one per line"
-          onChange={(value) => onChange(reconcileLines(items, value, () => makeId("h")))}
-          placeholderRows={3}
-          value={text}
-        />
-      </>
-    );
-  }
-
-  return (
-    <LinesField
-      countLabel={`${items.length} ${items.length === 1 ? "interest" : "interests"}`}
-      label="Interests — one per line"
-      onChange={(value) => onChange(reconcileLines(items, value, () => makeId("h")))}
-      placeholderRows={Math.max(3, Math.min(6, items.length + 1))}
-      value={text}
-    />
+      ) : null}
+      <LinesField
+        countLabel={items.length > 0 ? `${items.length} ${items.length === 1 ? "interest" : "interests"}` : undefined}
+        label="Interests — one per line"
+        onChange={handleChange}
+        rows={Math.max(3, Math.min(6, items.length + 1))}
+        value={bulletsToText(items)}
+      />
+    </>
   );
 }
 
 /* -------------------------------------------------------------- References */
 
-const REFERENCE_MODES: Array<{ hint?: string; label: string; value: ReferencesMode }> = [
+const REFERENCE_MODES: Array<{ label: string; value: ReferencesMode }> = [
   { label: "Don’t include references", value: "omitted" },
   { label: "“References available upon request.”", value: "onRequest" },
   { label: "List my referees", value: "listed" },
@@ -131,30 +117,15 @@ export function ReferencesPanel({
   mode: ReferencesMode;
   onChange: (next: { items: ReferenceItem[]; mode: ReferencesMode }) => void;
 }) {
-  const removal = useRemovalUndo<ReferenceItem>((restored, index) => {
-    const next = [...items];
-    next.splice(index, 0, restored);
-    onChange({ mode, items: reorder(next) });
-  });
+  const list = useItemList(items, (next) => onChange({ mode, items: next }));
 
   // Switching away from "listed" keeps referee data in the document — it just
   // stops rendering. Losing typed referees on a radio click would be a small
   // betrayal, and retaining them costs nothing.
   const setMode = (next: ReferencesMode) => onChange({ mode: next, items });
 
-  const updateReferee = (id: string, patch: Partial<ReferenceItem>) => {
-    onChange({ mode, items: items.map((item) => (item.id === id ? { ...item, ...patch } : item)) });
-  };
-
-  const addReferee = () => {
-    onChange({
-      mode,
-      items: reorder([
-        ...items,
-        { id: makeId("r"), order: items.length, name: "", role: "", organization: "" },
-      ]),
-    });
-  };
+  const add = () =>
+    list.add({ id: makeId("r"), order: items.length, name: "", role: "", organization: "" });
 
   return (
     <>
@@ -176,57 +147,52 @@ export function ReferencesPanel({
 
       {mode === "listed" ? (
         <>
-          {items.length === 0 && !removal.pending ? (
+          {items.length === 0 && !list.removal.pending ? (
             <p className="form-note">Add at least one referee, or switch back to “available upon request”.</p>
           ) : null}
-          {items.map((item, index) => (
+          {items.map((item) => (
             <div className="item-editor" key={item.id}>
               <div className="item-editor-header">
                 <TextField
                   label="Name"
-                  onChange={(value) => updateReferee(item.id, { name: value })}
+                  onChange={(name) => list.update(item.id, { name })}
                   value={item.name}
                 />
                 <RemoveButton
                   label={`Remove ${item.name || "referee"}`}
-                  onRemove={() => {
-                    removal.remove(item, index);
-                    onChange({ mode, items: reorder(items.filter((candidate) => candidate.id !== item.id)) });
-                  }}
+                  onRemove={() => list.remove(item.id)}
                 />
               </div>
               <div className="field-grid two-columns">
-                <TextField
-                  label="Role"
-                  onChange={(value) => updateReferee(item.id, { role: value })}
-                  value={item.role}
-                />
+                <TextField label="Role" onChange={(role) => list.update(item.id, { role })} value={item.role} />
                 <TextField
                   label="Organisation"
-                  onChange={(value) => updateReferee(item.id, { organization: value })}
+                  onChange={(organization) => list.update(item.id, { organization })}
                   value={item.organization}
                 />
               </div>
               <div className="field-grid two-columns">
                 <TextField
+                  inputMode="email"
                   label="Email"
-                  onChange={(value) => updateReferee(item.id, { email: emptyToUndefined(value) })}
+                  onChange={(email) => list.update(item.id, { email: emptyToUndefined(email) })}
                   value={item.email ?? ""}
                 />
                 <TextField
+                  inputMode="tel"
                   label="Phone"
-                  onChange={(value) => updateReferee(item.id, { phone: emptyToUndefined(value) })}
+                  onChange={(phone) => list.update(item.id, { phone: emptyToUndefined(phone) })}
                   value={item.phone ?? ""}
                 />
               </div>
             </div>
           ))}
-          <UndoRow removal={removal} what="Referee" />
-          <AddButton label="Add a referee" onClick={addReferee} />
+          <UndoRow removal={list.removal} what="Referee" />
+          <AddButton label="Add a referee" onClick={add} />
         </>
       ) : null}
 
-      {mode === "omitted" && items.length > 0 ? (
+      {mode !== "listed" && items.length > 0 ? (
         <p className="form-note">
           {items.length} {items.length === 1 ? "referee is" : "referees are"} saved but not shown. Choose “List my
           referees” to include {items.length === 1 ? "them" : "them"}.
@@ -236,234 +202,6 @@ export function ReferencesPanel({
   );
 }
 
-/* ------------------------------------------------------------- shared bits */
-
-function ChipsField({
-  entries,
-  label,
-  onChange,
-}: {
-  entries: string[];
-  label: string;
-  onChange: (entries: string[]) => void;
-}) {
-  const [draft, setDraft] = useState("");
-
-  const commit = (raw: string) => {
-    const additions = raw
-      .split(",")
-      .map((entry) => entry.trim())
-      .filter((entry) => entry.length > 0 && !entries.includes(entry));
-
-    if (additions.length > 0) {
-      onChange([...entries, ...additions]);
-    }
-    setDraft("");
-  };
-
-  return (
-    <div className="chips-field">
-      <label>
-        {label}
-        <input
-          onBlur={() => commit(draft)}
-          onChange={(event) => {
-            // Comma commits, which is what people type. Enter also commits,
-            // which is what they expect. Support both.
-            if (event.target.value.includes(",")) {
-              commit(event.target.value);
-              return;
-            }
-            setDraft(event.target.value);
-          }}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              event.preventDefault();
-              commit(draft);
-              return;
-            }
-            if (event.key === "Backspace" && draft === "" && entries.length > 0) {
-              onChange(entries.slice(0, -1));
-            }
-          }}
-          placeholder={entries.length === 0 ? "Type a skill, then press Enter" : ""}
-          value={draft}
-        />
-      </label>
-      {entries.length > 0 ? (
-        <ul className="chips">
-          {entries.map((entry) => (
-            <li key={entry}>
-              <button
-                aria-label={`Remove ${entry}`}
-                onClick={() => onChange(entries.filter((candidate) => candidate !== entry))}
-                type="button"
-              >
-                {entry}
-                <span aria-hidden="true">×</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-    </div>
-  );
-}
-
-function LinesField({
-  countLabel,
-  label,
-  onChange,
-  placeholderRows,
-  value,
-}: {
-  countLabel?: string;
-  label: string;
-  onChange: (value: string) => void;
-  placeholderRows: number;
-  value: string;
-}) {
-  return (
-    <label>
-      {label}
-      <textarea
-        className="bullets-textarea"
-        onChange={(event) => onChange(event.target.value)}
-        onPaste={(event) => {
-          const pasted = event.clipboardData.getData("text/plain");
-          if (!pasted.includes("\n")) {
-            return;
-          }
-          event.preventDefault();
-          const cleaned = splitBulletLines(pasted).join("\n");
-          const target = event.currentTarget;
-          const before = target.value.slice(0, target.selectionStart ?? 0);
-          const after = target.value.slice(target.selectionEnd ?? 0);
-          onChange(`${before}${cleaned}${after}`);
-        }}
-        rows={placeholderRows}
-        value={value}
-      />
-      {countLabel ? <span className="counter-line">{countLabel}</span> : null}
-    </label>
-  );
-}
-
-function EmptyState({
-  actionLabel,
-  onAction,
-  text,
-}: {
-  actionLabel: string;
-  onAction: () => void;
-  text: string;
-}) {
-  return (
-    <div className="empty-state">
-      <p>{text}</p>
-      <AddButton label={actionLabel} onClick={onAction} />
-    </div>
-  );
-}
-
-function AddButton({ label, onClick }: { label: string; onClick: () => void }) {
-  return (
-    <button className="add-button" onClick={onClick} type="button">
-      + {label}
-    </button>
-  );
-}
-
-function RemoveButton({ label, onRemove }: { label: string; onRemove: () => void }) {
-  return (
-    <button aria-label={label} className="remove-button" onClick={onRemove} type="button">
-      Remove
-    </button>
-  );
-}
-
-function UndoRow<T>({ removal, what }: { removal: RemovalUndo<T>; what: string }) {
-  if (!removal.pending) {
-    return null;
-  }
-
-  return (
-    <div className="undo-row" role="status">
-      <span>{what} removed.</span>
-      <button onClick={removal.undo} type="button">
-        Undo
-      </button>
-    </div>
-  );
-}
-
-/* Removal is the one action that needs undo (PIVOT-v3 §6). Remove immediately,
-   offer undo briefly — an undo affordance beats a confirmation modal. */
-
-type RemovalUndo<T> = {
-  pending: { index: number; item: T } | null;
-  remove: (item: T, index: number) => void;
-  undo: () => void;
-};
-
-const UNDO_WINDOW_MS = 8000;
-
-function useRemovalUndo<T>(restore: (item: T, index: number) => void): RemovalUndo<T> {
-  const [pending, setPending] = useState<{ index: number; item: T } | null>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => () => {
-    if (timer.current) {
-      clearTimeout(timer.current);
-    }
-  }, []);
-
-  return {
-    pending,
-    remove: (item, index) => {
-      if (timer.current) {
-        clearTimeout(timer.current);
-      }
-      setPending({ index, item });
-      timer.current = setTimeout(() => setPending(null), UNDO_WINDOW_MS);
-    },
-    undo: () => {
-      if (timer.current) {
-        clearTimeout(timer.current);
-      }
-      if (pending) {
-        restore(pending.item, pending.index);
-      }
-      setPending(null);
-    },
-  };
-}
-
-function TextField({
-  label,
-  onChange,
-  value,
-}: {
-  label: string;
-  onChange: (value: string) => void;
-  value: string;
-}) {
-  return (
-    <label>
-      {label}
-      <input onChange={(event) => onChange(event.target.value)} value={value} />
-    </label>
-  );
-}
-
-function reorder<T extends { order: number }>(items: T[]): T[] {
-  return items.map((item, index) => ({ ...item, order: index }));
-}
-
 function emptyToUndefined(value: string) {
   return value.trim().length === 0 ? undefined : value;
-}
-
-function makeId(prefix: string) {
-  return `${prefix}-${crypto.randomUUID()}`;
 }

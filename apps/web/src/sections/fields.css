@@ -1,0 +1,108 @@
+/* Append to apps/web/src/styles.css — shared fields, links, disclosure, advisory */
+
+.field-hint,
+.field-message {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--text-muted, #6b7280);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.field-group-label {
+  display: block;
+  margin-top: 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.link-button {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent, #47506b);
+  font: inherit;
+  font-size: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Advisory notes are guidance, never errors — muted, never red, always
+   dismissible or self-resolving. role="status", not role="alert". */
+.advisory {
+  margin: 0.4rem 0 0;
+  padding: 0.5rem 0.6rem;
+  border-left: 2px solid var(--border, #c8ccd4);
+  background: rgba(0, 0, 0, 0.02);
+  color: var(--text-muted, #4a5160);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+/* Links ------------------------------------------------------------------ */
+
+.links-field {
+  margin-top: 0.25rem;
+}
+
+.link-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.link-row .link-type {
+  flex: 0 0 8.5rem;
+}
+
+.link-row .link-label {
+  flex: 0 0 7rem;
+}
+
+.link-row .link-value {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.link-row label {
+  margin: 0;
+}
+
+.link-row input,
+.link-row select {
+  width: 100%;
+}
+
+/* Disclosure ------------------------------------------------------------- */
+
+.disclosure {
+  margin-top: 0.85rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--border, #e2e5ea);
+}
+
+.disclosure-toggle {
+  padding: 0.2rem 0;
+  border: none;
+  background: none;
+  color: var(--text-muted, #4a5160);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.disclosure-toggle:hover {
+  color: var(--accent, #47506b);
+}
+
+.disclosure-toggle span {
+  display: inline-block;
+  width: 1rem;
+  font-weight: 700;
+}
+
+.disclosure-body {
+  padding-top: 0.4rem;
+}
