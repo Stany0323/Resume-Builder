@@ -7,7 +7,7 @@
   overflow: hidden;
   margin: 0.5rem 0;
   border: 1px solid var(--border, #c8ccd4);
-  background: #f3f4f6;
+  background: var(--surface-quiet, #f3f4f6);
   cursor: grab;
   touch-action: none;
   user-select: none;
@@ -43,18 +43,25 @@
 
 .zoom-control { display: grid; gap: 0.2rem; font-size: 0.8rem; }
 .zoom-control input { width: 100%; }
+.zoom-control input { accent-color: var(--accent, #47506b); }
 
 .photo-actions { display: flex; align-items: center; gap: 0.75rem; }
 
 .photo-actions .primary {
+  min-height: 36px;
   padding: 0.45rem 1rem;
   border: 1px solid var(--accent, #47506b);
-  border-radius: 6px;
+  border-radius: var(--radius-control, 6px);
   background: var(--accent, #47506b);
   color: #fff;
   font: inherit;
   font-weight: 600;
   cursor: pointer;
+}
+
+.photo-actions .primary:hover {
+  border-color: var(--accent-strong, #254a43);
+  background: var(--accent-strong, #254a43);
 }
 
 .photo-current { display: flex; align-items: center; gap: 0.8rem; margin: 0.5rem 0; }

@@ -12,42 +12,56 @@
 
 .add-button {
   width: 100%;
+  min-height: 38px;
   padding: 0.55rem 0.75rem;
   margin-top: 0.5rem;
   border: 1px dashed var(--border, #c8ccd4);
-  border-radius: 6px;
-  background: transparent;
+  border-radius: var(--radius-control, 6px);
+  background: var(--surface, #fff);
   color: var(--text-muted, #4a5160);
   font: inherit;
+  font-weight: 600;
   cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease, background-color 120ms ease;
 }
 
 .add-button:hover {
   border-color: var(--accent, #47506b);
+  background: var(--surface-subtle, #f8fafb);
   color: var(--accent, #47506b);
 }
 
+.add-button:disabled {
+  border-style: solid;
+  background: var(--surface-quiet, #f2f5f7);
+  color: var(--text-soft, #8a8f9a);
+  cursor: not-allowed;
+}
+
 .remove-button {
-  padding: 0.4rem 0.6rem;
+  min-height: 34px;
+  padding: 0.38rem 0.58rem;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: var(--radius-control, 6px);
   background: transparent;
   color: var(--text-muted, #6b7280);
   font: inherit;
   font-size: 0.85rem;
   cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease, background-color 120ms ease;
 }
 
 .remove-button:hover {
-  border-color: #d9534f;
-  color: #b33a36;
+  border-color: color-mix(in srgb, var(--danger, #b33a36) 30%, transparent);
+  background: var(--danger-bg, #fff4f1);
+  color: var(--danger, #b33a36);
 }
 
 .empty-state {
   padding: 0.85rem;
   border: 1px dashed var(--border, #c8ccd4);
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.015);
+  border-radius: var(--radius-card, 8px);
+  background: var(--surface-subtle, rgba(0, 0, 0, 0.015));
 }
 
 .empty-state p {
@@ -68,8 +82,9 @@
   gap: 0.75rem;
   padding: 0.5rem 0.7rem;
   margin-top: 0.5rem;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border, #dfe2e8);
+  border-radius: var(--radius-control, 6px);
+  background: var(--surface-quiet, rgba(0, 0, 0, 0.05));
   font-size: 0.875rem;
 }
 
@@ -88,7 +103,7 @@
 .chips-field .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem;
+  gap: 0.38rem;
   margin: 0.45rem 0 0;
   padding: 0;
   list-style: none;
@@ -98,18 +113,21 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.2rem 0.5rem;
+  min-height: 28px;
+  padding: 0.2rem 0.52rem;
   border: 1px solid var(--border, #c8ccd4);
   border-radius: 999px;
-  background: #fff;
+  background: var(--surface, #fff);
   color: inherit;
   font: inherit;
   font-size: 0.82rem;
   cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease;
 }
 
 .chips button:hover {
-  border-color: #d9534f;
+  border-color: color-mix(in srgb, var(--danger, #b33a36) 35%, transparent);
+  background: var(--danger-bg, #fff4f1);
 }
 
 .chips button span {
@@ -129,7 +147,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.25rem 0;
+  padding: 0.3rem 0;
   font-size: 0.9rem;
   cursor: pointer;
 }
@@ -137,6 +155,7 @@
 .radio-field input {
   width: auto;
   margin: 0;
+  accent-color: var(--accent, #47506b);
 }
 
 .visually-hidden {

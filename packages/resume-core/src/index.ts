@@ -199,14 +199,36 @@ export function hasVisibleSectionContent(section: ResumeSection): boolean {
 }
 
 export function getRenderableSections(resume: ResumeDocument): ResumeSection[] {
-  return [
-    getSummarySection(resume),
-    getEducationSection(resume),
-    getExperienceSection(resume),
-    getSkillsSection(resume),
-    getHobbiesSection(resume),
-    getReferencesSection(resume),
-  ].filter(hasVisibleSectionContent);
+  const order = getSectionOrder(resume);
+  const sectionsByType: Record<ResumeSection["type"], ResumeSection> = {
+    summary: getSummarySection(resume),
+    experience: getExperienceSection(resume),
+    education: getEducationSection(resume),
+    skills: getSkillsSection(resume),
+    hobbies: getHobbiesSection(resume),
+    references: getReferencesSection(resume),
+  };
+
+  return order.map((type) => sectionsByType[type]).filter(hasVisibleSectionContent);
+}
+
+function getSectionOrder(resume: ResumeDocument): Array<ResumeSection["type"]> {
+  if (resume.meta.profileType === "earlyCareer") {
+    return ["summary", "education", "experience", "skills", "hobbies", "references"];
+  }
+
+  switch (resume.design.templateId) {
+    case "atlas":
+    case "meridian":
+    case "quill":
+    case "slate":
+    case "lumen":
+      return ["summary", "experience", "education", "skills", "hobbies", "references"];
+  }
+}
+
+export function getTemplateSectionOrder(resume: ResumeDocument): Array<ResumeSection["type"]> {
+  return getSectionOrder(resume);
 }
 
 export function extractResumeBlocks(resume: ResumeDocument): ResumeBlock[] {

@@ -1,4 +1,5 @@
 import type { ResumeDocument } from "@resume-builder/core";
+import type { CSSProperties } from "react";
 import {
   ACCENTS,
   FONT_PAIRINGS,
@@ -153,7 +154,12 @@ function Segmented<T extends string>({
       <span className="field-group-label" id={`${label}-label`}>
         {label}
       </span>
-      <div aria-labelledby={`${label}-label`} className="segmented-control" role="group">
+      <div
+        aria-labelledby={`${label}-label`}
+        className="segmented-control"
+        role="group"
+        style={{ "--segment-count": options.length } as CSSProperties}
+      >
         {options.map((option) => (
           <button
             aria-pressed={value === option.value}

@@ -56,19 +56,28 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  padding-top: 0.85rem;
-  margin-top: 0.5rem;
+  padding-top: 0.9rem;
+  margin-top: 0.6rem;
   border-top: 1px solid var(--border, #e2e5ea);
 }
 
 .export-bar button {
   flex: 1 1 auto;
+  min-height: 38px;
   padding: 0.55rem 0.8rem;
   border: 1px solid var(--border, #c8ccd4);
-  border-radius: 6px;
-  background: #fff;
+  border-radius: var(--radius-control, 6px);
+  background: var(--surface, #fff);
+  color: var(--text, #1d232a);
   font: inherit;
+  font-weight: 600;
   cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease, color 120ms ease;
+}
+
+.export-bar button:hover {
+  border-color: var(--accent, #47506b);
+  background: var(--surface-subtle, #f8fafb);
 }
 
 .export-bar button.primary {
@@ -91,6 +100,10 @@
 
 .import-error {
   margin: 0.5rem 0 0;
-  color: #b33a36;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--danger, #b33a36) 28%, transparent);
+  border-radius: var(--radius-control, 6px);
+  background: var(--danger-bg, #fff4f1);
+  color: var(--danger, #b33a36);
   font-size: 0.85rem;
 }

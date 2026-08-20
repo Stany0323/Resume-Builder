@@ -3,7 +3,7 @@
 .chooser {
   max-width: 78rem;
   min-height: 100vh;
-  padding: 3.5rem 1.5rem 4rem;
+  padding: 3.25rem 1.5rem 4rem;
   margin: 0 auto;
 }
 
@@ -41,8 +41,8 @@
   align-items: stretch;
   padding: 0.7rem 0.7rem 0.9rem;
   border: 1px solid var(--border, #dfe2e8);
-  border-radius: 10px;
-  background: #fff;
+  border-radius: var(--radius-card, 8px);
+  background: var(--surface, #fff);
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -51,7 +51,7 @@
 
 .chooser-card:hover {
   border-color: color-mix(in srgb, var(--accent, #47506b) 55%, transparent);
-  box-shadow: 0 6px 18px rgba(20, 24, 33, 0.08);
+  box-shadow: var(--shadow-pop, 0 6px 18px rgba(20, 24, 33, 0.08));
   transform: translateY(-2px);
 }
 
@@ -103,7 +103,7 @@
   overflow: hidden;
   border: 1px solid var(--border, #e6e9ee);
   border-radius: 4px;
-  background: #fff;
+  background: var(--surface, #fff);
 }
 
 .template-thumbnail-inner {
@@ -147,16 +147,18 @@
 .chooser-actions .primary {
   padding: 0.75rem 1.9rem;
   border: 1px solid var(--accent, #47506b);
-  border-radius: 6px;
+  border-radius: var(--radius-control, 6px);
   background: var(--accent, #47506b);
   color: #fff;
   font: inherit;
   font-weight: 600;
   cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease;
 }
 
 .chooser-actions .primary:hover {
-  filter: brightness(1.08);
+  border-color: var(--accent-strong, #254a43);
+  background: var(--accent-strong, #254a43);
 }
 
 @media (prefers-reduced-motion: reduce) {

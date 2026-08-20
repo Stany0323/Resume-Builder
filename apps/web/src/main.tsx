@@ -25,6 +25,7 @@ import "./styles.css";
 import "./templates.css";
 import "./sections/panels.css";
 import "./sections/fields.css";
+import "./sections/photo.css";
 import "./sections/design.css";
 import "./export/print.css";
 import "./onboarding/chooser.css";

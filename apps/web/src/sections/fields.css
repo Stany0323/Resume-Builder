@@ -25,16 +25,23 @@
   font: inherit;
   font-size: inherit;
   text-decoration: underline;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.18em;
   cursor: pointer;
+}
+
+.link-button:hover {
+  color: var(--accent-strong, #254a43);
 }
 
 /* Advisory notes are guidance, never errors — muted, never red, always
    dismissible or self-resolving. role="status", not role="alert". */
 .advisory {
   margin: 0.4rem 0 0;
-  padding: 0.5rem 0.6rem;
-  border-left: 2px solid var(--border, #c8ccd4);
-  background: rgba(0, 0, 0, 0.02);
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--border, #c8ccd4);
+  border-radius: var(--radius-control, 6px);
+  background: var(--surface-subtle, rgba(0, 0, 0, 0.02));
   color: var(--text-muted, #4a5160);
   font-size: 0.8rem;
   line-height: 1.45;
@@ -49,8 +56,8 @@
 .link-row {
   display: flex;
   align-items: flex-end;
-  gap: 0.4rem;
-  margin-top: 0.4rem;
+  gap: 0.45rem;
+  margin-top: 0.45rem;
 }
 
 .link-row .link-type {
@@ -79,17 +86,18 @@
 
 .disclosure {
   margin-top: 0.85rem;
-  padding-top: 0.6rem;
+  padding-top: 0.68rem;
   border-top: 1px solid var(--border, #e2e5ea);
 }
 
 .disclosure-toggle {
-  padding: 0.2rem 0;
+  padding: 0.22rem 0;
   border: none;
   background: none;
   color: var(--text-muted, #4a5160);
   font: inherit;
   font-size: 0.85rem;
+  font-weight: 600;
   cursor: pointer;
 }
 
@@ -99,10 +107,28 @@
 
 .disclosure-toggle span {
   display: inline-block;
-  width: 1rem;
+  width: 1.05rem;
   font-weight: 700;
 }
 
 .disclosure-body {
-  padding-top: 0.4rem;
+  padding-top: 0.48rem;
+}
+
+@media (max-width: 560px) {
+  .link-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .link-row .link-type,
+  .link-row .link-label,
+  .link-row .link-value {
+    flex-basis: auto;
+  }
+
+  .link-row .link-value,
+  .link-row .link-label {
+    grid-column: 1 / -1;
+  }
 }
