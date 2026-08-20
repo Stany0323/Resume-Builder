@@ -49,7 +49,6 @@ body,
 
 body {
   overflow: hidden;
-  padding: 8px;
 }
 
 button,
@@ -69,7 +68,7 @@ button {
 }
 
 .app-shell {
-  height: calc(100vh - 16px);
+  height: 100vh;
   min-height: 0;
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr);
@@ -532,10 +531,6 @@ button {
 }
 
 @media (max-width: 800px) {
-  body {
-    padding: 0;
-  }
-
   .app-shell {
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 48vh) minmax(0, 1fr);

@@ -11,6 +11,8 @@ const SAVE_LABEL: Record<SaveStatus, string> = {
   error: "Couldn’t save — your work is still here, but not stored locally.",
 };
 
+const SHOW_JSON_CONTROLS = false;
+
 export function ExportBar({
   onImport,
   resume,
@@ -52,19 +54,23 @@ export function ExportBar({
         >
           Download PDF
         </button>
-        <button onClick={() => downloadResumeJson(resume)} type="button">
-          Export JSON
-        </button>
-        <button onClick={() => fileInput.current?.click()} type="button">
-          Import JSON
-        </button>
-        <input
-          accept="application/json,.json"
-          onChange={(event) => void handleFile(event.target.files?.[0])}
-          ref={fileInput}
-          style={{ display: "none" }}
-          type="file"
-        />
+        {SHOW_JSON_CONTROLS ? (
+          <>
+            <button onClick={() => downloadResumeJson(resume)} type="button">
+              Export JSON
+            </button>
+            <button onClick={() => fileInput.current?.click()} type="button">
+              Import JSON
+            </button>
+            <input
+              accept="application/json,.json"
+              onChange={(event) => void handleFile(event.target.files?.[0])}
+              ref={fileInput}
+              style={{ display: "none" }}
+              type="file"
+            />
+          </>
+        ) : null}
       </div>
       {error ? <p className="import-error" role="alert">{error}</p> : null}
       <p aria-live="polite" className="save-status">{SAVE_LABEL[saveStatus]}</p>
