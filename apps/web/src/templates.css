@@ -1,0 +1,196 @@
+/* apps/web/src/templates.css — or packages/resume-render if you prefer it
+   packaged with the components. Import once; it must be loaded by BOTH the
+   editor and the measurement route, or preview/export parity breaks.
+
+   Everything here reads from the custom properties emitted by
+   designTokenStyle(). No template defines its own sizes — that is what keeps
+   the token surface honest and the render path single.
+   --------------------------------------------------------------------------- */
+
+.resume-page {
+  box-sizing: border-box;
+  width: var(--resume-page-width);
+  min-height: var(--resume-page-height);
+  padding: var(--resume-margin);
+  background: #fff;
+  color: #14161a;
+  font-family: var(--resume-font-body);
+  font-size: var(--resume-font-size);
+  line-height: var(--resume-line-height);
+}
+
+.resume-page h2,
+.resume-page h3 {
+  margin: 0;
+  font-family: var(--resume-font-heading);
+  line-height: 1.2;
+}
+
+.resume-section {
+  margin-top: var(--resume-gap-section);
+}
+
+.resume-section:first-of-type {
+  margin-top: 0;
+}
+
+.resume-item {
+  margin-top: var(--resume-gap-item);
+}
+
+.resume-item:first-of-type {
+  margin-top: 0;
+}
+
+.resume-item p {
+  margin: 0;
+}
+
+.resume-bullets {
+  margin: var(--resume-gap-item) 0 0;
+  padding-left: 1.05em;
+}
+
+.resume-bullets li {
+  margin-top: var(--resume-gap-bullet);
+}
+
+.resume-bullets li:first-child {
+  margin-top: 0;
+}
+
+/* Typesetting rules. These are the CSS half of the orphan/widow story — the
+   measured engine decides breaks, but print needs to agree. */
+.resume-section h3,
+.resume-item p:first-child {
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+.resume-item {
+  break-inside: avoid-page;
+}
+
+/* ═══════════════════════════════════════════════════════════ atlas
+   US-style résumé: serif, dense, ruled section headings, compact header.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.resume-page[data-template="atlas"] .resume-header {
+  padding-bottom: 0.5rem;
+  margin-bottom: var(--resume-gap-section);
+  border-bottom: 2px solid var(--resume-accent);
+}
+
+.resume-page[data-template="atlas"] .resume-header h2 {
+  font-size: calc(var(--resume-font-size) * var(--resume-type-ratio) * 1.6);
+  letter-spacing: -0.005em;
+}
+
+.resume-page[data-template="atlas"] .resume-header > p {
+  margin: 0.1rem 0 0;
+  font-size: calc(var(--resume-font-size) * 1.05);
+}
+
+.resume-page[data-template="atlas"] .resume-header ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.75rem;
+  margin: 0.35rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: calc(var(--resume-font-size) * 0.92);
+}
+
+.resume-page[data-template="atlas"] .resume-section h3 {
+  padding-bottom: 0.15rem;
+  border-bottom: 1px solid var(--resume-accent);
+  color: var(--resume-accent);
+  font-size: calc(var(--resume-font-size) * var(--resume-type-ratio));
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.resume-page[data-template="atlas"] .resume-item > p:first-child {
+  margin-top: 0.25rem;
+}
+
+/* ═══════════════════════════════════════════════════════════ meridian
+   International CV: sans, generous whitespace, no rules, strong header
+   hierarchy, optional photo.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.resume-page[data-template="meridian"] {
+  font-family: var(--resume-font-body);
+}
+
+.resume-page[data-template="meridian"] .resume-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  margin-bottom: calc(var(--resume-gap-section) * 1.4);
+}
+
+.resume-page[data-template="meridian"] .resume-header-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.resume-page[data-template="meridian"] .resume-header h2 {
+  font-size: calc(var(--resume-font-size) * var(--resume-type-ratio) * 2.1);
+  font-weight: 300;
+  letter-spacing: -0.015em;
+}
+
+.resume-page[data-template="meridian"] .resume-header > div > p:first-of-type {
+  margin: 0.25rem 0 0;
+  color: var(--resume-accent);
+  font-size: calc(var(--resume-font-size) * 1.15);
+  font-weight: 500;
+}
+
+.resume-page[data-template="meridian"] .resume-header ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1rem;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: calc(var(--resume-font-size) * 0.9);
+}
+
+.resume-page[data-template="meridian"] .resume-section h3 {
+  color: var(--resume-accent);
+  font-size: calc(var(--resume-font-size) * 0.92);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.resume-page[data-template="meridian"] .resume-item {
+  margin-top: calc(var(--resume-gap-item) * 1.3);
+}
+
+.resume-page[data-template="meridian"] .resume-item > p:first-child {
+  margin-top: 0.4rem;
+}
+
+/* Photo — meridian only. Square or circle, no filters, no positioning. */
+.resume-photo {
+  flex: 0 0 auto;
+  width: 84px;
+  height: 84px;
+  object-fit: cover;
+  background: #eceef1;
+}
+
+.resume-photo[data-shape="circle"] {
+  border-radius: 50%;
+}
+
+.resume-photo[data-shape="square"] {
+  border-radius: 3px;
+}
+
+.resume-page[data-template="atlas"] .resume-photo {
+  display: none; /* atlas never shows a photo, whatever the document holds */
+}

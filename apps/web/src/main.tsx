@@ -1,247 +1,302 @@
 import React from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import fixture1Page from "../../../fixtures/fixture-1page.v2.json";
-import fixture3Page from "../../../fixtures/fixture-3page.v2.json";
 import {
   bulletsToText,
   reconcileLines,
-  sampleResume,
   type EducationItem,
   type ExperienceItem,
-  type PageSize,
   type ResumeDocument,
 } from "@resume-builder/core";
-import { ResumePreview } from "@resume-builder/render";
+import { ResumePreview, type Accent } from "@resume-builder/render";
+
+import { TemplateChooser } from "./onboarding/TemplateChooser";
+import { DesignPanel } from "./sections/DesignPanel";
+import { ExportBar } from "./sections/ExportBar";
+import { PersonalPanel } from "./sections/PersonalPanel";
+import { SummaryPanel } from "./sections/SummaryPanel";
 import { HobbiesPanel, ReferencesPanel, SkillsPanel } from "./sections/panels";
+import { TextField } from "./sections/fields";
+import { AddButton, RemoveButton, UndoRow, makeId, useItemList } from "./sections/list-controls";
+import { createBlankResume } from "./state/blank-resume";
+import { createAutosave, loadWorkingDocument, type SaveStatus } from "./state/persistence";
+
 import "./styles.css";
+import "./templates.css";
 import "./sections/panels.css";
+import "./sections/fields.css";
+import "./sections/design.css";
+import "./export/print.css";
+import "./onboarding/chooser.css";
 
-const resumes = {
-  sample: sampleResume,
-  "fixture-1page": fixture1Page as ResumeDocument,
-  "fixture-3page": fixture3Page as ResumeDocument,
-};
-
-type ResumeKey = keyof typeof resumes;
-type PersonalTextField = "firstName" | "lastName" | "headline" | "dateOfBirth" | "location" | "email" | "phone";
-type ExperienceTextField = "role" | "organization" | "location" | "startDate" | "endDate" | "summary";
-type EducationTextField = "degree" | "institution" | "location" | "startDate" | "endDate" | "detail";
+type ExperienceTextField = "role" | "organization" | "location";
+type EducationTextField = "degree" | "institution" | "location";
 
 const months = [
-  ["01", "January"],
-  ["02", "February"],
-  ["03", "March"],
-  ["04", "April"],
-  ["05", "May"],
-  ["06", "June"],
-  ["07", "July"],
-  ["08", "August"],
-  ["09", "September"],
-  ["10", "October"],
-  ["11", "November"],
-  ["12", "December"],
+  ["01", "January"], ["02", "February"], ["03", "March"], ["04", "April"],
+  ["05", "May"], ["06", "June"], ["07", "July"], ["08", "August"],
+  ["09", "September"], ["10", "October"], ["11", "November"], ["12", "December"],
 ] as const;
 
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: 62 }, (_, index) => String(currentYear + 1 - index));
 
-function App() {
-  const [resumeKey, setResumeKey] = useState<ResumeKey>("fixture-1page");
-  const [resume, setResume] = useState<ResumeDocument>(() => structuredClone(resumes["fixture-1page"]));
-  const orderedExperience = useMemo(() => sortDatedItems(resume.content.experience.items), [resume.content.experience.items]);
-  const orderedEducation = useMemo(() => sortDatedItems(resume.content.education.items), [resume.content.education.items]);
+/* ------------------------------------------------------------------- Root */
 
-  const loadResume = (key: ResumeKey) => {
-    setResumeKey(key);
-    setResume(structuredClone(resumes[key]));
-  };
+type Phase = "loading" | "choosing" | "editing";
 
-  const updateDesign = (pageSize: PageSize) => {
-    setResume((current) => ({ ...current, design: { ...current.design, pageSize } }));
-  };
+/**
+ * Boot order: read IndexedDB → if there's a working document, resume editing;
+ * if not, this is a first run, so show the template chooser over a blank
+ * document. The chooser and the editor are never mounted together (see the
+ * caution in TemplateChooser).
+ */
+function Root() {
+  const [phase, setPhase] = useState<Phase>("loading");
+  const [resume, setResume] = useState<ResumeDocument | null>(null);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const autosave = useRef(createAutosave(setSaveStatus));
 
+  useEffect(() => {
+    let cancelled = false;
+
+    void loadWorkingDocument().then((stored) => {
+      if (cancelled) {
+        return;
+      }
+      setResume(stored ?? createBlankResume());
+      setPhase(stored ? "editing" : "choosing");
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (phase === "editing" && resume) {
+      autosave.current.save(resume);
+    }
+  }, [phase, resume]);
+
+  useEffect(() => {
+    const flush = () => void autosave.current.flush();
+    window.addEventListener("beforeunload", flush);
+    return () => window.removeEventListener("beforeunload", flush);
+  }, []);
+
+  if (phase === "loading" || !resume) {
+    return <p className="boot">Loading…</p>;
+  }
+
+  if (phase === "choosing") {
+    return (
+      <TemplateChooser
+        onChoose={(templateId, accent: Accent) => {
+          setResume({ ...resume, design: { ...resume.design, templateId, accent } });
+          setPhase("editing");
+        }}
+        onSkip={() => setPhase("editing")}
+      />
+    );
+  }
+
+  return (
+    <Editor
+      onChooseTemplate={() => setPhase("choosing")}
+      resume={resume}
+      saveStatus={saveStatus}
+      setResume={setResume}
+    />
+  );
+}
+
+/* ----------------------------------------------------------------- Editor */
+
+function Editor({
+  onChooseTemplate,
+  resume,
+  saveStatus,
+  setResume,
+}: {
+  onChooseTemplate: () => void;
+  resume: ResumeDocument;
+  saveStatus: SaveStatus;
+  setResume: (resume: ResumeDocument) => void;
+}) {
   const setContent = <TKey extends keyof ResumeDocument["content"]>(
     key: TKey,
     value: ResumeDocument["content"][TKey],
-  ) => {
-    setResume((current) => ({
-      ...current,
-      content: {
-        ...current.content,
-        [key]: value,
-      },
-    }));
-  };
+  ) => setResume({ ...resume, content: { ...resume.content, [key]: value } });
 
-  const updatePersonal = (field: PersonalTextField, value: string) => {
-    setResume((current) => ({
-      ...current,
-      personal: {
-        ...current.personal,
-        [field]: optionalPersonalFields.includes(field) ? emptyToUndefined(value) : value,
-      },
-    }));
-  };
+  const experience = useItemList(resume.content.experience.items, (items) =>
+    setContent("experience", { items }));
+  const education = useItemList(resume.content.education.items, (items) =>
+    setContent("education", { items }));
 
-  const updateExperience = (id: string, field: ExperienceTextField, value: string) => {
-    setResume((current) => ({
-      ...current,
-      content: {
-        ...current.content,
-        experience: {
-          items: current.content.experience.items.map((item) => item.id === id ? { ...item, [field]: value } : item),
-        },
-      },
-    }));
-  };
+  // Sorted for display only — the stored order is never rewritten by sorting.
+  const orderedExperience = useMemo(
+    () => sortDatedItems(resume.content.experience.items),
+    [resume.content.experience.items],
+  );
+  const orderedEducation = useMemo(
+    () => sortDatedItems(resume.content.education.items),
+    [resume.content.education.items],
+  );
 
-  const updateEducation = (id: string, field: EducationTextField, value: string) => {
-    setResume((current) => ({
-      ...current,
-      content: {
-        ...current.content,
-        education: {
-          items: current.content.education.items.map((item) => item.id === id ? { ...item, [field]: value } : item),
-        },
-      },
-    }));
-  };
+  const addExperience = () =>
+    experience.add({
+      id: makeId("x"),
+      order: resume.content.experience.items.length,
+      role: "",
+      organization: "",
+      startDate: currentMonthValue(),
+      endDate: "present",
+      bullets: [],
+    } as ExperienceItem);
 
-  const updateExperienceBullets = (id: string, value: string) => {
-    setResume((current) => ({
-      ...current,
-      content: {
-        ...current.content,
-        experience: {
-          items: current.content.experience.items.map((item) => item.id === id
-            ? { ...item, bullets: reconcileLines(item.bullets, value, makeBulletId) }
-            : item),
-        },
-      },
-    }));
-  };
-
-  const updateEducationBullets = (id: string, value: string) => {
-    setResume((current) => ({
-      ...current,
-      content: {
-        ...current.content,
-        education: {
-          items: current.content.education.items.map((item) => item.id === id
-            ? { ...item, bullets: reconcileLines(item.bullets, value, makeBulletId) }
-            : item),
-        },
-      },
-    }));
-  };
+  const addEducation = () =>
+    education.add({
+      id: makeId("e"),
+      order: resume.content.education.items.length,
+      degree: "",
+      institution: "",
+      startDate: currentMonthValue(),
+      endDate: currentMonthValue(),
+      bullets: [],
+    } as EducationItem);
 
   return (
     <main className="app-shell">
       <aside className="toolbar" aria-label="Resume controls">
         <h1>Resume Builder</h1>
-        <label>
-          Fixture
-          <select value={resumeKey} onChange={(event) => loadResume(event.target.value as ResumeKey)}>
-            <option value="sample">Sample</option>
-            <option value="fixture-1page">Sprint 0: one page</option>
-            <option value="fixture-3page">Sprint 0: hostile</option>
-          </select>
-        </label>
-        <div className="segmented-control" aria-label="Page size">
-          {(["A4", "Letter"] as const).map((size) => (
-            <button
-              aria-pressed={resume.design.pageSize === size}
-              key={size}
-              onClick={() => updateDesign(size)}
-              type="button"
-            >
-              {size}
-            </button>
-          ))}
-        </div>
+
+        <section className="form-section" aria-labelledby="design-heading">
+          <FormSectionHeader id="design-heading" title="Design" />
+          <DesignPanel
+            design={resume.design}
+            onChange={(patch) => setResume({ ...resume, design: { ...resume.design, ...patch } })}
+          />
+          <button className="link-button" onClick={onChooseTemplate} type="button">
+            Browse templates
+          </button>
+        </section>
+
         <section className="form-section" aria-labelledby="personal-heading">
-          <h2 id="personal-heading">Personal Info</h2>
-          <div className="field-grid two-columns">
-            <TextField label="First name" value={resume.personal.firstName} onChange={(value) => updatePersonal("firstName", value)} />
-            <TextField label="Last name" value={resume.personal.lastName} onChange={(value) => updatePersonal("lastName", value)} />
-          </div>
-          <TextField label="Headline" value={resume.personal.headline ?? ""} onChange={(value) => updatePersonal("headline", value)} />
-          <TextField label="Email" value={resume.personal.email} onChange={(value) => updatePersonal("email", value)} />
-          <TextField label="Phone" value={resume.personal.phone} onChange={(value) => updatePersonal("phone", value)} />
-          <TextField label="Location" value={resume.personal.location ?? ""} onChange={(value) => updatePersonal("location", value)} />
-          <TextField label="Date of birth" value={resume.personal.dateOfBirth ?? ""} onChange={(value) => updatePersonal("dateOfBirth", value)} />
+          <FormSectionHeader id="personal-heading" title="Personal Info" />
+          <PersonalPanel
+            onChange={(patch) => setResume({ ...resume, personal: { ...resume.personal, ...patch } })}
+            personal={resume.personal}
+            templateId={resume.design.templateId}
+          />
         </section>
+
         <section className="form-section" aria-labelledby="summary-heading">
-          <h2 id="summary-heading">Summary</h2>
-          <label>
-            Summary
-            <textarea
-              rows={5}
-              value={resume.content.summary.text}
-              onChange={(event) => setResume((current) => ({
-                ...current,
-                content: { ...current.content, summary: { text: event.target.value } },
-              }))}
-            />
-          </label>
+          <FormSectionHeader id="summary-heading" title="Summary" />
+          <SummaryPanel onChange={(text) => setContent("summary", { text })} text={resume.content.summary.text} />
         </section>
-        <section className="form-section" aria-labelledby="education-heading">
-          <FormSectionHeader id="education-heading" title="Education" count={orderedEducation.length} />
-          <p className="form-note">Ordered automatically, most recent first.</p>
-          {orderedEducation.map((item) => (
-            <div className="item-editor" key={item.id}>
-              <TextField label="Degree" value={item.degree} onChange={(value) => updateEducation(item.id, "degree", value)} />
-              <TextField label="Institution" value={item.institution} onChange={(value) => updateEducation(item.id, "institution", value)} />
-              <DateRangeFields
-                endDate={item.endDate}
-                onEndDateChange={(value) => updateEducation(item.id, "endDate", value)}
-                onStartDateChange={(value) => updateEducation(item.id, "startDate", value)}
-                startDate={item.startDate}
-              />
-              <DateValidationMessage endDate={item.endDate} startDate={item.startDate} />
-              <BulletsField
-                bullets={item.bullets}
-                onChange={(value) => updateEducationBullets(item.id, value)}
-              />
-            </div>
-          ))}
-        </section>
+
         <section className="form-section" aria-labelledby="experience-heading">
-          <FormSectionHeader id="experience-heading" title="Experience" count={orderedExperience.length} />
-          <p className="form-note">Ordered automatically, most recent first.</p>
+          <FormSectionHeader count={orderedExperience.length} id="experience-heading" title="Experience" />
+          {orderedExperience.length > 0 ? (
+            <p className="form-note">Ordered automatically, most recent first.</p>
+          ) : (
+            <p className="form-note">
+              No roles yet. Add your most recent position first — the rest sort themselves.
+            </p>
+          )}
           {orderedExperience.map((item) => (
             <div className="item-editor" key={item.id}>
-              <TextField label="Role" value={item.role} onChange={(value) => updateExperience(item.id, "role", value)} />
-              <TextField label="Organization" value={item.organization} onChange={(value) => updateExperience(item.id, "organization", value)} />
+              <div className="item-editor-header">
+                <TextField
+                  label="Role"
+                  onChange={(value) => experience.update(item.id, { role: value })}
+                  value={item.role}
+                />
+                <RemoveButton
+                  label={`Remove ${item.role || "role"}`}
+                  onRemove={() => experience.remove(item.id)}
+                />
+              </div>
+              <TextField
+                label="Organisation"
+                onChange={(value) => experience.update(item.id, { organization: value })}
+                value={item.organization}
+              />
+              <TextField
+                label="Location"
+                onChange={(value) => experience.update(item.id, { location: emptyToUndefined(value) })}
+                value={item.location ?? ""}
+              />
               <DateRangeFields
                 endDate={item.endDate}
-                onEndDateChange={(value) => updateExperience(item.id, "endDate", value)}
-                onStartDateChange={(value) => updateExperience(item.id, "startDate", value)}
+                onEndDateChange={(value) => experience.update(item.id, { endDate: value })}
+                onStartDateChange={(value) => experience.update(item.id, { startDate: value })}
                 startDate={item.startDate}
               />
               <DateValidationMessage endDate={item.endDate} startDate={item.startDate} />
               <BulletsField
                 bullets={item.bullets}
-                onChange={(value) => updateExperienceBullets(item.id, value)}
+                onChange={(value) =>
+                  experience.update(item.id, { bullets: reconcileLines(item.bullets, value, makeBulletId) })}
               />
             </div>
           ))}
+          <UndoRow removal={experience.removal} what="Role" />
+          <AddButton label="Add a role" onClick={addExperience} />
         </section>
+
+        <section className="form-section" aria-labelledby="education-heading">
+          <FormSectionHeader count={orderedEducation.length} id="education-heading" title="Education" />
+          {orderedEducation.length === 0 ? (
+            <p className="form-note">Add your highest qualification.</p>
+          ) : null}
+          {orderedEducation.map((item) => (
+            <div className="item-editor" key={item.id}>
+              <div className="item-editor-header">
+                <TextField
+                  label="Qualification"
+                  onChange={(value) => education.update(item.id, { degree: value })}
+                  value={item.degree}
+                />
+                <RemoveButton
+                  label={`Remove ${item.degree || "qualification"}`}
+                  onRemove={() => education.remove(item.id)}
+                />
+              </div>
+              <TextField
+                label="Institution"
+                onChange={(value) => education.update(item.id, { institution: value })}
+                value={item.institution}
+              />
+              <DateRangeFields
+                endDate={item.endDate}
+                onEndDateChange={(value) => education.update(item.id, { endDate: value })}
+                onStartDateChange={(value) => education.update(item.id, { startDate: value })}
+                startDate={item.startDate}
+              />
+              <DateValidationMessage endDate={item.endDate} startDate={item.startDate} />
+              <BulletsField
+                bullets={item.bullets}
+                onChange={(value) =>
+                  education.update(item.id, { bullets: reconcileLines(item.bullets, value, makeBulletId) })}
+              />
+            </div>
+          ))}
+          <UndoRow removal={education.removal} what="Qualification" />
+          <AddButton label="Add a qualification" onClick={addEducation} />
+        </section>
+
         <section className="form-section" aria-labelledby="skills-heading">
-          <FormSectionHeader id="skills-heading" title="Skills" count={resume.content.skills.items.length} />
-          <SkillsPanel
-            items={resume.content.skills.items}
-            onChange={(items) => setContent("skills", { items })}
-          />
+          <FormSectionHeader count={resume.content.skills.items.length} id="skills-heading" title="Skills" />
+          <SkillsPanel items={resume.content.skills.items} onChange={(items) => setContent("skills", { items })} />
         </section>
+
         <section className="form-section" aria-labelledby="hobbies-heading">
-          <FormSectionHeader id="hobbies-heading" title="Hobbies" count={resume.content.hobbies.items.length} />
-          <HobbiesPanel
-            items={resume.content.hobbies.items}
-            onChange={(items) => setContent("hobbies", { items })}
-          />
+          <FormSectionHeader count={resume.content.hobbies.items.length} id="hobbies-heading" title="Hobbies" />
+          <HobbiesPanel items={resume.content.hobbies.items} onChange={(items) => setContent("hobbies", { items })} />
         </section>
+
         <section className="form-section" aria-labelledby="references-heading">
           <FormSectionHeader
             count={resume.content.references.mode === "listed" ? resume.content.references.items.length : 0}
@@ -254,7 +309,10 @@ function App() {
             onChange={(references) => setContent("references", references)}
           />
         </section>
+
+        <ExportBar onImport={setResume} resume={resume} saveStatus={saveStatus} />
       </aside>
+
       <section className="preview-stage" aria-label="Resume preview">
         <ResumePreview resume={resume} />
       </section>
@@ -262,13 +320,10 @@ function App() {
   );
 }
 
-const optionalPersonalFields: PersonalTextField[] = ["headline", "dateOfBirth", "location"];
+/* ---------------------------------------------------------------- helpers */
 
 function sortDatedItems<T extends { endDate: string; order: number }>(items: T[]) {
-  return [...items].sort((a, b) => {
-    const dateCompare = dateSortValue(b.endDate) - dateSortValue(a.endDate);
-    return dateCompare || a.order - b.order;
-  });
+  return [...items].sort((a, b) => dateSortValue(b.endDate) - dateSortValue(a.endDate) || a.order - b.order);
 }
 
 function dateSortValue(value: string) {
@@ -280,21 +335,21 @@ function emptyToUndefined(value: string) {
   return trimmed ? trimmed : undefined;
 }
 
-function FormSectionHeader({ count, id, title }: { count: number; id: string; title: string }) {
+function currentMonthValue() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function makeBulletId() {
+  return `b-${crypto.randomUUID()}`;
+}
+
+function FormSectionHeader({ count, id, title }: { count?: number; id: string; title: string }) {
   return (
     <div className="form-section-header">
       <h2 id={id}>{title}</h2>
-      <span>{count}</span>
+      {typeof count === "number" ? <span>{count}</span> : null}
     </div>
-  );
-}
-
-function TextField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
-  return (
-    <label>
-      {label}
-      <input value={value} onChange={(event) => onChange(event.target.value)} />
-    </label>
   );
 }
 
@@ -305,7 +360,6 @@ function BulletsField({
   bullets: Array<{ id: string; order: number; text: string }>;
   onChange: (value: string) => void;
 }) {
-  const text = bulletsToText(bullets);
   const longest = bullets.reduce((max, bullet) => Math.max(max, bullet.text.length), 0);
 
   return (
@@ -313,12 +367,13 @@ function BulletsField({
       Achievements — one per line
       <textarea
         className="bullets-textarea"
-        rows={Math.max(3, Math.min(8, bullets.length + 1))}
-        value={text}
         onChange={(event) => onChange(event.target.value)}
+        rows={Math.max(3, Math.min(8, bullets.length + 1))}
+        value={bulletsToText(bullets)}
       />
       <span className="counter-line">
-        {bullets.length} {bullets.length === 1 ? "bullet" : "bullets"} · longest {longest} characters
+        {bullets.length} {bullets.length === 1 ? "bullet" : "bullets"}
+        {longest > 0 ? ` · longest ${longest} characters` : ""}
       </span>
     </label>
   );
@@ -339,15 +394,15 @@ function DateRangeFields({
 
   return (
     <div className="date-range-fields">
-      <MonthYearField label="Start" value={startDate} onChange={onStartDateChange} />
-      <MonthYearField disabled={isCurrent} label="End" value={isCurrent ? "" : endDate} onChange={onEndDateChange} />
+      <MonthYearField label="Start" onChange={onStartDateChange} value={startDate} />
+      <MonthYearField disabled={isCurrent} label="End" onChange={onEndDateChange} value={isCurrent ? "" : endDate} />
       <label className="checkbox-field">
         <input
           checked={isCurrent}
           onChange={(event) => onEndDateChange(event.target.checked ? "present" : currentMonthValue())}
           type="checkbox"
         />
-        Current role
+        Current
       </label>
     </div>
   );
@@ -371,20 +426,20 @@ function MonthYearField({
       <legend>{label}</legend>
       <select
         aria-label={`${label} month`}
+        onChange={(event) => onChange(`${year}-${event.target.value}`)}
         value={month}
-        onChange={(event) => onChange(composeMonthYear(year, event.target.value))}
       >
-        {months.map(([value, name]) => (
-          <option key={value} value={value}>{name}</option>
+        {months.map(([candidate, name]) => (
+          <option key={candidate} value={candidate}>{name}</option>
         ))}
       </select>
       <select
         aria-label={`${label} year`}
+        onChange={(event) => onChange(`${event.target.value}-${month}`)}
         value={year}
-        onChange={(event) => onChange(composeMonthYear(event.target.value, month))}
       >
-        {years.map((year) => (
-          <option key={year} value={year}>{year}</option>
+        {years.map((candidate) => (
+          <option key={candidate} value={candidate}>{candidate}</option>
         ))}
       </select>
     </fieldset>
@@ -407,21 +462,8 @@ function parseMonthYear(value: string) {
   };
 }
 
-function composeMonthYear(year: string, month: string) {
-  return `${year}-${month}`;
-}
-
-function currentMonthValue() {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-}
-
-function makeBulletId() {
-  return `b-${crypto.randomUUID()}`;
-}
-
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    <Root />
   </React.StrictMode>,
 );
