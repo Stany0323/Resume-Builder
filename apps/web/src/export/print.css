@@ -1,0 +1,96 @@
+/* Append to apps/web/src/styles.css
+   ---------------------------------------------------------------------------
+   PRINT: page-box setup and app-chrome hiding ONLY.
+
+   Plan §9.2 tripwire — if rules for `.resume-page`, `.resume-section`,
+   `.resume-item` or `.resume-bullets` ever appear in this block (different
+   spacing, type, or break behaviour), the print path has forked from the
+   preview and must be deleted. Server PDF is the source of truth.
+
+   Everything below either hides non-resume UI or removes the editor's own
+   viewport chrome. None of it restyles the resume.
+   --------------------------------------------------------------------------- */
+
+@media print {
+  .toolbar,
+  .segmented-control,
+  .add-button,
+  .remove-button,
+  .undo-row,
+  .empty-state,
+  .form-note,
+  .counter-line {
+    display: none !important;
+  }
+
+  html,
+  body,
+  .app-shell,
+  .preview-stage {
+    margin: 0;
+    padding: 0;
+    background: #fff;
+    overflow: visible;
+  }
+
+  .app-shell {
+    display: block;
+  }
+
+  .preview-stage {
+    box-shadow: none;
+    border: none;
+  }
+
+  /* Accent rules and any background fills must survive the print pipeline. */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* Export controls at the foot of the form panel. "Your data is never trapped"
+   is a stated product bet — these stay visible rather than living in a menu. */
+
+.export-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-top: 0.85rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--border, #e2e5ea);
+}
+
+.export-bar button {
+  flex: 1 1 auto;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--border, #c8ccd4);
+  border-radius: 6px;
+  background: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.export-bar button.primary {
+  border-color: var(--accent, #47506b);
+  background: var(--accent, #47506b);
+  color: #fff;
+  font-weight: 600;
+}
+
+.export-bar button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.save-status {
+  padding-top: 0.5rem;
+  color: var(--text-muted, #8a8f9a);
+  font-size: 0.8rem;
+}
+
+.import-error {
+  margin: 0.5rem 0 0;
+  color: #b33a36;
+  font-size: 0.85rem;
+}

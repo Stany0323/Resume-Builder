@@ -1,0 +1,73 @@
+import { useRef, useState } from "react";
+import type { ResumeDocument } from "@resume-builder/core";
+import { downloadResumeJson, readResumeFile, ResumeImportError } from "../state/document-file";
+import { canPrintReliably, printResume } from "../export/print-export";
+import type { SaveStatus } from "../state/persistence";
+
+const SAVE_LABEL: Record<SaveStatus, string> = {
+  idle: "",
+  saving: "Saving…",
+  saved: "Saved",
+  error: "Couldn’t save — your work is still here, but not stored locally.",
+};
+
+export function ExportBar({
+  onImport,
+  resume,
+  saveStatus,
+}: {
+  onImport: (resume: ResumeDocument) => void;
+  resume: ResumeDocument;
+  saveStatus: SaveStatus;
+}) {
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFile = async (file: File | undefined) => {
+    if (!file) {
+      return;
+    }
+
+    setError(null);
+    try {
+      onImport(await readResumeFile(file));
+    } catch (cause) {
+      setError(cause instanceof ResumeImportError ? cause.message : "That file couldn’t be read.");
+    } finally {
+      if (fileInput.current) {
+        fileInput.current.value = "";
+      }
+    }
+  };
+
+  return (
+    <div className="export-section">
+      <div className="export-bar">
+        <button
+          className="primary"
+          disabled={!canPrintReliably()}
+          onClick={() => printResume(resume)}
+          title={canPrintReliably() ? undefined : "Printing to PDF isn’t reliable on mobile — use a desktop browser."}
+          type="button"
+        >
+          Download PDF
+        </button>
+        <button onClick={() => downloadResumeJson(resume)} type="button">
+          Export JSON
+        </button>
+        <button onClick={() => fileInput.current?.click()} type="button">
+          Import JSON
+        </button>
+        <input
+          accept="application/json,.json"
+          onChange={(event) => void handleFile(event.target.files?.[0])}
+          ref={fileInput}
+          style={{ display: "none" }}
+          type="file"
+        />
+      </div>
+      {error ? <p className="import-error" role="alert">{error}</p> : null}
+      <p aria-live="polite" className="save-status">{SAVE_LABEL[saveStatus]}</p>
+    </div>
+  );
+}
