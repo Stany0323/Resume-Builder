@@ -3,15 +3,19 @@ import fixture1Page from "../../../fixtures/fixture-1page.json";
 import fixture3Page from "../../../fixtures/fixture-3page.json";
 import {
   extractResumeBlocks,
+  hasVisibleSectionContent,
+  migrateResumeDocument,
+  PAGE_BOXES,
   paginateBlocks,
   type MeasureBlock,
   type PageBox,
   type ResumeBlock,
   type ResumeDocument,
+  type LegacyResumeDocumentV1,
 } from "./index";
 
-const a4: PageBox = { width: 595, height: 842 };
-const letter: PageBox = { width: 612, height: 792 };
+const a4 = PAGE_BOXES.A4;
+const letter = PAGE_BOXES.Letter;
 
 const measureFixtureBlock: MeasureBlock = (block, pageBox) => {
   const lineHeight = block.kind === "header" ? 18 : 14;
@@ -25,22 +29,37 @@ const measureFixtureBlock: MeasureBlock = (block, pageBox) => {
 
 describe("resume pagination primitives", () => {
   it("extracts visible blocks in render order", () => {
-    const blocks = extractResumeBlocks(fixture3Page as ResumeDocument);
+    const blocks = extractResumeBlocks(migrateResumeDocument(fixture3Page as LegacyResumeDocumentV1));
 
     expect(blocks[0]?.id).toBe("header");
-    expect(blocks.map((block) => block.id)).toContain("section:s2:item:i2:bullet:b1");
-    expect(blocks.map((block) => block.id)).not.toContain("section:s11:item:i22");
+    expect(blocks.map((block) => block.id)).toContain("section:experience:item:i2:bullet:b1");
+    expect(blocks.map((block) => block.id)).not.toContain("section:hobbies:item:i22");
     expect(blocks.map((block) => block.content).join(" ")).not.toContain(
       "If this text appears in any rendered output",
     );
   });
 
+  it("skips visible sections that have no visible items", () => {
+    const resume: ResumeDocument = {
+      ...migrateResumeDocument(fixture1Page as LegacyResumeDocumentV1),
+      content: {
+        ...migrateResumeDocument(fixture1Page as LegacyResumeDocumentV1).content,
+        summary: { text: "" },
+        education: { items: [] },
+        experience: { items: [] },
+        skills: { items: [] },
+        hobbies: { items: [] },
+        references: { mode: "listed", items: [] },
+      },
+    };
+
+    expect(hasVisibleSectionContent({ id: "hobbies", type: "hobbies", title: "Hobbies", items: [] })).toBe(false);
+    expect(extractResumeBlocks(resume).map((block) => block.id)).toEqual(["header"]);
+  });
+
   it("keeps the baseline fixture on one A4 and Letter page", () => {
     for (const pageBox of [a4, letter]) {
-      const blocks = extractResumeBlocks({ ...(fixture1Page as ResumeDocument), design: {
-        ...(fixture1Page as ResumeDocument).design,
-        pageSize: pageBox === a4 ? "A4" : "Letter",
-      } });
+      const blocks = extractResumeBlocks(migrateResumeDocument(fixture1Page as LegacyResumeDocumentV1));
       const result = paginateBlocks(blocks, pageBox, measureFixtureBlock);
 
       expect(result.pages).toHaveLength(1);
@@ -49,7 +68,7 @@ describe("resume pagination primitives", () => {
   });
 
   it("produces width-sensitive breaks for the hostile fixture", () => {
-    const blocks = extractResumeBlocks(fixture3Page as ResumeDocument);
+    const blocks = extractResumeBlocks(migrateResumeDocument(fixture3Page as LegacyResumeDocumentV1));
     const a4Result = paginateBlocks(blocks, a4, measureFixtureBlock);
     const letterResult = paginateBlocks(blocks, letter, measureFixtureBlock);
 
@@ -58,8 +77,18 @@ describe("resume pagination primitives", () => {
     expect(a4Result.breakBlockIds).not.toEqual(letterResult.breakBlockIds);
   });
 
+  it("keeps item titles with their first child block", () => {
+    const blocks = extractResumeBlocks(migrateResumeDocument(fixture3Page as LegacyResumeDocumentV1));
+
+    for (const pageBox of [a4, letter]) {
+      const result = paginateBlocks(blocks, pageBox, measureFixtureBlock);
+
+      expect(findItemTitleOrphan(result.pages)).toBeNull();
+    }
+  });
+
   it("lets density alter breaks without rendering", () => {
-    const blocks = extractResumeBlocks(fixture3Page as ResumeDocument);
+    const blocks = extractResumeBlocks(migrateResumeDocument(fixture3Page as LegacyResumeDocumentV1));
     const densityBreaks = ["compact", "normal", "relaxed"].map((density) => {
       const densityMeasure = (block: ResumeBlock, pageBox: PageBox) => {
         const multiplier = density === "compact" ? 0.72 : density === "relaxed" ? 1.34 : 1;
@@ -70,6 +99,18 @@ describe("resume pagination primitives", () => {
     });
 
     expect(new Set(densityBreaks).size).toBeGreaterThan(1);
+  });
+
+  it("reports blocks that cannot fit on any page", () => {
+    const oversizedBlock: ResumeBlock = {
+      id: "oversized",
+      kind: "bullet",
+      content: "x".repeat(10_000),
+    };
+
+    const result = paginateBlocks([oversizedBlock], a4, measureFixtureBlock);
+
+    expect(result.overflowBlockIds).toEqual(["oversized"]);
   });
 });
 
@@ -87,4 +128,21 @@ function baseHeightByKind(block: ResumeBlock) {
     case "bullet":
       return 3;
   }
+}
+
+function findItemTitleOrphan(pages: Array<{ blocks: ResumeBlock[] }>) {
+  for (let index = 0; index < pages.length - 1; index += 1) {
+    const lastBlock = pages[index].blocks.at(-1);
+    const firstNextBlock = pages[index + 1].blocks[0];
+
+    if (
+      lastBlock?.kind === "item" &&
+      firstNextBlock?.itemId === lastBlock.itemId &&
+      firstNextBlock.sectionId === lastBlock.sectionId
+    ) {
+      return { pageIndex: index, itemId: lastBlock.itemId, nextBlockId: firstNextBlock.id };
+    }
+  }
+
+  return null;
 }

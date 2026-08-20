@@ -8,14 +8,18 @@
     ".": "./src/index.tsx"
   },
   "scripts": {
-    "typecheck": "tsc -p tsconfig.json --pretty false"
+    "typecheck": "tsc -p tsconfig.json --pretty false",
+    "test": "vitest run"
   },
   "dependencies": {
     "@resume-builder/core": "*",
-    "react": "^19.1.1"
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
   },
   "devDependencies": {
     "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "vitest": "^3.2.4",
     "typescript": "^5.9.2"
   }
 }

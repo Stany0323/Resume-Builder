@@ -1,6 +1,17 @@
+import { SECTION_BLOCK_EXTRACTORS } from "./blocks/registry";
+export { SECTION_BLOCK_EXTRACTORS, SECTION_TYPES, type SectionBlockExtractor, type SectionType } from "./blocks/registry";
+export { PAGE_BOXES, type PageBox } from "./pagination/page-boxes";
+export {
+  paginateBlocks,
+  type MeasureBlock,
+  type PaginatedPage,
+  type PaginationResult,
+} from "./pagination/paginate";
+
 export type PageSize = "A4" | "Letter";
 export type TemplateId = "atlas" | "meridian";
 export type ProfileType = "general" | "earlyCareer" | "experienced" | "changer";
+export type LinkType = "email" | "phone" | "url" | "linkedin" | "github" | "custom";
 
 export interface OrderedNode {
   id: string;
@@ -9,7 +20,7 @@ export interface OrderedNode {
 }
 
 export interface ResumeDocument {
-  schemaVersion: 1;
+  schemaVersion: 2;
   meta: {
     id: string;
     title: string;
@@ -26,42 +37,59 @@ export interface ResumeDocument {
     accent: string;
     dateFormat: string;
   };
-  header: {
-    fullName: string;
+  personal: {
+    firstName: string;
+    lastName: string;
     headline?: string;
+    dateOfBirth?: string;
     location?: string;
+    email: string;
+    phone: string;
+    links: Array<{
+      id: string;
+      type: Exclude<LinkType, "email" | "phone">;
+      label?: string;
+      value: string;
+    }>;
     photo: null | {
       assetId: string;
       cropRect: { x: number; y: number; w: number; h: number };
       shape: "circle" | "square";
     };
-    contacts: Array<{
-      id: string;
-      type: "email" | "phone" | "url" | "linkedin" | "github" | "custom";
-      label?: string;
-      value: string;
-      order: number;
-    }>;
   };
-  sections: ResumeSection[];
+  content: ResumeContent;
 }
 
-export type ResumeSection =
+export interface ResumeContent {
+  summary: { text: string };
+  education: { items: EducationItem[] };
+  experience: { items: ExperienceItem[] };
+  skills: { items: SkillsItem[] };
+  hobbies: { items: HobbyItem[] };
+  references: {
+    mode: "onRequest" | "listed";
+    items: ReferenceItem[];
+  };
+}
+
+export type RenderableResumeSection =
   | SummarySection
   | ExperienceSection
   | EducationSection
   | SkillsSection
-  | ProjectsSection
-  | CertificationsSection
-  | AwardsSection
-  | PublicationsSection
-  | VolunteerSection
-  | CustomSection;
+  | HobbiesSection
+  | ReferencesSection;
 
-export interface BaseSection<TType extends string, TItem extends OrderedNode> extends OrderedNode {
+export interface BaseSection<TType extends string, TItem extends ResumeItem> {
+  id: TType;
   type: TType;
   title: string;
   items: TItem[];
+}
+
+export interface ResumeItem {
+  id: string;
+  order: number;
 }
 
 export interface Bullet {
@@ -70,8 +98,8 @@ export interface Bullet {
   text: string;
 }
 
-export type SummarySection = BaseSection<"summary", OrderedNode & { text: string }>;
-export type ExperienceSection = BaseSection<"experience", OrderedNode & {
+export type SummaryItem = ResumeItem & { text: string };
+export type ExperienceItem = ResumeItem & {
   role: string;
   organization: string;
   location?: string;
@@ -79,8 +107,8 @@ export type ExperienceSection = BaseSection<"experience", OrderedNode & {
   endDate: string;
   summary?: string | null;
   bullets: Bullet[];
-}>;
-export type EducationSection = BaseSection<"education", OrderedNode & {
+};
+export type EducationItem = ResumeItem & {
   degree: string;
   institution: string;
   location?: string;
@@ -88,59 +116,58 @@ export type EducationSection = BaseSection<"education", OrderedNode & {
   endDate: string;
   detail?: string;
   bullets: Bullet[];
-}>;
-export type SkillsSection = BaseSection<"skills", OrderedNode & {
+};
+export type SkillsItem = ResumeItem & {
   groupLabel: string;
   entries: string[];
-}>;
-export type ProjectsSection = BaseSection<"projects", OrderedNode & {
+};
+export type HobbyItem = ResumeItem & { text: string };
+export type ReferenceItem = ResumeItem & {
   name: string;
-  role?: string;
-  url?: string | null;
-  startDate?: string;
-  endDate?: string;
-  summary?: string | null;
-  bullets: Bullet[];
-}>;
-export type CertificationsSection = BaseSection<"certifications", OrderedNode & {
-  name: string;
-  issuer: string;
-  date: string;
-  credentialId?: string | null;
-}>;
-export type AwardsSection = BaseSection<"awards", OrderedNode & {
-  name: string;
-  issuer: string;
-  date: string;
-  detail?: string;
-}>;
-export type PublicationsSection = BaseSection<"publications", OrderedNode & {
-  title: string;
-  venue: string;
-  date: string;
-  url?: string | null;
-}>;
-export type VolunteerSection = BaseSection<"volunteer", OrderedNode & {
   role: string;
   organization: string;
-  location?: string;
-  startDate: string;
-  endDate: string;
-  bullets: Bullet[];
-}>;
-export type CustomSection = BaseSection<"custom", OrderedNode & {
-  title?: string | null;
-  text?: string;
-  bullets: Bullet[];
-}>;
+  email?: string;
+  phone?: string;
+};
+
+export type SummarySection = BaseSection<"summary", SummaryItem>;
+export type ExperienceSection = BaseSection<"experience", ExperienceItem>;
+export type EducationSection = BaseSection<"education", EducationItem>;
+export type SkillsSection = BaseSection<"skills", SkillsItem>;
+export type HobbiesSection = BaseSection<"hobbies", HobbyItem>;
+export type ReferencesSection = BaseSection<"references", ReferenceItem & { requestText?: string }>;
+
+export type ResumeSection = RenderableResumeSection;
+
+export interface LegacyResumeDocumentV1 {
+  schemaVersion: 1;
+  meta: ResumeDocument["meta"];
+  design: ResumeDocument["design"];
+  header: {
+    fullName: string;
+    headline?: string;
+    location?: string;
+    photo: ResumeDocument["personal"]["photo"];
+    contacts: Array<{
+      id: string;
+      type: LinkType;
+      label?: string;
+      value: string;
+      order: number;
+    }>;
+  };
+  sections: Array<{
+    id: string;
+    type: string;
+    title: string;
+    order: number;
+    visible: boolean;
+    items: Array<ResumeItem & Record<string, unknown> & { visible?: boolean }>;
+  }>;
+}
 
 export const byOrder = <T extends { order: number }>(items: T[]): T[] =>
   [...items].sort((a, b) => a.order - b.order);
-
-export interface PageBox {
-  width: number;
-  height: number;
-}
 
 export type ResumeBlockKind =
   | "header"
@@ -161,236 +188,193 @@ export interface ResumeBlock {
   avoidBreakBefore?: boolean;
 }
 
-export interface PaginatedPage {
-  index: number;
-  blocks: ResumeBlock[];
-  firstBlockId: string | null;
-  usedHeight: number;
+export function hasVisibleSectionContent(section: ResumeSection): boolean {
+  return section.items.length > 0;
 }
 
-export interface PaginationResult {
-  pages: PaginatedPage[];
-  breakBlockIds: string[];
+export function getRenderableSections(resume: ResumeDocument): ResumeSection[] {
+  return [
+    getSummarySection(resume),
+    getEducationSection(resume),
+    getExperienceSection(resume),
+    getSkillsSection(resume),
+    getHobbiesSection(resume),
+    getReferencesSection(resume),
+  ].filter(hasVisibleSectionContent);
 }
-
-export type MeasureBlock = (block: ResumeBlock, pageBox: PageBox) => number;
-type BlockItem = OrderedNode & Record<string, unknown>;
 
 export function extractResumeBlocks(resume: ResumeDocument): ResumeBlock[] {
   const blocks: ResumeBlock[] = [{
     id: "header",
     kind: "header",
     content: [
-      resume.header.fullName,
-      resume.header.headline,
-      resume.header.location,
-      ...byOrder(resume.header.contacts).map((contact) =>
-        `${contact.label ? `${contact.label}: ` : ""}${contact.value}`),
+      resume.personal.firstName,
+      resume.personal.lastName,
+      resume.personal.headline,
+      resume.personal.location,
+      resume.personal.email,
+      resume.personal.phone,
+      ...resume.personal.links.map((link) => `${link.label ? `${link.label}: ` : ""}${link.value}`),
     ].filter(Boolean).join(" "),
   }];
 
-  for (const section of byOrder(resume.sections).filter((candidate) => candidate.visible)) {
-    const visibleItems = [...section.items]
-      .sort((a, b) => a.order - b.order)
-      .filter((item) => item.visible) as unknown as BlockItem[];
-
-    if (visibleItems.length === 0) {
-      continue;
-    }
-
-    blocks.push({
-      id: `section:${section.id}:header`,
-      kind: "section-header",
-      content: section.title,
-      sectionId: section.id,
-      keepWithNext: true,
-    });
-
-    for (const item of visibleItems) {
-      blocks.push({
-        id: `section:${section.id}:item:${item.id}`,
-        kind: "item",
-        content: getItemPrimaryText(section, item),
-        sectionId: section.id,
-        itemId: item.id,
-        avoidBreakBefore: true,
-      });
-
-      if (typeof item.summary === "string" && item.summary.length > 0) {
-        blocks.push({
-          id: `section:${section.id}:item:${item.id}:summary`,
-          kind: "item-summary",
-          content: item.summary,
-          sectionId: section.id,
-          itemId: item.id,
-        });
-      }
-
-      if (typeof item.detail === "string" && item.detail.length > 0) {
-        blocks.push({
-          id: `section:${section.id}:item:${item.id}:detail`,
-          kind: "item-detail",
-          content: item.detail,
-          sectionId: section.id,
-          itemId: item.id,
-        });
-      }
-
-      if (typeof item.credentialId === "string" && item.credentialId.length > 0) {
-        blocks.push({
-          id: `section:${section.id}:item:${item.id}:credential`,
-          kind: "item-detail",
-          content: `Credential: ${item.credentialId}`,
-          sectionId: section.id,
-          itemId: item.id,
-        });
-      }
-
-      if (
-        section.type === "custom" &&
-        typeof item.title === "string" &&
-        typeof item.text === "string" &&
-        item.text.length > 0
-      ) {
-        blocks.push({
-          id: `section:${section.id}:item:${item.id}:text`,
-          kind: "item-detail",
-          content: item.text,
-          sectionId: section.id,
-          itemId: item.id,
-        });
-      }
-
-      if (Array.isArray(item.bullets)) {
-        for (const bullet of byOrder(item.bullets as Bullet[])) {
-          blocks.push({
-            id: `section:${section.id}:item:${item.id}:bullet:${bullet.id}`,
-            kind: "bullet",
-            content: bullet.text,
-            sectionId: section.id,
-            itemId: item.id,
-            bulletId: bullet.id,
-          });
-        }
-      }
-    }
+  for (const section of getRenderableSections(resume)) {
+    blocks.push(...SECTION_BLOCK_EXTRACTORS[section.type](section));
   }
 
   return blocks;
 }
 
-function getItemPrimaryText(section: ResumeSection, item: BlockItem) {
-  switch (section.type) {
-    case "summary":
-      return stringValue(item.text);
-    case "experience":
-    case "volunteer":
-      return [
-        stringValue(item.role),
-        stringValue(item.organization),
-        stringValue(item.location),
-        formatDateRangeForBlock(stringValue(item.startDate), stringValue(item.endDate)),
-      ].filter(Boolean).join(", ");
-    case "education":
-      return [
-        stringValue(item.degree),
-        stringValue(item.institution),
-        stringValue(item.location),
-        formatDateRangeForBlock(stringValue(item.startDate), stringValue(item.endDate)),
-      ].filter(Boolean).join(", ");
-    case "skills":
-      return `${stringValue(item.groupLabel)}: ${stringArrayValue(item.entries).join(", ")}`;
-    case "projects":
-      return [
-        stringValue(item.name),
-        stringValue(item.role),
-        stringValue(item.url),
-        formatDateRangeForBlock(stringValue(item.startDate), stringValue(item.endDate)),
-      ].filter(Boolean).join(", ");
-    case "certifications":
-      return [stringValue(item.name), stringValue(item.issuer), stringValue(item.date)].filter(Boolean).join(", ");
-    case "awards":
-      return [stringValue(item.name), stringValue(item.issuer), stringValue(item.date)].filter(Boolean).join(", ");
-    case "publications":
-      return [
-        stringValue(item.title),
-        stringValue(item.venue),
-        stringValue(item.url),
-        stringValue(item.date),
-      ].filter(Boolean).join(", ");
-    case "custom":
-      return stringValue(item.title) || stringValue(item.text);
-  }
-}
-
-function formatDateRangeForBlock(startDate?: string, endDate?: string) {
-  if (!startDate && !endDate) {
-    return "";
+export function migrateResumeDocument(document: ResumeDocument | LegacyResumeDocumentV1): ResumeDocument {
+  if (document.schemaVersion === 2) {
+    return document;
   }
 
-  return `${startDate ?? ""} - ${endDate ?? ""}`;
+  return migrateV1ToV2(document);
 }
 
-function stringValue(value: unknown) {
-  return typeof value === "string" ? value : "";
-}
-
-function stringArrayValue(value: unknown) {
-  return Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === "string") : [];
-}
-
-export function paginateBlocks(
-  blocks: ResumeBlock[],
-  pageBox: PageBox,
-  measureBlock: MeasureBlock,
-): PaginationResult {
-  const pages: PaginatedPage[] = [];
-  let currentBlocks: ResumeBlock[] = [];
-  let usedHeight = 0;
-
-  const pushPage = () => {
-    pages.push({
-      index: pages.length,
-      blocks: currentBlocks,
-      firstBlockId: currentBlocks[0]?.id ?? null,
-      usedHeight,
-    });
-    currentBlocks = [];
-    usedHeight = 0;
+function getSummarySection(resume: ResumeDocument): SummarySection {
+  return {
+    id: "summary",
+    type: "summary",
+    title: "Summary",
+    items: resume.content.summary.text.trim()
+      ? [{ id: "summary", order: 0, text: resume.content.summary.text }]
+      : [],
   };
+}
 
-  for (let index = 0; index < blocks.length; index += 1) {
-    const block = blocks[index];
-    const nextBlock = blocks[index + 1];
-    const blockHeight = measureBlock(block, pageBox);
-    const keepPairHeight = block.keepWithNext && nextBlock
-      ? blockHeight + measureBlock(nextBlock, pageBox)
-      : blockHeight;
+function getEducationSection(resume: ResumeDocument): EducationSection {
+  return {
+    id: "education",
+    type: "education",
+    title: "Education",
+    items: sortDatedItems(resume.content.education.items),
+  };
+}
 
-    if (currentBlocks.length > 0 && usedHeight + keepPairHeight > pageBox.height) {
-      pushPage();
-    }
+function getExperienceSection(resume: ResumeDocument): ExperienceSection {
+  return {
+    id: "experience",
+    type: "experience",
+    title: "Experience",
+    items: sortDatedItems(resume.content.experience.items),
+  };
+}
 
-    currentBlocks.push(block);
-    usedHeight += blockHeight;
-  }
+function getSkillsSection(resume: ResumeDocument): SkillsSection {
+  return {
+    id: "skills",
+    type: "skills",
+    title: "Skills",
+    items: byOrder(resume.content.skills.items),
+  };
+}
 
-  if (currentBlocks.length > 0 || pages.length === 0) {
-    pushPage();
+function getHobbiesSection(resume: ResumeDocument): HobbiesSection {
+  return {
+    id: "hobbies",
+    type: "hobbies",
+    title: "Hobbies",
+    items: byOrder(resume.content.hobbies.items),
+  };
+}
+
+function getReferencesSection(resume: ResumeDocument): ReferencesSection {
+  if (resume.content.references.mode === "onRequest") {
+    return {
+      id: "references",
+      type: "references",
+      title: "References",
+      items: [{ id: "references-on-request", order: 0, name: "", role: "", organization: "", requestText: "References available upon request." }],
+    };
   }
 
   return {
-    pages,
-    breakBlockIds: pages.slice(1).map((page) => page.firstBlockId).filter((id): id is string => Boolean(id)),
+    id: "references",
+    type: "references",
+    title: "References",
+    items: byOrder(resume.content.references.items),
   };
 }
 
+function sortDatedItems<T extends ResumeItem & { endDate: string }>(items: T[]): T[] {
+  return [...items].sort((a, b) => {
+    const dateCompare = dateSortValue(b.endDate) - dateSortValue(a.endDate);
+    return dateCompare || a.order - b.order;
+  });
+}
+
+function dateSortValue(value: string) {
+  return value.toLowerCase() === "present" ? Number.MAX_SAFE_INTEGER : Date.parse(`${value}-01`) || 0;
+}
+
+function migrateV1ToV2(document: LegacyResumeDocumentV1): ResumeDocument {
+  const contacts = byOrder(document.header.contacts);
+  const fullNameParts = document.header.fullName.trim().split(/\s+/);
+  const email = contacts.find((contact) => contact.type === "email")?.value ?? "";
+  const phone = contacts.find((contact) => contact.type === "phone")?.value ?? "";
+  const firstName = fullNameParts.shift() ?? "";
+  const lastName = fullNameParts.join(" ");
+
+  return {
+    schemaVersion: 2,
+    meta: document.meta,
+    design: document.design,
+    personal: {
+      firstName,
+      lastName,
+      headline: document.header.headline,
+      location: document.header.location,
+      email,
+      phone,
+      links: contacts
+        .filter((contact) => contact.type !== "email" && contact.type !== "phone")
+        .map(({ id, type, label, value }) => ({ id, type: type as Exclude<LinkType, "email" | "phone">, label, value })),
+      photo: document.header.photo,
+    },
+    content: {
+      summary: { text: firstVisibleSectionItem(document, "summary")?.text as string ?? "" },
+      education: { items: sectionItems<EducationItem>(document, "education") },
+      experience: { items: sectionItems<ExperienceItem>(document, "experience") },
+      skills: { items: sectionItems<SkillsItem>(document, "skills") },
+      hobbies: { items: customTextItems(document).map((item) => ({ id: item.id, order: item.order, text: item.text })) },
+      references: { mode: "onRequest", items: [] },
+    },
+  };
+}
+
+function sectionItems<T extends ResumeItem>(document: LegacyResumeDocumentV1, type: string): T[] {
+  return sectionsOfType(document, type)
+    .flatMap((section) => section.items)
+    .filter((item) => item.visible !== false)
+    .map(({ visible: _visible, ...item }) => item as unknown as T);
+}
+
+function firstVisibleSectionItem(document: LegacyResumeDocumentV1, type: string) {
+  return sectionsOfType(document, type)
+    .flatMap((section) => section.items)
+    .find((item) => item.visible !== false);
+}
+
+function customTextItems(document: LegacyResumeDocumentV1): HobbyItem[] {
+  return sectionsOfType(document, "custom")
+    .flatMap((section) => section.items)
+    .filter((item) => item.visible !== false && typeof item.text === "string" && item.text.trim())
+    .map((item) => ({ id: item.id, order: item.order, text: item.text as string }));
+}
+
+function sectionsOfType(document: LegacyResumeDocumentV1, type: string) {
+  return byOrder(document.sections)
+    .filter((section) => section.visible !== false && section.type === type);
+}
+
 export const sampleResume: ResumeDocument = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   meta: {
     id: "sample",
     title: "Sample Resume",
-    updatedAt: new Date().toISOString(),
+    updatedAt: "2026-08-20T08:00:00.000Z",
     profileType: "experienced",
   },
   design: {
@@ -403,31 +387,22 @@ export const sampleResume: ResumeDocument = {
     accent: "slate",
     dateFormat: "MMM yyyy",
   },
-  header: {
-    fullName: "Amara Chikafu",
+  personal: {
+    firstName: "Amara",
+    lastName: "Chikafu",
     headline: "Senior Product Manager",
     location: "Harare, Zimbabwe",
+    email: "amara.chikafu@example.com",
+    phone: "+263 77 000 0000",
+    links: [],
     photo: null,
-    contacts: [
-      { id: "c1", type: "email", value: "amara.chikafu@example.com", order: 0 },
-      { id: "c2", type: "phone", value: "+263 77 000 0000", order: 1 },
-    ],
   },
-  sections: [
-    {
-      id: "s1",
-      type: "summary",
-      title: "Summary",
-      order: 0,
-      visible: true,
-      items: [
-        {
-          id: "i1",
-          order: 0,
-          visible: true,
-          text: "Product manager with eight years building payments and lending products for emerging markets.",
-        },
-      ],
-    },
-  ],
+  content: {
+    summary: { text: "Product manager with eight years building payments and lending products for emerging markets." },
+    education: { items: [] },
+    experience: { items: [] },
+    skills: { items: [] },
+    hobbies: { items: [] },
+    references: { mode: "onRequest", items: [] },
+  },
 };

@@ -12,7 +12,7 @@ body {
 .app-shell {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 320px minmax(0, 1fr);
+  grid-template-columns: minmax(360px, 440px) minmax(0, 1fr);
 }
 
 .toolbar {
@@ -22,6 +22,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 18px;
+  max-height: 100vh;
+  overflow: auto;
 }
 
 .toolbar h1 {
@@ -38,6 +40,8 @@ body {
 }
 
 .toolbar select,
+.toolbar input,
+.toolbar textarea,
 .segmented-control button {
   min-height: 36px;
   border: 1px solid #b9c1cb;
@@ -46,9 +50,48 @@ body {
   font: inherit;
 }
 
-.toolbar select {
+.toolbar select,
+.toolbar input,
+.toolbar textarea {
   border-radius: 6px;
   padding: 0 10px;
+}
+
+.toolbar textarea {
+  min-height: 104px;
+  padding: 10px;
+  resize: vertical;
+}
+
+.form-section {
+  display: grid;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #e1e5ea;
+}
+
+.form-section h2 {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.field-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.two-columns {
+  grid-template-columns: 1fr 1fr;
+}
+
+.item-editor {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #dde3e8;
+  border-radius: 6px;
+  background: #f8fafb;
 }
 
 .segmented-control {
