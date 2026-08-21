@@ -27,6 +27,8 @@ const LANGUAGE_LEVELS: Array<{ label: string; value: LanguageLevel }> = [
   { label: "Native", value: 5 },
 ];
 
+const MAX_SKILLS_PER_GROUP = 4;
+
 /* ------------------------------------------------------------------ Skills */
 
 export function SkillsPanel({
@@ -36,7 +38,14 @@ export function SkillsPanel({
   items: SkillsItem[];
   onChange: (items: SkillsItem[]) => void;
 }) {
-  const list = useItemList(items, onChange);
+  const list = useItemList(
+    items.map((item) => ({
+      ...item,
+      entries: item.entries.slice(0, MAX_SKILLS_PER_GROUP),
+      groupLabel: firstWord(item.groupLabel),
+    })),
+    onChange,
+  );
 
   const add = () => list.add({ id: makeId("k"), order: items.length, groupLabel: "", entries: [] });
 
@@ -52,13 +61,13 @@ export function SkillsPanel({
 
   return (
     <>
-      {items.map((item) => (
+      {list.items.map((item) => (
         <div className="item-editor" key={item.id}>
           <div className="item-editor-header">
             <TextField
               label="Group name"
-              onChange={(groupLabel) => list.update(item.id, { groupLabel })}
-              value={item.groupLabel}
+              onChange={(groupLabel) => list.update(item.id, { groupLabel: firstWord(groupLabel) })}
+              value={firstWord(item.groupLabel)}
             />
             <RemoveButton
               label={`Remove ${item.groupLabel || "skill group"}`}
@@ -68,15 +77,21 @@ export function SkillsPanel({
           <ChipsField
             entries={item.entries}
             label="Skills"
-            onChange={(entries) => list.update(item.id, { entries })}
+            maxEntries={MAX_SKILLS_PER_GROUP}
+            onChange={(entries) => list.update(item.id, { entries: entries.slice(0, MAX_SKILLS_PER_GROUP) })}
             placeholder="Type a skill, then press Enter"
           />
+          <span className="field-hint">Group name must be one word. Add up to 4 skills.</span>
         </div>
       ))}
       <UndoRow removal={list.removal} what="Skill group" />
       <AddButton label="Add a skill group" onClick={add} />
     </>
   );
+}
+
+function firstWord(value: string) {
+  return value.trimStart().split(/\s+/)[0] ?? "";
 }
 
 /* --------------------------------------------------------------- Languages */

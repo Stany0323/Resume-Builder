@@ -162,24 +162,32 @@ export function ProseField({
 export function ChipsField({
   entries,
   label,
+  maxEntries,
   onChange,
   placeholder,
 }: {
   entries: string[];
   label: string;
+  maxEntries?: number;
   onChange: (entries: string[]) => void;
   placeholder?: string;
 }) {
   const [draft, setDraft] = useState("");
+  const isFull = typeof maxEntries === "number" && entries.length >= maxEntries;
 
   const commit = (raw: string) => {
+    if (isFull) {
+      setDraft("");
+      return;
+    }
+
     const additions = raw
       .split(/[,\n]/)
       .map((entry) => normaliseBulletLine(entry))
       .filter((entry) => entry.length > 0 && !entries.includes(entry));
 
     if (additions.length > 0) {
-      onChange([...entries, ...additions]);
+      onChange([...entries, ...additions].slice(0, maxEntries ?? Number.POSITIVE_INFINITY));
     }
     setDraft("");
   };
@@ -189,6 +197,7 @@ export function ChipsField({
       <label>
         {label}
         <input
+          disabled={isFull}
           onBlur={() => commit(draft)}
           onChange={(event) => {
             // Comma commits, which is what people type. Enter also commits,
@@ -218,10 +227,15 @@ export function ChipsField({
             event.preventDefault();
             commit(pasted);
           }}
-          placeholder={entries.length === 0 ? placeholder ?? "Type one, then press Enter" : ""}
+          placeholder={isFull ? "Maximum reached" : entries.length === 0 ? placeholder ?? "Type one, then press Enter" : ""}
           value={draft}
         />
       </label>
+      {typeof maxEntries === "number" ? (
+        <span className="counter-line">
+          {entries.length}/{maxEntries} {maxEntries === 1 ? "skill" : "skills"}
+        </span>
+      ) : null}
       {entries.length > 0 ? (
         <ul className="chips">
           {entries.map((entry) => (
