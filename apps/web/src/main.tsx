@@ -9,8 +9,13 @@ import {
   type ExperienceItem,
   type ResumeDocument,
 } from "@resume-builder/core";
-import { FileText, LayoutGrid } from "lucide-react";
-import { ResumePreview, applyTemplate, type Accent, type TemplateId } from "@resume-builder/render";
+import { ChevronRight, FileText, LayoutGrid } from "lucide-react";
+import {
+  ResumePreview,
+  applyTemplate,
+  type Accent,
+  type TemplateId,
+} from "@resume-builder/render";
 
 import { TemplateChooser } from "./onboarding/TemplateChooser";
 import { DesignPanel } from "./sections/DesignPanel";
@@ -19,9 +24,19 @@ import { PersonalPanel } from "./sections/PersonalPanel";
 import { SummaryPanel } from "./sections/SummaryPanel";
 import { HobbiesPanel, ReferencesPanel, SkillsPanel } from "./sections/panels";
 import { TextField } from "./sections/fields";
-import { AddButton, RemoveButton, UndoRow, makeId, useItemList } from "./sections/list-controls";
+import {
+  AddButton,
+  RemoveButton,
+  UndoRow,
+  makeId,
+  useItemList,
+} from "./sections/list-controls";
 import { createBlankResume } from "./state/blank-resume";
-import { createAutosave, loadWorkingDocument, type SaveStatus } from "./state/persistence";
+import {
+  createAutosave,
+  loadWorkingDocument,
+  type SaveStatus,
+} from "./state/persistence";
 
 import "./styles.css";
 import "./templates.css";
@@ -34,33 +49,50 @@ import "./onboarding/chooser.css";
 
 type ExperienceTextField = "role" | "organization" | "location";
 type EducationTextField = "degree" | "institution" | "location";
+type SidebarSectionId =
+  | "education"
+  | "experience"
+  | "hobbies"
+  | "personal"
+  | "references"
+  | "skills"
+  | "summary";
 
 type EntryLogo = { assetId: string };
 
 const LOGO_OUTPUT_SIZE = 256;
 const LOGO_IMAGE_QUALITY = 0.86;
 const MAX_LOGO_UPLOAD_BYTES = 4 * 1024 * 1024;
-const LOGO_ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/svg+xml"];
+const LOGO_ACCEPTED_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/svg+xml",
+];
+const SIDEBAR_SECTION_TOP_GAP = 12;
 
 const months = [
-  ["01", "January"], ["02", "February"], ["03", "March"], ["04", "April"],
-  ["05", "May"], ["06", "June"], ["07", "July"], ["08", "August"],
-  ["09", "September"], ["10", "October"], ["11", "November"], ["12", "December"],
+  ["01", "January"],
+  ["02", "February"],
+  ["03", "March"],
+  ["04", "April"],
+  ["05", "May"],
+  ["06", "June"],
+  ["07", "July"],
+  ["08", "August"],
+  ["09", "September"],
+  ["10", "October"],
+  ["11", "November"],
+  ["12", "December"],
 ] as const;
 
 const currentYear = new Date().getFullYear();
-const years = Array.from({ length: 62 }, (_, index) => String(currentYear + 1 - index));
-
-/* ------------------------------------------------------------------- Root */
+const years = Array.from({ length: 62 }, (_, index) =>
+  String(currentYear + 1 - index),
+);
 
 type Phase = "loading" | "choosing" | "editing";
 
-/**
- * Boot order: read IndexedDB → if there's a working document, resume editing;
- * if not, this is a first run, so show the template chooser over a blank
- * document. The chooser and the editor are never mounted together (see the
- * caution in TemplateChooser).
- */
 function Root() {
   const [phase, setPhase] = useState<Phase>("loading");
   const [resume, setResume] = useState<ResumeDocument | null>(null);
@@ -103,9 +135,10 @@ function Root() {
     return (
       <TemplateChooser
         onChoose={(templateId: TemplateId, accent: Accent) => {
-          // applyTemplate also brings the pairing the template was designed
-          // around; everything else the user chose is preserved.
-          setResume({ ...resume, design: applyTemplate({ ...resume.design, accent }, templateId) });
+          setResume({
+            ...resume,
+            design: applyTemplate({ ...resume.design, accent }, templateId),
+          });
           setPhase("editing");
         }}
         onSkip={() => setPhase("editing")}
@@ -122,8 +155,6 @@ function Root() {
     />
   );
 }
-
-/* ----------------------------------------------------------------- Editor */
 
 function Editor({
   onChooseTemplate,
@@ -142,11 +173,50 @@ function Editor({
   ) => setResume({ ...resume, content: { ...resume.content, [key]: value } });
 
   const experience = useItemList(resume.content.experience.items, (items) =>
-    setContent("experience", { items }));
+    setContent("experience", { items }),
+  );
   const education = useItemList(resume.content.education.items, (items) =>
-    setContent("education", { items }));
+    setContent("education", { items }),
+  );
+  const [activeSidebarSection, setActiveSidebarSection] =
+    useState<SidebarSectionId | null>("personal");
+  const sidebarScrollRef = useRef<HTMLDivElement>(null);
+  const sidebarSectionRefs = useRef<
+    Partial<Record<SidebarSectionId, HTMLElement | null>>
+  >({});
+  const toggleSidebarSection = (sectionId: SidebarSectionId) =>
+    setActiveSidebarSection((current) =>
+      current === sectionId ? null : sectionId,
+    );
 
-  // Sorted for display only — the stored order is never rewritten by sorting.
+  useEffect(() => {
+    if (!activeSidebarSection) {
+      return;
+    }
+
+    const scrollContainer = sidebarScrollRef.current;
+    const section = sidebarSectionRefs.current[activeSidebarSection];
+    if (!scrollContainer || !section) {
+      return;
+    }
+
+    const frame = requestAnimationFrame(() => {
+      const containerRect = scrollContainer.getBoundingClientRect();
+      const sectionRect = section.getBoundingClientRect();
+
+      scrollContainer.scrollTo({
+        top:
+          scrollContainer.scrollTop +
+          sectionRect.top -
+          containerRect.top -
+          SIDEBAR_SECTION_TOP_GAP,
+        behavior: "smooth",
+      });
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [activeSidebarSection]);
+
   const orderedExperience = useMemo(
     () => sortDatedItems(resume.content.experience.items),
     [resume.content.experience.items],
@@ -191,8 +261,22 @@ function Editor({
           </div>
         </div>
         <div className="dashboard-actions">
-          <ExportBar onImport={setResume} resume={resume} saveStatus={saveStatus} />
-          <button className="dashboard-template-button" onClick={onChooseTemplate} type="button">
+          <ExportBar
+            onImport={setResume}
+            resume={resume}
+            saveStatus={saveStatus}
+          />
+          <DesignPanel
+            design={resume.design}
+            onChange={(patch) =>
+              setResume({ ...resume, design: { ...resume.design, ...patch } })
+            }
+          />
+          <button
+            className="dashboard-template-button"
+            onClick={onChooseTemplate}
+            type="button"
+          >
             <LayoutGrid size={16} strokeWidth={2} />
             <span>Browse templates</span>
           </button>
@@ -200,28 +284,61 @@ function Editor({
       </header>
 
       <aside className="toolbar" aria-label="Resume controls">
-        <div className="toolbar-content">
-          <section className="form-section" aria-labelledby="personal-heading">
-            <FormSectionHeader id="personal-heading" title="Personal Info" />
+        <div className="toolbar-content" ref={sidebarScrollRef}>
+          <SidebarSection
+            id="personal"
+            isOpen={activeSidebarSection === "personal"}
+            onToggle={() => toggleSidebarSection("personal")}
+            sectionRef={(node) => {
+              sidebarSectionRefs.current.personal = node;
+            }}
+            title="Personal Info"
+          >
             <PersonalPanel
-              onChange={(patch) => setResume({ ...resume, personal: { ...resume.personal, ...patch } })}
+              onChange={(patch) =>
+                setResume({
+                  ...resume,
+                  personal: { ...resume.personal, ...patch },
+                })
+              }
               personal={resume.personal}
               templateId={resume.design.templateId}
             />
-          </section>
+          </SidebarSection>
 
-          <section className="form-section" aria-labelledby="summary-heading">
-            <FormSectionHeader id="summary-heading" title="Summary" />
-            <SummaryPanel onChange={(text) => setContent("summary", { text })} text={resume.content.summary.text} />
-          </section>
+          <SidebarSection
+            id="summary"
+            isOpen={activeSidebarSection === "summary"}
+            onToggle={() => toggleSidebarSection("summary")}
+            sectionRef={(node) => {
+              sidebarSectionRefs.current.summary = node;
+            }}
+            title="Summary"
+          >
+            <SummaryPanel
+              onChange={(text) => setContent("summary", { text })}
+              text={resume.content.summary.text}
+            />
+          </SidebarSection>
 
-          <section className="form-section" aria-labelledby="experience-heading">
-            <FormSectionHeader count={orderedExperience.length} id="experience-heading" title="Experience" />
+          <SidebarSection
+            count={orderedExperience.length}
+            id="experience"
+            isOpen={activeSidebarSection === "experience"}
+            onToggle={() => toggleSidebarSection("experience")}
+            sectionRef={(node) => {
+              sidebarSectionRefs.current.experience = node;
+            }}
+            title="Experience"
+          >
             {orderedExperience.length > 0 ? (
-              <p className="form-note">Ordered automatically, most recent first.</p>
+              <p className="form-note">
+                Ordered automatically, most recent first.
+              </p>
             ) : (
               <p className="form-note">
-                No roles yet. Add your most recent position first — the rest sort themselves.
+                No roles yet. Add your most recent position first — the rest
+                sort themselves.
               </p>
             )}
             {orderedExperience.map((item) => (
@@ -229,7 +346,9 @@ function Editor({
                 <div className="item-editor-header">
                   <TextField
                     label="Role"
-                    onChange={(value) => experience.update(item.id, { role: value })}
+                    onChange={(value) =>
+                      experience.update(item.id, { role: value })
+                    }
                     value={item.role}
                   />
                   <RemoveButton
@@ -239,40 +358,70 @@ function Editor({
                 </div>
                 <TextField
                   label="Organisation"
-                  onChange={(value) => experience.update(item.id, { organization: value })}
+                  onChange={(value) =>
+                    experience.update(item.id, { organization: value })
+                  }
                   value={item.organization}
                 />
                 <EntryLogoField
                   entity={item.organization}
                   label="Organisation logo"
                   logo={item.organizationLogo ?? null}
-                  onChange={(logo) => experience.update(item.id, { organizationLogo: logo })}
+                  onChange={(logo) =>
+                    experience.update(item.id, { organizationLogo: logo })
+                  }
                 />
                 <TextField
                   label="Location"
-                  onChange={(value) => experience.update(item.id, { location: emptyToUndefined(value) })}
+                  onChange={(value) =>
+                    experience.update(item.id, {
+                      location: emptyToUndefined(value),
+                    })
+                  }
                   value={item.location ?? ""}
                 />
                 <DateRangeFields
                   endDate={item.endDate}
-                  onEndDateChange={(value) => experience.update(item.id, { endDate: value })}
-                  onStartDateChange={(value) => experience.update(item.id, { startDate: value })}
+                  onEndDateChange={(value) =>
+                    experience.update(item.id, { endDate: value })
+                  }
+                  onStartDateChange={(value) =>
+                    experience.update(item.id, { startDate: value })
+                  }
                   startDate={item.startDate}
                 />
-                <DateValidationMessage endDate={item.endDate} startDate={item.startDate} />
+                <DateValidationMessage
+                  endDate={item.endDate}
+                  startDate={item.startDate}
+                />
                 <BulletsField
                   bullets={item.bullets}
                   onChange={(value) =>
-                    experience.update(item.id, { bullets: reconcileLines(item.bullets, value, makeBulletId) })}
+                    experience.update(item.id, {
+                      bullets: reconcileLines(
+                        item.bullets,
+                        value,
+                        makeBulletId,
+                      ),
+                    })
+                  }
                 />
               </div>
             ))}
             <UndoRow removal={experience.removal} what="Role" />
             <AddButton label="Add a role" onClick={addExperience} />
-          </section>
+          </SidebarSection>
 
-          <section className="form-section" aria-labelledby="education-heading">
-            <FormSectionHeader count={orderedEducation.length} id="education-heading" title="Education" />
+          <SidebarSection
+            count={orderedEducation.length}
+            id="education"
+            isOpen={activeSidebarSection === "education"}
+            onToggle={() => toggleSidebarSection("education")}
+            sectionRef={(node) => {
+              sidebarSectionRefs.current.education = node;
+            }}
+            title="Education"
+          >
             {orderedEducation.length === 0 ? (
               <p className="form-note">Add your highest qualification.</p>
             ) : null}
@@ -281,7 +430,9 @@ function Editor({
                 <div className="item-editor-header">
                   <TextField
                     label="Qualification"
-                    onChange={(value) => education.update(item.id, { degree: value })}
+                    onChange={(value) =>
+                      education.update(item.id, { degree: value })
+                    }
                     value={item.degree}
                   />
                   <RemoveButton
@@ -291,66 +442,107 @@ function Editor({
                 </div>
                 <TextField
                   label="Institution"
-                  onChange={(value) => education.update(item.id, { institution: value })}
+                  onChange={(value) =>
+                    education.update(item.id, { institution: value })
+                  }
                   value={item.institution}
                 />
                 <EntryLogoField
                   entity={item.institution}
                   label="Institution logo"
                   logo={item.institutionLogo ?? null}
-                  onChange={(logo) => education.update(item.id, { institutionLogo: logo })}
+                  onChange={(logo) =>
+                    education.update(item.id, { institutionLogo: logo })
+                  }
                 />
                 <DateRangeFields
                   endDate={item.endDate}
-                  onEndDateChange={(value) => education.update(item.id, { endDate: value })}
-                  onStartDateChange={(value) => education.update(item.id, { startDate: value })}
+                  onEndDateChange={(value) =>
+                    education.update(item.id, { endDate: value })
+                  }
+                  onStartDateChange={(value) =>
+                    education.update(item.id, { startDate: value })
+                  }
                   startDate={item.startDate}
                 />
-                <DateValidationMessage endDate={item.endDate} startDate={item.startDate} />
+                <DateValidationMessage
+                  endDate={item.endDate}
+                  startDate={item.startDate}
+                />
                 <BulletsField
                   bullets={item.bullets}
                   onChange={(value) =>
-                    education.update(item.id, { bullets: reconcileLines(item.bullets, value, makeBulletId) })}
+                    education.update(item.id, {
+                      bullets: reconcileLines(
+                        item.bullets,
+                        value,
+                        makeBulletId,
+                      ),
+                    })
+                  }
                 />
               </div>
             ))}
             <UndoRow removal={education.removal} what="Qualification" />
             <AddButton label="Add a qualification" onClick={addEducation} />
-          </section>
+          </SidebarSection>
 
-          <section className="form-section" aria-labelledby="skills-heading">
-            <FormSectionHeader count={resume.content.skills.items.length} id="skills-heading" title="Skills" />
-            <SkillsPanel items={resume.content.skills.items} onChange={(items) => setContent("skills", { items })} />
-          </section>
-
-          <section className="form-section" aria-labelledby="hobbies-heading">
-            <FormSectionHeader count={resume.content.hobbies.items.length} id="hobbies-heading" title="Hobbies" />
-            <HobbiesPanel items={resume.content.hobbies.items} onChange={(items) => setContent("hobbies", { items })} />
-          </section>
-
-          <section className="form-section" aria-labelledby="references-heading">
-            <FormSectionHeader
-              count={resume.content.references.mode === "listed" ? resume.content.references.items.length : 0}
-              id="references-heading"
-              title="References"
+          <SidebarSection
+            count={resume.content.skills.items.length}
+            id="skills"
+            isOpen={activeSidebarSection === "skills"}
+            onToggle={() => toggleSidebarSection("skills")}
+            sectionRef={(node) => {
+              sidebarSectionRefs.current.skills = node;
+            }}
+            title="Skills"
+          >
+            <SkillsPanel
+              items={resume.content.skills.items}
+              onChange={(items) => setContent("skills", { items })}
             />
+          </SidebarSection>
+
+          <SidebarSection
+            count={resume.content.hobbies.items.length}
+            id="hobbies"
+            isOpen={activeSidebarSection === "hobbies"}
+            onToggle={() => toggleSidebarSection("hobbies")}
+            sectionRef={(node) => {
+              sidebarSectionRefs.current.hobbies = node;
+            }}
+            title="Hobbies"
+          >
+            <HobbiesPanel
+              items={resume.content.hobbies.items}
+              onChange={(items) => setContent("hobbies", { items })}
+            />
+          </SidebarSection>
+
+          <SidebarSection
+            count={
+              resume.content.references.mode === "listed"
+                ? resume.content.references.items.length
+                : 0
+            }
+            id="references"
+            isOpen={activeSidebarSection === "references"}
+            onToggle={() => toggleSidebarSection("references")}
+            sectionRef={(node) => {
+              sidebarSectionRefs.current.references = node;
+            }}
+            title="References"
+          >
             <ReferencesPanel
               items={resume.content.references.items}
               mode={resume.content.references.mode}
               onChange={(references) => setContent("references", references)}
             />
-          </section>
+          </SidebarSection>
         </div>
       </aside>
 
       <section className="workspace" aria-label="Resume workspace">
-        <div className="topbar">
-          <DesignPanel
-            design={resume.design}
-            onChange={(patch) => setResume({ ...resume, design: { ...resume.design, ...patch } })}
-          />
-        </div>
-
         <section className="preview-stage" aria-label="Resume preview">
           <ResumePreview resume={resume} />
         </section>
@@ -361,12 +553,19 @@ function Editor({
 
 /* ---------------------------------------------------------------- helpers */
 
-function sortDatedItems<T extends { endDate: string; order: number }>(items: T[]) {
-  return [...items].sort((a, b) => dateSortValue(b.endDate) - dateSortValue(a.endDate) || a.order - b.order);
+function sortDatedItems<T extends { endDate: string; order: number }>(
+  items: T[],
+) {
+  return [...items].sort(
+    (a, b) =>
+      dateSortValue(b.endDate) - dateSortValue(a.endDate) || a.order - b.order,
+  );
 }
 
 function dateSortValue(value: string) {
-  return value.toLowerCase() === "present" ? Number.MAX_SAFE_INTEGER : Date.parse(`${value}-01`) || 0;
+  return value.toLowerCase() === "present"
+    ? Number.MAX_SAFE_INTEGER
+    : Date.parse(`${value}-01`) || 0;
 }
 
 function emptyToUndefined(value: string) {
@@ -383,11 +582,82 @@ function makeBulletId() {
   return `b-${crypto.randomUUID()}`;
 }
 
-function FormSectionHeader({ count, id, title }: { count?: number; id: string; title: string }) {
+function SidebarSection({
+  children,
+  count,
+  id,
+  isOpen,
+  onToggle,
+  sectionRef,
+  title,
+}: {
+  children: React.ReactNode;
+  count?: number;
+  id: SidebarSectionId;
+  isOpen: boolean;
+  onToggle: () => void;
+  sectionRef?: (node: HTMLElement | null) => void;
+  title: string;
+}) {
+  const headingId = `${id}-heading`;
+  const bodyId = `${id}-panel`;
+
+  return (
+    <section
+      className="form-section"
+      aria-labelledby={headingId}
+      data-open={isOpen ? "true" : "false"}
+      ref={sectionRef}
+    >
+      <FormSectionHeader
+        bodyId={bodyId}
+        count={count}
+        id={headingId}
+        isOpen={isOpen}
+        onToggle={onToggle}
+        title={title}
+      />
+      <div className="form-section-body" hidden={!isOpen} id={bodyId}>
+        {children}
+      </div>
+    </section>
+  );
+}
+
+function FormSectionHeader({
+  bodyId,
+  count,
+  id,
+  isOpen,
+  onToggle,
+  title,
+}: {
+  bodyId: string;
+  count?: number;
+  id: string;
+  isOpen: boolean;
+  onToggle: () => void;
+  title: string;
+}) {
   return (
     <div className="form-section-header">
-      <h2 id={id}>{title}</h2>
-      {typeof count === "number" ? <span>{count}</span> : null}
+      <h2 id={id}>
+        <button
+          aria-controls={bodyId}
+          aria-expanded={isOpen}
+          className="form-section-toggle"
+          onClick={onToggle}
+          type="button"
+        >
+          <span className="form-section-title">
+            <ChevronRight aria-hidden="true" size={16} strokeWidth={2.2} />
+            <span>{title}</span>
+          </span>
+          {typeof count === "number" ? (
+            <span className="form-section-count">{count}</span>
+          ) : null}
+        </button>
+      </h2>
     </div>
   );
 }
@@ -401,7 +671,10 @@ function BulletsField({
 }) {
   const bulletText = bulletsToText(bullets);
   const [draft, setDraft] = useState(bulletText);
-  const longest = bullets.reduce((max, bullet) => Math.max(max, bullet.text.length), 0);
+  const longest = bullets.reduce(
+    (max, bullet) => Math.max(max, bullet.text.length),
+    0,
+  );
 
   useEffect(() => {
     if (canonicalBulletText(draft) !== bulletText) {
@@ -479,12 +752,24 @@ function EntryLogoField({
       <span className="field-group-label">{label}</span>
       {logo ? (
         <div className="logo-current">
-          <img alt={entity ? `${entity} logo` : ""} className="logo-preview" src={logo.assetId} />
+          <img
+            alt={entity ? `${entity} logo` : ""}
+            className="logo-preview"
+            src={logo.assetId}
+          />
           <div className="photo-current-actions">
-            <button className="link-button" onClick={() => fileInput.current?.click()} type="button">
+            <button
+              className="link-button"
+              onClick={() => fileInput.current?.click()}
+              type="button"
+            >
               Replace
             </button>
-            <button className="link-button" onClick={() => onChange(null)} type="button">
+            <button
+              className="link-button"
+              onClick={() => onChange(null)}
+              type="button"
+            >
               Remove
             </button>
           </div>
@@ -499,7 +784,9 @@ function EntryLogoField({
           >
             {busy ? "Reading..." : `+ Add ${label.toLowerCase()}`}
           </button>
-          <span className="field-hint">Optional mark shown beside this entry.</span>
+          <span className="field-hint">
+            Optional mark shown beside this entry.
+          </span>
         </>
       )}
       <input
@@ -509,7 +796,11 @@ function EntryLogoField({
         style={{ display: "none" }}
         type="file"
       />
-      {error ? <p className="field-message" role="alert">{error}</p> : null}
+      {error ? (
+        <p className="field-message" role="alert">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -533,12 +824,25 @@ function DateRangeFields({
 
   return (
     <div className="date-range-fields">
-      <MonthYearField label="Start" onChange={onStartDateChange} value={startDate} />
-      <MonthYearField disabled={isCurrent} label="End" onChange={onEndDateChange} value={isCurrent ? "" : endDate} />
+      <MonthYearField
+        label="Start"
+        onChange={onStartDateChange}
+        value={startDate}
+      />
+      <MonthYearField
+        disabled={isCurrent}
+        label="End"
+        onChange={onEndDateChange}
+        value={isCurrent ? "" : endDate}
+      />
       <label className="checkbox-field">
         <input
           checked={isCurrent}
-          onChange={(event) => onEndDateChange(event.target.checked ? "present" : currentMonthValue())}
+          onChange={(event) =>
+            onEndDateChange(
+              event.target.checked ? "present" : currentMonthValue(),
+            )
+          }
           type="checkbox"
         />
         Current
@@ -569,7 +873,9 @@ function MonthYearField({
         value={month}
       >
         {months.map(([candidate, name]) => (
-          <option key={candidate} value={candidate}>{name}</option>
+          <option key={candidate} value={candidate}>
+            {name}
+          </option>
         ))}
       </select>
       <select
@@ -578,15 +884,26 @@ function MonthYearField({
         value={year}
       >
         {years.map((candidate) => (
-          <option key={candidate} value={candidate}>{candidate}</option>
+          <option key={candidate} value={candidate}>
+            {candidate}
+          </option>
         ))}
       </select>
     </fieldset>
   );
 }
 
-function DateValidationMessage({ endDate, startDate }: { endDate: string; startDate: string }) {
-  if (endDate === "present" || dateSortValue(endDate) >= dateSortValue(startDate)) {
+function DateValidationMessage({
+  endDate,
+  startDate,
+}: {
+  endDate: string;
+  startDate: string;
+}) {
+  if (
+    endDate === "present" ||
+    dateSortValue(endDate) >= dateSortValue(startDate)
+  ) {
     return null;
   }
 

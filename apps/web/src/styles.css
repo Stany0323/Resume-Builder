@@ -177,16 +177,18 @@ button {
 
 .toolbar-content {
   min-height: 0;
-  display: grid;
-  gap: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   overflow: auto;
   padding: 18px 24px 24px;
+  padding-bottom: calc(min(56vh, 520px) + 32px);
   scrollbar-gutter: stable;
+  scroll-padding-top: 18px;
 }
 
 .toolbar-content .form-section:first-child {
-  padding-top: 0;
-  border-top: 0;
+  margin-top: 0;
 }
 
 .toolbar label {
@@ -200,7 +202,6 @@ button {
 .toolbar select,
 .toolbar input,
 .toolbar textarea,
-.topbar select,
 .segmented-control button {
   min-height: 36px;
   border: 1px solid var(--border-strong);
@@ -211,8 +212,7 @@ button {
 
 .toolbar select,
 .toolbar input,
-.toolbar textarea,
-.topbar select {
+.toolbar textarea {
   width: 100%;
   border-radius: var(--radius-control);
   padding: 0 10px;
@@ -221,15 +221,13 @@ button {
 .toolbar select:hover,
 .toolbar input:hover,
 .toolbar textarea:hover,
-.topbar select:hover,
 .segmented-control button:hover {
   border-color: color-mix(in srgb, var(--accent) 45%, var(--border-strong));
 }
 
 .toolbar select:focus,
 .toolbar input:focus,
-.toolbar textarea:focus,
-.topbar select:focus {
+.toolbar textarea:focus {
   border-color: var(--focus);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 14%, transparent);
   outline: none;
@@ -238,7 +236,6 @@ button {
 .toolbar select:disabled,
 .toolbar input:disabled,
 .toolbar textarea:disabled,
-.topbar select:disabled,
 .segmented-control button:disabled {
   background: var(--surface-quiet);
   color: var(--text-soft);
@@ -257,10 +254,18 @@ button {
 }
 
 .form-section {
-  display: grid;
-  gap: 12px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
+  display: block;
+  flex: 0 0 auto;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.form-section[data-open="true"] {
+  border-color: color-mix(in srgb, var(--accent) 26%, var(--border));
+  background: color-mix(in srgb, var(--surface) 96%, var(--accent));
 }
 
 .form-section h2 {
@@ -271,13 +276,51 @@ button {
 }
 
 .form-section-header {
+  min-width: 0;
+}
+
+.form-section-toggle {
+  width: 100%;
+  min-height: 46px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  padding: 0 12px;
+  border: 0;
+  background: var(--surface);
+  color: var(--text-strong);
+  cursor: pointer;
 }
 
-.form-section-header span {
+.form-section-toggle:hover {
+  background: var(--surface-subtle);
+}
+
+.form-section-toggle:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.form-section-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.form-section-title svg {
+  flex: 0 0 auto;
+  color: var(--text-soft);
+  transition: transform 120ms ease, color 120ms ease;
+}
+
+.form-section-toggle[aria-expanded="true"] .form-section-title svg {
+  transform: rotate(90deg);
+  color: var(--accent);
+}
+
+.form-section-count {
   min-width: 24px;
   border-radius: 999px;
   background: var(--surface-quiet);
@@ -286,6 +329,22 @@ button {
   font-weight: 700;
   line-height: 24px;
   text-align: center;
+}
+
+.form-section-toggle[aria-expanded="true"] .form-section-count {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  color: var(--accent);
+}
+
+.form-section-body {
+  display: grid;
+  gap: 12px;
+  padding: 0 12px 12px;
+  background: var(--surface);
+}
+
+.form-section-body[hidden] {
+  display: none;
 }
 
 .form-note,
@@ -488,23 +547,8 @@ button {
   min-width: 0;
   min-height: 0;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   overflow: hidden;
-}
-
-.topbar {
-  position: relative;
-  z-index: 1;
-  min-height: var(--topbar-height, 88px);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-  overflow: hidden;
-  padding: 12px 18px;
-  border-bottom: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 96%, var(--app-bg));
-  box-shadow: 0 1px 0 rgba(24, 34, 45, 0.02);
 }
 
 .preview-stage {
@@ -593,12 +637,6 @@ button {
     grid-column: 1;
     grid-row: 3;
     min-height: 0;
-  }
-
-  .topbar {
-    align-items: flex-start;
-    overflow-x: auto;
-    padding: 10px 12px;
   }
 
   .preview-stage {

@@ -34,14 +34,14 @@ function renderExperience(section: ExperienceSection) {
   return byOrder(section.items).map((item) => (
     <div className="resume-item" key={item.id}>
       <div className="resume-entry-heading" data-block-id={`section:${section.id}:item:${item.id}`}>
-        {item.organizationLogo ? (
-          <img
-            alt={item.organization ? `${item.organization} logo` : ""}
-            className="resume-entry-logo"
-            src={item.organizationLogo.assetId}
-          />
-        ) : null}
         <div className="resume-entry-copy">
+          {item.organizationLogo ? (
+            <img
+              alt={item.organization ? `${item.organization} logo` : ""}
+              className="resume-entry-logo"
+              src={item.organizationLogo.assetId}
+            />
+          ) : null}
           <strong>{item.role}</strong>
           <span className="resume-item-meta">
             {item.organization}
@@ -62,14 +62,14 @@ function renderEducation(section: EducationSection) {
   return byOrder(section.items).map((item) => (
     <div className="resume-item" key={item.id}>
       <div className="resume-entry-heading" data-block-id={`section:${section.id}:item:${item.id}`}>
-        {item.institutionLogo ? (
-          <img
-            alt={item.institution ? `${item.institution} logo` : ""}
-            className="resume-entry-logo"
-            src={item.institutionLogo.assetId}
-          />
-        ) : null}
         <div className="resume-entry-copy">
+          {item.institutionLogo ? (
+            <img
+              alt={item.institution ? `${item.institution} logo` : ""}
+              className="resume-entry-logo"
+              src={item.institutionLogo.assetId}
+            />
+          ) : null}
           <strong>{item.degree}</strong>
           <span className="resume-item-meta">
             {item.institution}
