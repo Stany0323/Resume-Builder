@@ -85,13 +85,22 @@ function renderEducation(section: EducationSection) {
 }
 
 function renderSkills(section: SkillsSection) {
-  return byOrder(section.items).map((item) => (
-    <div className="resume-item" key={item.id}>
-      <p data-block-id={`section:${section.id}:item:${item.id}`}>
-        <strong>{item.groupLabel}</strong>: {item.entries.join(", ")}
-      </p>
+  return (
+    <div className="resume-skills-grid">
+      {byOrder(section.items).map((item) => (
+        <div className="resume-skill-group" data-block-id={`section:${section.id}:item:${item.id}`} key={item.id}>
+          <strong>{item.groupLabel}</strong>
+          {item.entries.length > 0 ? (
+            <ul>
+              {item.entries.map((entry) => (
+                <li key={entry}>{entry}</li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+      ))}
     </div>
-  ));
+  );
 }
 
 function renderHobbies(section: HobbiesSection) {

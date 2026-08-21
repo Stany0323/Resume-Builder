@@ -137,6 +137,37 @@
   overflow-wrap: anywhere;
 }
 
+.resume-skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.75rem 1rem;
+  margin-top: var(--resume-gap-item);
+}
+
+.resume-skill-group {
+  break-inside: avoid-page;
+  min-width: 0;
+}
+
+.resume-skill-group strong {
+  display: block;
+  margin-bottom: 0.24rem;
+  font-weight: 600;
+}
+
+.resume-skill-group ul {
+  display: grid;
+  gap: 0.13rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.resume-skill-group li {
+  color: color-mix(in srgb, currentColor 72%, transparent);
+  overflow-wrap: anywhere;
+}
+
 .resume-photo {
   flex: 0 0 auto;
   display: block;
@@ -381,7 +412,7 @@
 
 .resume-page[data-template="slate"]
   .resume-section[data-section-type="skills"]
-  strong {
+  .resume-skill-group strong {
   font-family: var(--resume-font-mono);
   font-size: calc(var(--resume-font-size) * 0.85);
   font-weight: 600;
