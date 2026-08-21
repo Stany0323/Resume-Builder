@@ -54,7 +54,7 @@ describe("section render/block conformance", () => {
     expect(renderedMarkup).toContain("References available upon request.");
   });
 
-  it("renders language levels as a ten-dot scale", () => {
+  it("renders language levels as a five-dot scale", () => {
     const resume = fixture3Page as ResumeDocument;
     const languagesSection = getRenderableSections(resume).find((section) => section.type === "languages");
 
@@ -72,11 +72,11 @@ describe("section render/block conformance", () => {
     const dotMatches = renderedMarkup.match(/class="resume-language-dot"/g) ?? [];
     const filledDotMatches = renderedMarkup.match(/data-filled="true"/g) ?? [];
 
-    expect(dotMatches).toHaveLength(languageCount * 10);
+    expect(dotMatches).toHaveLength(languageCount * 5);
     expect(filledDotMatches).toHaveLength(
-      languagesSection.items.reduce((total, item) => total + item.level * 2, 0),
+      languagesSection.items.reduce((total, item) => total + item.level, 0),
     );
-    expect(renderedMarkup).toContain("out of 10");
+    expect(renderedMarkup).toContain("out of 5");
   });
 });
 

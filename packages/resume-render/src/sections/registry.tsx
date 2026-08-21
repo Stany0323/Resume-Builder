@@ -120,19 +120,17 @@ function renderLanguages(section: LanguagesSection) {
   );
 }
 
-const LANGUAGE_DOT_COUNT = 10;
+const LANGUAGE_DOT_COUNT = 5;
 
 function LanguageDots({ level }: { level: LanguageLevel }) {
-  const filledDots = level * 2;
-
   return (
     <span
-      aria-label={`${filledDots} out of ${LANGUAGE_DOT_COUNT}`}
+      aria-label={`${level} out of ${LANGUAGE_DOT_COUNT}`}
       className="resume-language-dots"
       role="img"
     >
       {Array.from({ length: LANGUAGE_DOT_COUNT }, (_, index) => index + 1).map((step) => (
-        <span className="resume-language-dot" data-filled={step <= filledDots ? "true" : "false"} key={step} />
+        <span className="resume-language-dot" data-filled={step <= level ? "true" : "false"} key={step} />
       ))}
     </span>
   );
