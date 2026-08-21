@@ -102,6 +102,27 @@
   background: #eceef1;
 }
 
+.resume-photo-placeholder {
+  flex: 0 0 auto;
+  display: none;
+  aspect-ratio: 1 / 1;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--resume-accent) 28%, transparent);
+  background: color-mix(in srgb, var(--resume-accent) 7%, #fff);
+  color: color-mix(in srgb, var(--resume-accent) 70%, currentColor);
+}
+
+.resume-photo-placeholder-icon {
+  width: 48%;
+  height: 48%;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.72;
+}
+
 .resume-photo[data-shape="circle"] {
   border-radius: 50%;
 }
@@ -115,7 +136,7 @@
 
 .resume-page[data-template="meridian"] .resume-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 1.4rem;
   margin-bottom: calc(var(--resume-gap-section) * 1.6);
 }
@@ -126,8 +147,14 @@
 }
 
 .resume-page[data-template="meridian"] .resume-photo {
-  width: 86px;
-  height: 86px;
+  width: 129px;
+  height: 129px;
+}
+
+.resume-page[data-template="meridian"] .resume-photo-placeholder {
+  width: 129px;
+  height: 129px;
+  display: grid;
 }
 
 .resume-page[data-template="meridian"] .resume-header h2 {

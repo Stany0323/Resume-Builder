@@ -35,6 +35,8 @@ export function ResumePreview({ resume }: { resume: ResumeDocument }) {
             data-shape={photo.shape}
             src={photo.assetId}
           />
+        ) : resume.design.templateId === "meridian" ? (
+          <PhotoPlaceholder />
         ) : null}
         <div className="resume-header-text">
           <h2>{resume.personal.firstName} {resume.personal.lastName}</h2>
@@ -62,6 +64,17 @@ export function ResumePreview({ resume }: { resume: ResumeDocument }) {
         <ResumeSectionView key={section.id} section={section} />
       ))}
     </article>
+  );
+}
+
+function PhotoPlaceholder() {
+  return (
+    <span aria-hidden="true" className="resume-photo-placeholder">
+      <svg className="resume-photo-placeholder-icon" fill="none" focusable="false" viewBox="0 0 24 24">
+        <circle cx="12" cy="8.5" r="3.25" />
+        <path d="M5.75 19c.9-3.35 3.05-5.05 6.25-5.05s5.35 1.7 6.25 5.05" />
+      </svg>
+    </span>
   );
 }
 
