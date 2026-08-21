@@ -237,7 +237,7 @@
 .resume-page[data-template="slate"] .resume-header {
   padding-bottom: 0.8rem;
   margin-bottom: calc(var(--resume-gap-section) * 1.15);
-  border-bottom: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--resume-accent) 36%, transparent);
 }
 
 .resume-page[data-template="slate"] .resume-header h2 {
