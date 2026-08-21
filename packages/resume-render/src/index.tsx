@@ -1,5 +1,10 @@
 import React, { type ReactNode } from "react";
-import { getRenderableSections, hasVisibleSectionContent, type ResumeDocument, type ResumeSection } from "@resume-builder/core";
+import {
+  getRenderableSections,
+  hasVisibleSectionContent,
+  type ResumeDocument,
+  type ResumeSection,
+} from "@resume-builder/core";
 import { designTokenStyle } from "./design-tokens";
 import { SECTION_RENDERERS } from "./sections/registry";
 
@@ -39,30 +44,45 @@ export function ResumePreview({ resume }: { resume: ResumeDocument }) {
           <PhotoPlaceholder />
         ) : null}
         <div className="resume-header-text">
-          <h2>{resume.personal.firstName} {resume.personal.lastName}</h2>
+          <h2>
+            {resume.personal.firstName} {resume.personal.lastName}
+          </h2>
           {resume.personal.headline ? <p>{resume.personal.headline}</p> : null}
           <ul>
             {resume.personal.location ? (
-              <ContactItem icon="location" label="Location">{resume.personal.location}</ContactItem>
+              <ContactItem icon="location" label="Location">
+                {resume.personal.location}
+              </ContactItem>
             ) : null}
             {resume.personal.email ? (
-              <ContactItem icon="email" label="Email">{resume.personal.email}</ContactItem>
+              <ContactItem icon="email" label="Email">
+                {resume.personal.email}
+              </ContactItem>
             ) : null}
             {resume.personal.phone ? (
-              <ContactItem icon="phone" label="Phone">{resume.personal.phone}</ContactItem>
+              <ContactItem icon="phone" label="Phone">
+                {resume.personal.phone}
+              </ContactItem>
             ) : null}
             {resume.personal.dateOfBirth ? (
-              <ContactItem icon="birthday" label="Date of birth">Date of birth: {resume.personal.dateOfBirth}</ContactItem>
+              <ContactItem icon="birthday" label="Date of birth">
+                DOB: {resume.personal.dateOfBirth}
+              </ContactItem>
             ) : null}
             {resume.personal.links.map((link) => (
-              <li key={link.id}>{link.label ? `${link.label}: ` : ""}{link.value}</li>
+              <li key={link.id}>
+                {link.label ? `${link.label}: ` : ""}
+                {link.value}
+              </li>
             ))}
           </ul>
         </div>
       </header>
-      {getRenderableSections(resume).filter(hasVisibleSectionContent).map((section) => (
-        <ResumeSectionView key={section.id} section={section} />
-      ))}
+      {getRenderableSections(resume)
+        .filter(hasVisibleSectionContent)
+        .map((section) => (
+          <ResumeSectionView key={section.id} section={section} />
+        ))}
     </article>
   );
 }
@@ -70,7 +90,12 @@ export function ResumePreview({ resume }: { resume: ResumeDocument }) {
 function PhotoPlaceholder() {
   return (
     <span aria-hidden="true" className="resume-photo-placeholder">
-      <svg className="resume-photo-placeholder-icon" fill="none" focusable="false" viewBox="0 0 24 24">
+      <svg
+        className="resume-photo-placeholder-icon"
+        fill="none"
+        focusable="false"
+        viewBox="0 0 24 24"
+      >
         <circle cx="12" cy="8.5" r="3.25" />
         <path d="M5.75 19c.9-3.35 3.05-5.05 6.25-5.05s5.35 1.7 6.25 5.05" />
       </svg>
@@ -97,7 +122,13 @@ function ContactItem({
 
 type ContactIconName = "birthday" | "email" | "location" | "phone";
 
-function ContactIcon({ ariaLabel, icon }: { ariaLabel: string; icon: ContactIconName }) {
+function ContactIcon({
+  ariaLabel,
+  icon,
+}: {
+  ariaLabel: string;
+  icon: ContactIconName;
+}) {
   return (
     <svg
       aria-label={ariaLabel}
@@ -136,7 +167,11 @@ function ContactIcon({ ariaLabel, icon }: { ariaLabel: string; icon: ContactIcon
 
 function ResumeSectionView({ section }: { section: ResumeSection }) {
   return (
-    <section className="resume-section" data-section-id={section.id} data-section-type={section.type}>
+    <section
+      className="resume-section"
+      data-section-id={section.id}
+      data-section-type={section.type}
+    >
       <h3 data-block-id={`section:${section.id}:header`}>{section.title}</h3>
       {SECTION_RENDERERS[section.type](section)}
     </section>
