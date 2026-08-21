@@ -85,6 +85,12 @@
         { "id": "k2", "order": 1, "groupLabel": "Technical", "entries": ["SQL", "Python", "Amplitude", "Figma"] }
       ]
     },
+    "languages": {
+      "items": [
+        { "id": "g1", "order": 0, "language": "English", "level": 5 },
+        { "id": "g2", "order": 1, "language": "Shona", "level": 5 }
+      ]
+    },
     "hobbies": {
       "items": [
         { "id": "h1", "order": 0, "text": "Long-distance trail running" },

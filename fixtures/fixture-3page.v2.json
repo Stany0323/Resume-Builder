@@ -206,8 +206,15 @@
         { "id": "k1", "order": 0, "groupLabel": "Languages", "entries": ["Go", "Rust", "Python", "Java", "SQL", "TypeScript", "C"] },
         { "id": "k2", "order": 1, "groupLabel": "Infrastructure", "entries": ["Kubernetes", "Kafka", "PostgreSQL", "Terraform", "ClickHouse", "Redis"] },
         { "id": "k3", "order": 2, "groupLabel": "Practices", "entries": ["Distributed systems design", "Incident response", "Property-based testing", "Technical mentorship", "Architecture review"] },
-        { "id": "k4", "order": 3, "groupLabel": "Domains", "entries": ["Interbank settlement", "Prepaid billing", "Route optimisation", "Regulatory reporting"] },
-        { "id": "k5", "order": 4, "groupLabel": "Spoken", "entries": ["Shona (native)", "English (native)", "Dutch (professional working)", "Ndebele (conversational)"] }
+        { "id": "k4", "order": 3, "groupLabel": "Domains", "entries": ["Interbank settlement", "Prepaid billing", "Route optimisation", "Regulatory reporting"] }
+      ]
+    },
+    "languages": {
+      "items": [
+        { "id": "g1", "order": 0, "language": "Shona", "level": 5 },
+        { "id": "g2", "order": 1, "language": "English", "level": 5 },
+        { "id": "g3", "order": 2, "language": "Dutch", "level": 3 },
+        { "id": "g4", "order": 3, "language": "Ndebele", "level": 2 }
       ]
     },
     "hobbies": {

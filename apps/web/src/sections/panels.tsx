@@ -2,6 +2,8 @@ import {
   bulletsToText,
   reconcileLines,
   type HobbyItem,
+  type LanguageItem,
+  type LanguageLevel,
   type ReferenceItem,
   type SkillsItem,
 } from "@resume-builder/core";
@@ -16,6 +18,14 @@ import {
 } from "./list-controls";
 
 type ReferencesMode = "omitted" | "onRequest" | "listed";
+
+const LANGUAGE_LEVELS: Array<{ label: string; value: LanguageLevel }> = [
+  { label: "Basic", value: 1 },
+  { label: "Conversational", value: 2 },
+  { label: "Working", value: 3 },
+  { label: "Fluent", value: 4 },
+  { label: "Native", value: 5 },
+];
 
 /* ------------------------------------------------------------------ Skills */
 
@@ -65,6 +75,64 @@ export function SkillsPanel({
       ))}
       <UndoRow removal={list.removal} what="Skill group" />
       <AddButton label="Add a skill group" onClick={add} />
+    </>
+  );
+}
+
+/* --------------------------------------------------------------- Languages */
+
+export function LanguagesPanel({
+  items,
+  onChange,
+}: {
+  items: LanguageItem[];
+  onChange: (items: LanguageItem[]) => void;
+}) {
+  const list = useItemList(items, onChange);
+  const add = () => list.add({ id: makeId("g"), order: items.length, language: "", level: 4 });
+
+  if (items.length === 0 && !list.removal.pending) {
+    return (
+      <EmptyState
+        actionLabel="Add a language"
+        onAction={add}
+        text="Add languages with a level indicator. They’ll render with accent dots, not as plain text like “English fluent”."
+      />
+    );
+  }
+
+  return (
+    <>
+      {items.map((item) => (
+        <div className="item-editor" key={item.id}>
+          <div className="item-editor-header">
+            <TextField
+              label="Language"
+              onChange={(language) => list.update(item.id, { language })}
+              value={item.language}
+            />
+            <RemoveButton
+              label={`Remove ${item.language || "language"}`}
+              onRemove={() => list.remove(item.id)}
+            />
+          </div>
+          <label>
+            Level
+            <select
+              onChange={(event) => list.update(item.id, { level: Number(event.target.value) as LanguageLevel })}
+              value={item.level}
+            >
+              {LANGUAGE_LEVELS.map((level) => (
+                <option key={level.value} value={level.value}>
+                  {level.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      ))}
+      <UndoRow removal={list.removal} what="Language" />
+      <AddButton label="Add a language" onClick={add} />
     </>
   );
 }

@@ -169,6 +169,50 @@
   overflow-wrap: anywhere;
 }
 
+.resume-language-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  gap: 0.45rem 1rem;
+  margin-top: var(--resume-gap-item);
+}
+
+.resume-language {
+  display: flex;
+  align-items: center;
+  gap: 0.38rem;
+  min-width: 0;
+  break-inside: avoid-page;
+}
+
+.resume-language-name {
+  min-width: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.resume-language-separator {
+  color: color-mix(in srgb, currentColor 45%, transparent);
+}
+
+.resume-language-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.18rem;
+  flex: 0 0 auto;
+}
+
+.resume-language-dot {
+  width: 0.42rem;
+  height: 0.42rem;
+  border: 1px solid color-mix(in srgb, var(--resume-accent) 42%, transparent);
+  border-radius: 50%;
+}
+
+.resume-language-dot[data-filled="true"] {
+  border-color: var(--resume-accent);
+  background: var(--resume-accent);
+}
+
 .resume-photo {
   flex: 0 0 auto;
   display: block;

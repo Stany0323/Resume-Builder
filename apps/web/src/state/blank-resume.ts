@@ -31,6 +31,7 @@ export function createBlankResume(): ResumeDocument {
       summary: { text: "" },
       education: { items: [] },
       experience: { items: [] },
+      languages: { items: [] },
       skills: { items: [] },
       hobbies: { items: [] },
       references: { mode: "omitted", items: [] },
@@ -50,6 +51,7 @@ export function isBlankResume(resume: ResumeDocument): boolean {
     content.summary.text.trim() === "" &&
     content.education.items.length === 0 &&
     content.experience.items.length === 0 &&
+    content.languages.items.length === 0 &&
     content.skills.items.length === 0 &&
     content.hobbies.items.length === 0 &&
     content.references.items.length === 0

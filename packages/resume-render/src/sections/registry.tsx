@@ -4,6 +4,8 @@ import {
   type EducationSection,
   type ExperienceSection,
   type HobbiesSection,
+  type LanguageLevel,
+  type LanguagesSection,
   type ReferencesSection,
   type ResumeSection,
   type SectionType,
@@ -20,6 +22,7 @@ export const SECTION_RENDERERS: Record<SectionType, SectionRenderer> = {
   experience: (section) => renderExperience(section as ExperienceSection),
   education: (section) => renderEducation(section as EducationSection),
   skills: (section) => renderSkills(section as SkillsSection),
+  languages: (section) => renderLanguages(section as LanguagesSection),
   hobbies: (section) => renderHobbies(section as HobbiesSection),
   references: (section) => renderReferences(section as ReferencesSection),
 };
@@ -100,6 +103,34 @@ function renderSkills(section: SkillsSection) {
         </div>
       ))}
     </div>
+  );
+}
+
+function renderLanguages(section: LanguagesSection) {
+  return (
+    <div className="resume-language-list">
+      {byOrder(section.items).map((item) => (
+        <div className="resume-language" data-block-id={`section:${section.id}:item:${item.id}`} key={item.id}>
+          <span className="resume-language-name">{item.language}</span>
+          <span aria-hidden="true" className="resume-language-separator">-</span>
+          <LanguageDots level={item.level} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function LanguageDots({ level }: { level: LanguageLevel }) {
+  return (
+    <span
+      aria-label={`${level} out of 5`}
+      className="resume-language-dots"
+      role="img"
+    >
+      {[1, 2, 3, 4, 5].map((step) => (
+        <span className="resume-language-dot" data-filled={step <= level ? "true" : "false"} key={step} />
+      ))}
+    </span>
   );
 }
 

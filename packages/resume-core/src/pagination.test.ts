@@ -44,6 +44,7 @@ describe("resume pagination primitives", () => {
         summary: { text: "" },
         education: { items: [] },
         experience: { items: [] },
+        languages: { items: [] },
         skills: { items: [] },
         hobbies: { items: [] },
         references: { mode: "omitted", items: [] },

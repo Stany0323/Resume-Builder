@@ -110,6 +110,12 @@ export const TEMPLATE_SAMPLE: ResumeDocument = {
         },
       ],
     },
+    languages: {
+      items: [
+        { id: "s-g1", order: 0, language: "English", level: 5 },
+        { id: "s-g2", order: 1, language: "Shona", level: 5 },
+      ],
+    },
     hobbies: { items: [] },
     references: { mode: "omitted", items: [] },
   },

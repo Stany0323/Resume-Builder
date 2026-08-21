@@ -22,7 +22,12 @@ import { DesignPanel } from "./sections/DesignPanel";
 import { ExportBar } from "./sections/ExportBar";
 import { PersonalPanel } from "./sections/PersonalPanel";
 import { SummaryPanel } from "./sections/SummaryPanel";
-import { HobbiesPanel, ReferencesPanel, SkillsPanel } from "./sections/panels";
+import {
+  HobbiesPanel,
+  LanguagesPanel,
+  ReferencesPanel,
+  SkillsPanel,
+} from "./sections/panels";
 import { TextField } from "./sections/fields";
 import {
   AddButton,
@@ -53,6 +58,7 @@ type SidebarSectionId =
   | "education"
   | "experience"
   | "hobbies"
+  | "languages"
   | "personal"
   | "references"
   | "skills"
@@ -500,6 +506,22 @@ function Editor({
             <SkillsPanel
               items={resume.content.skills.items}
               onChange={(items) => setContent("skills", { items })}
+            />
+          </SidebarSection>
+
+          <SidebarSection
+            count={resume.content.languages.items.length}
+            id="languages"
+            isOpen={activeSidebarSection === "languages"}
+            onToggle={() => toggleSidebarSection("languages")}
+            sectionRef={(node) => {
+              sidebarSectionRefs.current.languages = node;
+            }}
+            title="Languages"
+          >
+            <LanguagesPanel
+              items={resume.content.languages.items}
+              onChange={(items) => setContent("languages", { items })}
             />
           </SidebarSection>
 

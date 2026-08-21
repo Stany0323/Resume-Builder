@@ -9,6 +9,7 @@ export const SECTION_TYPES = [
   "experience",
   "education",
   "skills",
+  "languages",
   "hobbies",
   "references",
 ] as const satisfies readonly SectionType[];
@@ -18,6 +19,7 @@ export const SECTION_BLOCK_EXTRACTORS: Record<SectionType, SectionBlockExtractor
   experience: extractSectionBlocks,
   education: extractSectionBlocks,
   skills: extractSectionBlocks,
+  languages: extractSectionBlocks,
   hobbies: extractSectionBlocks,
   references: extractSectionBlocks,
 };
@@ -126,6 +128,11 @@ function getItemPrimaryText(section: ResumeSection, item: BlockItem) {
       ].filter(Boolean).join(", ");
     case "skills":
       return `${stringValue(item.groupLabel)}: ${stringArrayValue(item.entries).join(", ")}`;
+    case "languages":
+      return [
+        stringValue(item.language),
+        typeof item.level === "number" ? `level ${item.level} of 5` : "",
+      ].filter(Boolean).join(", ");
     case "hobbies":
       return stringValue(item.text);
     case "references":

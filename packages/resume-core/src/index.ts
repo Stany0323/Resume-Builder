@@ -70,6 +70,7 @@ export interface ResumeContent {
   summary: { text: string };
   education: { items: EducationItem[] };
   experience: { items: ExperienceItem[] };
+  languages: { items: LanguageItem[] };
   skills: { items: SkillsItem[] };
   hobbies: { items: HobbyItem[] };
   references: {
@@ -82,6 +83,7 @@ export type RenderableResumeSection =
   | SummarySection
   | ExperienceSection
   | EducationSection
+  | LanguagesSection
   | SkillsSection
   | HobbiesSection
   | ReferencesSection;
@@ -133,6 +135,11 @@ export type SkillsItem = ResumeItem & {
   groupLabel: string;
   entries: string[];
 };
+export type LanguageLevel = 1 | 2 | 3 | 4 | 5;
+export type LanguageItem = ResumeItem & {
+  language: string;
+  level: LanguageLevel;
+};
 export type HobbyItem = ResumeItem & { text: string };
 export type ReferenceItem = ResumeItem & {
   name: string;
@@ -145,6 +152,7 @@ export type ReferenceItem = ResumeItem & {
 export type SummarySection = BaseSection<"summary", SummaryItem>;
 export type ExperienceSection = BaseSection<"experience", ExperienceItem>;
 export type EducationSection = BaseSection<"education", EducationItem>;
+export type LanguagesSection = BaseSection<"languages", LanguageItem>;
 export type SkillsSection = BaseSection<"skills", SkillsItem>;
 export type HobbiesSection = BaseSection<"hobbies", HobbyItem>;
 export type ReferencesSection = BaseSection<"references", ReferenceItem & { requestText?: string }>;
@@ -210,6 +218,7 @@ export function getRenderableSections(resume: ResumeDocument): ResumeSection[] {
     summary: getSummarySection(resume),
     experience: getExperienceSection(resume),
     education: getEducationSection(resume),
+    languages: getLanguagesSection(resume),
     skills: getSkillsSection(resume),
     hobbies: getHobbiesSection(resume),
     references: getReferencesSection(resume),
@@ -220,13 +229,13 @@ export function getRenderableSections(resume: ResumeDocument): ResumeSection[] {
 
 function getSectionOrder(resume: ResumeDocument): Array<ResumeSection["type"]> {
   if (resume.meta.profileType === "earlyCareer") {
-    return ["summary", "education", "experience", "skills", "hobbies", "references"];
+    return ["summary", "education", "experience", "skills", "languages", "hobbies", "references"];
   }
 
   switch (resume.design.templateId) {
     case "meridian":
     case "slate":
-      return ["summary", "experience", "education", "skills", "hobbies", "references"];
+      return ["summary", "experience", "education", "skills", "languages", "hobbies", "references"];
   }
 }
 
@@ -272,6 +281,10 @@ export function normalizeResumeDocument(document: ResumeDocument): ResumeDocumen
       pageSize: "A4",
       templateId: normalizeTemplateId(document.design.templateId),
     },
+    content: {
+      ...document.content,
+      languages: document.content.languages ?? { items: [] },
+    },
   };
 }
 
@@ -314,6 +327,15 @@ function getSkillsSection(resume: ResumeDocument): SkillsSection {
     type: "skills",
     title: "Skills",
     items: byOrder(resume.content.skills.items),
+  };
+}
+
+function getLanguagesSection(resume: ResumeDocument): LanguagesSection {
+  return {
+    id: "languages",
+    type: "languages",
+    title: "Languages",
+    items: byOrder(resume.content.languages.items),
   };
 }
 
@@ -390,6 +412,7 @@ function migrateV1ToV2(document: LegacyResumeDocumentV1): ResumeDocument {
       summary: { text: firstVisibleSectionItem(document, "summary")?.text as string ?? "" },
       education: { items: sectionItems<EducationItem>(document, "education") },
       experience: { items: sectionItems<ExperienceItem>(document, "experience") },
+      languages: { items: [] },
       skills: { items: sectionItems<SkillsItem>(document, "skills") },
       hobbies: { items: customTextItems(document).map((item) => ({ id: item.id, order: item.order, text: item.text })) },
       references: { mode: "omitted", items: [] },
@@ -454,6 +477,7 @@ export const sampleResume: ResumeDocument = {
     summary: { text: "Product manager with eight years building payments and lending products for emerging markets." },
     education: { items: [] },
     experience: { items: [] },
+    languages: { items: [] },
     skills: { items: [] },
     hobbies: { items: [] },
     references: { mode: "omitted", items: [] },
