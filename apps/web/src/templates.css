@@ -114,6 +114,29 @@
   border-radius: 4px;
 }
 
+.resume-reference-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin-top: var(--resume-gap-item);
+  break-inside: avoid-page;
+}
+
+.resume-reference {
+  display: grid;
+  gap: 0.16rem;
+  min-width: 0;
+}
+
+.resume-reference strong {
+  font-weight: 600;
+}
+
+.resume-reference span {
+  color: color-mix(in srgb, currentColor 68%, transparent);
+  overflow-wrap: anywhere;
+}
+
 .resume-photo {
   flex: 0 0 auto;
   display: block;

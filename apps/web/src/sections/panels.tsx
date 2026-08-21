@@ -107,6 +107,7 @@ const REFERENCE_MODES: Array<{ label: string; value: ReferencesMode }> = [
   { label: "“References available upon request.”", value: "onRequest" },
   { label: "List my referees", value: "listed" },
 ];
+const MAX_REFERENCES = 3;
 
 export function ReferencesPanel({
   items,
@@ -124,8 +125,14 @@ export function ReferencesPanel({
   // betrayal, and retaining them costs nothing.
   const setMode = (next: ReferencesMode) => onChange({ mode: next, items });
 
-  const add = () =>
+  const hasMaxReferences = items.length >= MAX_REFERENCES;
+  const add = () => {
+    if (hasMaxReferences) {
+      return;
+    }
+
     list.add({ id: makeId("r"), order: items.length, name: "", role: "", organization: "" });
+  };
 
   return (
     <>
@@ -188,7 +195,14 @@ export function ReferencesPanel({
             </div>
           ))}
           <UndoRow removal={list.removal} what="Referee" />
-          <AddButton label="Add a referee" onClick={add} />
+          {hasMaxReferences ? (
+            <p className="form-note">You can add up to 3 referees.</p>
+          ) : null}
+          <AddButton
+            disabled={hasMaxReferences}
+            label={hasMaxReferences ? "Maximum 3 referees" : "Add a referee"}
+            onClick={add}
+          />
         </>
       ) : null}
 

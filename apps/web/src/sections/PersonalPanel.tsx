@@ -106,10 +106,10 @@ export function PersonalPanel({
       />
 
       <Disclosure label="Optional details">
-        <TextField
-          label="Date of birth"
-          onChange={setOptional("dateOfBirth")}
-          type="month"
+        <DateOfBirthField
+          onChange={(value) =>
+            onChange({ dateOfBirth: value.trim() === "" ? undefined : value })
+          }
           value={personal.dateOfBirth ?? ""}
         />
         <DateOfBirthNote
@@ -118,6 +118,37 @@ export function PersonalPanel({
         />
       </Disclosure>
     </>
+  );
+}
+
+function DateOfBirthField({
+  onChange,
+  value,
+}: {
+  onChange: (value: string) => void;
+  value: string;
+}) {
+  const formattedValue = formatDateOfBirthInput(value);
+  const isComplete = formattedValue.length === 10;
+  const isValid = !isComplete || isValidDateOfBirth(formattedValue);
+
+  return (
+    <label>
+      Date of birth
+      <input
+        inputMode="numeric"
+        maxLength={10}
+        onChange={(event) => onChange(formatDateOfBirthInput(event.target.value))}
+        placeholder="dd-mm-yyyy"
+        type="text"
+        value={formattedValue}
+      />
+      {!isValid ? (
+        <span className="field-message" role="status">
+          Use dd-mm-yyyy.
+        </span>
+      ) : null}
+    </label>
   );
 }
 
@@ -187,6 +218,39 @@ function EmailWarning({ email }: { email: string }) {
     <p className="field-message" role="status">
       That doesn’t look like an email address.
     </p>
+  );
+}
+
+function formatDateOfBirthInput(value: string) {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [year, month, day] = value.split("-");
+    return `${day}-${month}-${year}`;
+  }
+
+  const digits = value.replace(/\D/g, "").slice(0, 8);
+  const day = digits.slice(0, 2);
+  const month = digits.slice(2, 4);
+  const year = digits.slice(4, 8);
+
+  return [day, month, year].filter(Boolean).join("-");
+}
+
+function isValidDateOfBirth(value: string) {
+  const match = /^(\d{2})-(\d{2})-(\d{4})$/.exec(value);
+  if (!match) {
+    return false;
+  }
+
+  const [, dayText, monthText, yearText] = match;
+  const day = Number(dayText);
+  const month = Number(monthText);
+  const year = Number(yearText);
+  const date = new Date(year, month - 1, day);
+
+  return (
+    date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day
   );
 }
 

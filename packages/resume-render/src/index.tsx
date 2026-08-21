@@ -66,7 +66,7 @@ export function ResumePreview({ resume }: { resume: ResumeDocument }) {
             ) : null}
             {resume.personal.dateOfBirth ? (
               <ContactItem icon="birthday" label="Date of birth">
-                DOB: {resume.personal.dateOfBirth}
+                DOB: {formatDateOfBirth(resume.personal.dateOfBirth)}
               </ContactItem>
             ) : null}
             {resume.personal.links.map((link) => (
@@ -118,6 +118,19 @@ function ContactItem({
       <span>{children}</span>
     </li>
   );
+}
+
+function formatDateOfBirth(value: string) {
+  if (/^\d{2}-\d{2}-\d{4}$/.test(value)) {
+    return value;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [year, month, day] = value.split("-");
+    return `${day}-${month}-${year}`;
+  }
+
+  return value;
 }
 
 type ContactIconName = "birthday" | "email" | "location" | "phone";

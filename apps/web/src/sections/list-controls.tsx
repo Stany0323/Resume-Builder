@@ -100,9 +100,17 @@ export function useRemovalUndo<T>(restore: (item: T, index: number) => void): Re
 
 /* ------------------------------------------------------------------- view */
 
-export function AddButton({ label, onClick }: { label: string; onClick: () => void }) {
+export function AddButton({
+  disabled = false,
+  label,
+  onClick,
+}: {
+  disabled?: boolean;
+  label: string;
+  onClick: () => void;
+}) {
   return (
-    <button className="add-button" onClick={onClick} type="button">
+    <button className="add-button" disabled={disabled} onClick={onClick} type="button">
       + {label}
     </button>
   );

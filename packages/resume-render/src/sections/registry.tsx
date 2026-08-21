@@ -105,17 +105,32 @@ function renderHobbies(section: HobbiesSection) {
 }
 
 function renderReferences(section: ReferencesSection) {
-  return byOrder(section.items).map((item) => (
-    <div className="resume-item" key={item.id}>
-      <p data-block-id={`section:${section.id}:item:${item.id}`}>
-        {item.requestText ? item.requestText : (
-          <>
-            <strong>{item.name}</strong>, {item.role}, {item.organization}
-            {item.email ? `, ${item.email}` : ""}
-            {item.phone ? `, ${item.phone}` : ""}
-          </>
-        )}
+  const items = byOrder(section.items);
+  const requestItem = items.find((item) => item.requestText);
+
+  if (requestItem) {
+    return (
+      <p className="resume-item" data-block-id={`section:${section.id}:item:${requestItem.id}`}>
+        {requestItem.requestText}
       </p>
+    );
+  }
+
+  return (
+    <div className="resume-reference-row">
+      {items.slice(0, 3).map((item) => (
+        <div
+          className="resume-reference"
+          data-block-id={`section:${section.id}:item:${item.id}`}
+          key={item.id}
+        >
+          <strong>{item.name}</strong>
+          {item.role ? <span>{item.role}</span> : null}
+          {item.organization ? <span>{item.organization}</span> : null}
+          {item.email ? <span>{item.email}</span> : null}
+          {item.phone ? <span>{item.phone}</span> : null}
+        </div>
+      ))}
     </div>
-  ));
+  );
 }
