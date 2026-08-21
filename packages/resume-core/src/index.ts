@@ -108,6 +108,9 @@ export type SummaryItem = ResumeItem & { text: string };
 export type ExperienceItem = ResumeItem & {
   role: string;
   organization: string;
+  organizationLogo?: {
+    assetId: string;
+  } | null;
   location?: string;
   startDate: string;
   endDate: string;
@@ -117,6 +120,9 @@ export type ExperienceItem = ResumeItem & {
 export type EducationItem = ResumeItem & {
   degree: string;
   institution: string;
+  institutionLogo?: {
+    assetId: string;
+  } | null;
   location?: string;
   startDate: string;
   endDate: string;

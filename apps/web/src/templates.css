@@ -43,7 +43,7 @@
   margin-top: 0;
 }
 
-.resume-item > p:first-child > span {
+.resume-date-range {
   font-variant-numeric: tabular-nums lining-nums;
   white-space: nowrap;
 }
@@ -85,13 +85,34 @@
 }
 
 .resume-section h3,
-.resume-item p:first-child {
+.resume-item p:first-child,
+.resume-entry-heading {
   break-after: avoid;
   page-break-after: avoid;
 }
 
 .resume-item {
   break-inside: avoid-page;
+}
+
+.resume-entry-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.48rem;
+}
+
+.resume-entry-copy {
+  display: grid;
+  gap: 0.08rem;
+  min-width: 0;
+}
+
+.resume-entry-logo {
+  flex: 0 0 auto;
+  width: 1.85rem;
+  height: 1.85rem;
+  object-fit: contain;
+  border-radius: 4px;
 }
 
 .resume-photo {
@@ -203,13 +224,13 @@
 .resume-page[data-template="meridian"]
   .resume-section[data-section-type="experience"]
   .resume-item
-  > p:first-child
-  > span,
+  > .resume-entry-heading
+  > .resume-date-range,
 .resume-page[data-template="meridian"]
   .resume-section[data-section-type="education"]
   .resume-item
-  > p:first-child
-  > span {
+  > .resume-entry-heading
+  > .resume-date-range {
   position: absolute;
   top: 0.15em;
   left: 0;
@@ -218,7 +239,8 @@
   font-size: calc(var(--resume-font-size) * 0.85);
 }
 
-.resume-page[data-template="meridian"] .resume-item > p:first-child strong {
+.resume-page[data-template="meridian"] .resume-item > p:first-child strong,
+.resume-page[data-template="meridian"] .resume-entry-copy strong {
   font-weight: 600;
 }
 
@@ -303,13 +325,13 @@
 .resume-page[data-template="slate"]
   .resume-section[data-section-type="experience"]
   .resume-item
-  > p:first-child
-  > span,
+  > .resume-entry-heading
+  > .resume-date-range,
 .resume-page[data-template="slate"]
   .resume-section[data-section-type="education"]
   .resume-item
-  > p:first-child
-  > span {
+  > .resume-entry-heading
+  > .resume-date-range {
   position: absolute;
   top: 0.2em;
   left: 0;

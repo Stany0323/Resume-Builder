@@ -33,14 +33,23 @@ function renderSummary(section: SummarySection) {
 function renderExperience(section: ExperienceSection) {
   return byOrder(section.items).map((item) => (
     <div className="resume-item" key={item.id}>
-      <p data-block-id={`section:${section.id}:item:${item.id}`}>
-        <strong>{item.role}</strong>
+      <div className="resume-entry-heading" data-block-id={`section:${section.id}:item:${item.id}`}>
+        {item.organizationLogo ? (
+          <img
+            alt={item.organization ? `${item.organization} logo` : ""}
+            className="resume-entry-logo"
+            src={item.organizationLogo.assetId}
+          />
+        ) : null}
+        <div className="resume-entry-copy">
+          <strong>{item.role}</strong>
+          <span className="resume-item-meta">
+            {item.organization}
+            {item.location ? `, ${item.location}` : ""}
+          </span>
+        </div>
         <DateRange startDate={item.startDate} endDate={item.endDate} />
-      </p>
-      <p className="resume-item-meta">
-        {item.organization}
-        {item.location ? `, ${item.location}` : ""}
-      </p>
+      </div>
       {typeof item.summary === "string" && item.summary.length > 0 ? (
         <p data-block-id={`section:${section.id}:item:${item.id}:summary`}>{item.summary}</p>
       ) : null}
@@ -52,14 +61,23 @@ function renderExperience(section: ExperienceSection) {
 function renderEducation(section: EducationSection) {
   return byOrder(section.items).map((item) => (
     <div className="resume-item" key={item.id}>
-      <p data-block-id={`section:${section.id}:item:${item.id}`}>
-        <strong>{item.degree}</strong>
+      <div className="resume-entry-heading" data-block-id={`section:${section.id}:item:${item.id}`}>
+        {item.institutionLogo ? (
+          <img
+            alt={item.institution ? `${item.institution} logo` : ""}
+            className="resume-entry-logo"
+            src={item.institutionLogo.assetId}
+          />
+        ) : null}
+        <div className="resume-entry-copy">
+          <strong>{item.degree}</strong>
+          <span className="resume-item-meta">
+            {item.institution}
+            {item.location ? `, ${item.location}` : ""}
+          </span>
+        </div>
         <DateRange startDate={item.startDate} endDate={item.endDate} />
-      </p>
-      <p className="resume-item-meta">
-        {item.institution}
-        {item.location ? `, ${item.location}` : ""}
-      </p>
+      </div>
       {item.detail ? <p data-block-id={`section:${section.id}:item:${item.id}:detail`}>{item.detail}</p> : null}
       <Bullets sectionId={section.id} itemId={item.id} bullets={item.bullets} />
     </div>

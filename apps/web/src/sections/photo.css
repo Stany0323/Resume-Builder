@@ -64,6 +64,24 @@
 
 .photo-current { display: flex; align-items: center; gap: 0.8rem; margin: 0.5rem 0; }
 
+.logo-field { margin-top: 0.75rem; }
+
+.logo-current {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 0.45rem 0;
+}
+
+.logo-preview {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+  border: 1px solid var(--border, #dfe2e8);
+  border-radius: 6px;
+  background: #fff;
+}
+
 .photo-preview {
   width: 64px;
   height: 64px;

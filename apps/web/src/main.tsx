@@ -35,6 +35,13 @@ import "./onboarding/chooser.css";
 type ExperienceTextField = "role" | "organization" | "location";
 type EducationTextField = "degree" | "institution" | "location";
 
+type EntryLogo = { assetId: string };
+
+const LOGO_OUTPUT_SIZE = 256;
+const LOGO_IMAGE_QUALITY = 0.86;
+const MAX_LOGO_UPLOAD_BYTES = 4 * 1024 * 1024;
+const LOGO_ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/svg+xml"];
+
 const months = [
   ["01", "January"], ["02", "February"], ["03", "March"], ["04", "April"],
   ["05", "May"], ["06", "June"], ["07", "July"], ["08", "August"],
@@ -235,6 +242,12 @@ function Editor({
                   onChange={(value) => experience.update(item.id, { organization: value })}
                   value={item.organization}
                 />
+                <EntryLogoField
+                  entity={item.organization}
+                  label="Organisation logo"
+                  logo={item.organizationLogo ?? null}
+                  onChange={(logo) => experience.update(item.id, { organizationLogo: logo })}
+                />
                 <TextField
                   label="Location"
                   onChange={(value) => experience.update(item.id, { location: emptyToUndefined(value) })}
@@ -280,6 +293,12 @@ function Editor({
                   label="Institution"
                   onChange={(value) => education.update(item.id, { institution: value })}
                   value={item.institution}
+                />
+                <EntryLogoField
+                  entity={item.institution}
+                  label="Institution logo"
+                  logo={item.institutionLogo ?? null}
+                  onChange={(logo) => education.update(item.id, { institutionLogo: logo })}
                 />
                 <DateRangeFields
                   endDate={item.endDate}
@@ -410,6 +429,91 @@ function BulletsField({
   );
 }
 
+function EntryLogoField({
+  entity,
+  label,
+  logo,
+  onChange,
+}: {
+  entity: string;
+  label: string;
+  logo: EntryLogo | null;
+  onChange: (logo: EntryLogo | null) => void;
+}) {
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFile = async (file: File | undefined) => {
+    if (!file) {
+      return;
+    }
+
+    setError(null);
+
+    if (!LOGO_ACCEPTED_TYPES.includes(file.type)) {
+      setError("Use a JPEG, PNG, WebP or SVG logo.");
+      return;
+    }
+
+    if (file.size > MAX_LOGO_UPLOAD_BYTES) {
+      setError("That logo is over 4MB. Try a smaller file.");
+      return;
+    }
+
+    setBusy(true);
+    try {
+      onChange({ assetId: await renderLogoFile(file) });
+    } catch {
+      setError("That logo could not be read.");
+    } finally {
+      setBusy(false);
+      if (fileInput.current) {
+        fileInput.current.value = "";
+      }
+    }
+  };
+
+  return (
+    <div className="logo-field">
+      <span className="field-group-label">{label}</span>
+      {logo ? (
+        <div className="logo-current">
+          <img alt={entity ? `${entity} logo` : ""} className="logo-preview" src={logo.assetId} />
+          <div className="photo-current-actions">
+            <button className="link-button" onClick={() => fileInput.current?.click()} type="button">
+              Replace
+            </button>
+            <button className="link-button" onClick={() => onChange(null)} type="button">
+              Remove
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <button
+            className="add-button"
+            disabled={busy}
+            onClick={() => fileInput.current?.click()}
+            type="button"
+          >
+            {busy ? "Reading..." : `+ Add ${label.toLowerCase()}`}
+          </button>
+          <span className="field-hint">Optional mark shown beside this entry.</span>
+        </>
+      )}
+      <input
+        accept={LOGO_ACCEPTED_TYPES.join(",")}
+        onChange={(event) => void handleFile(event.target.files?.[0])}
+        ref={fileInput}
+        style={{ display: "none" }}
+        type="file"
+      />
+      {error ? <p className="field-message" role="alert">{error}</p> : null}
+    </div>
+  );
+}
+
 function canonicalBulletText(text: string) {
   return splitBulletLines(text).join("\n");
 }
@@ -495,6 +599,54 @@ function parseMonthYear(value: string) {
     month: months.some(([candidate]) => candidate === month) ? month : "01",
     year: years.includes(year) ? year : String(currentYear),
   };
+}
+
+async function renderLogoFile(file: File): Promise<string> {
+  const image = await loadImage(file);
+  const canvas = document.createElement("canvas");
+  canvas.width = LOGO_OUTPUT_SIZE;
+  canvas.height = LOGO_OUTPUT_SIZE;
+
+  const context = canvas.getContext("2d");
+  if (!context) {
+    throw new Error("Canvas unavailable");
+  }
+
+  context.imageSmoothingQuality = "high";
+
+  const scale = Math.min(
+    LOGO_OUTPUT_SIZE / image.naturalWidth,
+    LOGO_OUTPUT_SIZE / image.naturalHeight,
+  );
+  const width = image.naturalWidth * scale;
+  const height = image.naturalHeight * scale;
+
+  context.drawImage(
+    image,
+    (LOGO_OUTPUT_SIZE - width) / 2,
+    (LOGO_OUTPUT_SIZE - height) / 2,
+    width,
+    height,
+  );
+
+  return canvas.toDataURL("image/png", LOGO_IMAGE_QUALITY);
+}
+
+function loadImage(file: File): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    const url = URL.createObjectURL(file);
+
+    image.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(image);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Image failed to load"));
+    };
+    image.src = url;
+  });
 }
 
 createRoot(document.getElementById("root")!).render(
