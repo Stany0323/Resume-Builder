@@ -25,7 +25,20 @@ export function printResume(resume: ResumeDocument): void {
   const style = document.createElement("style");
 
   style.id = STYLE_ID;
-  style.textContent = `@page { size: ${A4_PAGE_SIZE}; margin: 0; }`;
+  style.textContent = `
+    @page {
+      size: ${A4_PAGE_SIZE};
+      margin: 0;
+    }
+
+    @media print {
+      body[data-printing="true"] .resume-page {
+        min-height: auto;
+        -webkit-box-decoration-break: clone;
+        box-decoration-break: clone;
+      }
+    }
+  `;
 
   document.getElementById(STYLE_ID)?.remove();
   document.head.append(style);
