@@ -86,6 +86,23 @@
   list-style: none;
 }
 
+.resume-contact-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32em;
+}
+
+.resume-contact-icon {
+  width: 0.92em;
+  height: 0.92em;
+  flex: 0 0 auto;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.78;
+}
+
 /* CSS half of the orphan/widow story. The measured engine decides breaks;
    print has to agree. */
 .resume-section h3,

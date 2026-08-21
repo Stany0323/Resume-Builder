@@ -12,7 +12,9 @@
    --------------------------------------------------------------------------- */
 
 @media print {
+  .dashboard-header,
   .toolbar,
+  .topbar,
   .segmented-control,
   .add-button,
   .remove-button,
@@ -49,30 +51,29 @@
   }
 }
 
-/* Export controls at the foot of the form panel. "Your data is never trapped"
-   is a stated product bet — these stay visible rather than living in a menu. */
+/* Export controls live with the primary header actions. */
 
 .export-section {
-  padding: 14px 24px 16px;
-  border-top: 1px solid var(--border, #e2e5ea);
-  background: var(--surface, #fff);
+  flex: 0 0 auto;
 }
 
 .export-bar {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
 }
 
 .export-bar button {
-  flex: 1 1 auto;
-  min-height: 38px;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   padding: 0.55rem 0.8rem;
   border: 1px solid var(--border, #c8ccd4);
   border-radius: var(--radius-control, 6px);
   background: var(--surface, #fff);
   color: var(--text, #1d232a);
   font: inherit;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: border-color 120ms ease, background-color 120ms ease, color 120ms ease;
@@ -96,9 +97,18 @@
 }
 
 .save-status {
-  padding-top: 0.5rem;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
   color: var(--text-muted, #8a8f9a);
   font-size: 0.8rem;
+  line-height: 1.25;
 }
 
 .import-error {
@@ -109,4 +119,24 @@
   background: var(--danger-bg, #fff4f1);
   color: var(--danger, #b33a36);
   font-size: 0.85rem;
+}
+
+@media (max-width: 800px) {
+  .export-bar button {
+    width: 40px;
+    min-width: 40px;
+    padding: 0;
+  }
+
+  .export-bar button span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
 }

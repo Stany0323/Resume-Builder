@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import type { ResumeDocument } from "@resume-builder/core";
+import { Download } from "lucide-react";
 import { downloadResumeJson, readResumeFile, ResumeImportError } from "../state/document-file";
 import { canPrintReliably, printResume } from "../export/print-export";
 import type { SaveStatus } from "../state/persistence";
@@ -52,7 +53,8 @@ export function ExportBar({
           title={canPrintReliably() ? undefined : "Printing to PDF isn’t reliable on mobile — use a desktop browser."}
           type="button"
         >
-          Download PDF
+          <Download size={16} strokeWidth={2} />
+          <span>Download PDF</span>
         </button>
         {SHOW_JSON_CONTROLS ? (
           <>

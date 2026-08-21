@@ -145,6 +145,13 @@ button {
   transition: border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
 }
 
+.dashboard-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
 .dashboard-template-button:hover {
   border-color: color-mix(in srgb, var(--accent) 45%, var(--border-strong));
   background: var(--surface-subtle);
@@ -162,16 +169,10 @@ button {
   border-right: 1px solid var(--border);
   background: var(--surface);
   display: grid;
-  grid-template-rows: var(--topbar-height, 88px) minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr);
   min-height: 0;
   overflow: hidden;
   scrollbar-gutter: stable;
-}
-
-.toolbar::before {
-  content: "";
-  border-bottom: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 98%, var(--app-bg));
 }
 
 .toolbar-content {
@@ -570,18 +571,18 @@ button {
     display: none;
   }
 
+  .dashboard-actions {
+    gap: 8px;
+  }
+
   .toolbar {
     grid-column: 1;
     grid-row: 2;
-    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-rows: minmax(0, 1fr);
     border-right: 0;
     border-bottom: 1px solid var(--border);
     min-height: 0;
     overflow: hidden;
-  }
-
-  .toolbar::before {
-    content: none;
   }
 
   .toolbar-content {

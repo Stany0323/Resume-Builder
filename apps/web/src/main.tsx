@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import {
   bulletsToText,
   reconcileLines,
+  splitBulletLines,
   type EducationItem,
   type ExperienceItem,
   type ResumeDocument,
@@ -182,10 +183,13 @@ function Editor({
             <p>Create a professional resume that gets you hired</p>
           </div>
         </div>
-        <button className="dashboard-template-button" onClick={onChooseTemplate} type="button">
-          <LayoutGrid size={16} strokeWidth={2} />
-          <span>Browse templates</span>
-        </button>
+        <div className="dashboard-actions">
+          <ExportBar onImport={setResume} resume={resume} saveStatus={saveStatus} />
+          <button className="dashboard-template-button" onClick={onChooseTemplate} type="button">
+            <LayoutGrid size={16} strokeWidth={2} />
+            <span>Browse templates</span>
+          </button>
+        </div>
       </header>
 
       <aside className="toolbar" aria-label="Resume controls">
@@ -318,8 +322,6 @@ function Editor({
             />
           </section>
         </div>
-
-        <ExportBar onImport={setResume} resume={resume} saveStatus={saveStatus} />
       </aside>
 
       <section className="workspace" aria-label="Resume workspace">
@@ -378,16 +380,27 @@ function BulletsField({
   bullets: Array<{ id: string; order: number; text: string }>;
   onChange: (value: string) => void;
 }) {
+  const bulletText = bulletsToText(bullets);
+  const [draft, setDraft] = useState(bulletText);
   const longest = bullets.reduce((max, bullet) => Math.max(max, bullet.text.length), 0);
+
+  useEffect(() => {
+    if (canonicalBulletText(draft) !== bulletText) {
+      setDraft(bulletText);
+    }
+  }, [bulletText, draft]);
 
   return (
     <label>
       Achievements — one per line
       <textarea
         className="bullets-textarea"
-        onChange={(event) => onChange(event.target.value)}
+        onChange={(event) => {
+          setDraft(event.target.value);
+          onChange(event.target.value);
+        }}
         rows={Math.max(3, Math.min(8, bullets.length + 1))}
-        value={bulletsToText(bullets)}
+        value={draft}
       />
       <span className="counter-line">
         {bullets.length} {bullets.length === 1 ? "bullet" : "bullets"}
@@ -395,6 +408,10 @@ function BulletsField({
       </span>
     </label>
   );
+}
+
+function canonicalBulletText(text: string) {
+  return splitBulletLines(text).join("\n");
 }
 
 function DateRangeFields({
