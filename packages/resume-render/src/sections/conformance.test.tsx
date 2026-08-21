@@ -53,6 +53,31 @@ describe("section render/block conformance", () => {
     expect(renderedMarkup).not.toContain("SENTINEL");
     expect(renderedMarkup).toContain("References available upon request.");
   });
+
+  it("renders language levels as a ten-dot scale", () => {
+    const resume = fixture3Page as ResumeDocument;
+    const languagesSection = getRenderableSections(resume).find((section) => section.type === "languages");
+
+    if (!languagesSection) {
+      throw new Error("Fixture is missing a languages section.");
+    }
+
+    const renderedMarkup = renderToStaticMarkup(
+      <section>
+        {SECTION_RENDERERS.languages(languagesSection)}
+      </section>,
+    );
+
+    const languageCount = languagesSection.items.length;
+    const dotMatches = renderedMarkup.match(/class="resume-language-dot"/g) ?? [];
+    const filledDotMatches = renderedMarkup.match(/data-filled="true"/g) ?? [];
+
+    expect(dotMatches).toHaveLength(languageCount * 10);
+    expect(filledDotMatches).toHaveLength(
+      languagesSection.items.reduce((total, item) => total + item.level * 2, 0),
+    );
+    expect(renderedMarkup).toContain("out of 10");
+  });
 });
 
 function extractDataBlockIds(markup: string) {

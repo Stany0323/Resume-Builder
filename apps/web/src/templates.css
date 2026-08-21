@@ -133,9 +133,27 @@
   font-weight: 600;
 }
 
-.resume-reference span {
+.resume-reference-detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  min-width: 0;
   color: color-mix(in srgb, currentColor 68%, transparent);
+}
+
+.resume-reference-detail > span {
+  min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.resume-reference-icon {
+  width: 1.02em;
+  height: 1.02em;
+  flex: 0 0 auto;
+  stroke: var(--resume-accent);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
 }
 
 .resume-skills-grid {

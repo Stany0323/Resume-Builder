@@ -120,15 +120,19 @@ function renderLanguages(section: LanguagesSection) {
   );
 }
 
+const LANGUAGE_DOT_COUNT = 10;
+
 function LanguageDots({ level }: { level: LanguageLevel }) {
+  const filledDots = level * 2;
+
   return (
     <span
-      aria-label={`${level} out of 5`}
+      aria-label={`${filledDots} out of ${LANGUAGE_DOT_COUNT}`}
       className="resume-language-dots"
       role="img"
     >
-      {[1, 2, 3, 4, 5].map((step) => (
-        <span className="resume-language-dot" data-filled={step <= level ? "true" : "false"} key={step} />
+      {Array.from({ length: LANGUAGE_DOT_COUNT }, (_, index) => index + 1).map((step) => (
+        <span className="resume-language-dot" data-filled={step <= filledDots ? "true" : "false"} key={step} />
       ))}
     </span>
   );
@@ -165,12 +169,67 @@ function renderReferences(section: ReferencesSection) {
           key={item.id}
         >
           <strong>{item.name}</strong>
-          {item.role ? <span>{item.role}</span> : null}
-          {item.organization ? <span>{item.organization}</span> : null}
-          {item.email ? <span>{item.email}</span> : null}
-          {item.phone ? <span>{item.phone}</span> : null}
+          {item.role ? <ReferenceDetail icon="role">{item.role}</ReferenceDetail> : null}
+          {item.organization ? <ReferenceDetail icon="organization">{item.organization}</ReferenceDetail> : null}
+          {item.email ? <ReferenceDetail icon="email">{item.email}</ReferenceDetail> : null}
+          {item.phone ? <ReferenceDetail icon="phone">{item.phone}</ReferenceDetail> : null}
         </div>
       ))}
     </div>
+  );
+}
+
+type ReferenceIconName = "email" | "organization" | "phone" | "role";
+
+function ReferenceDetail({
+  children,
+  icon,
+}: {
+  children: ReactNode;
+  icon: ReferenceIconName;
+}) {
+  return (
+    <span className="resume-reference-detail">
+      <ReferenceIcon icon={icon} />
+      <span>{children}</span>
+    </span>
+  );
+}
+
+function ReferenceIcon({ icon }: { icon: ReferenceIconName }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className="resume-reference-icon"
+      fill="none"
+      focusable="false"
+      viewBox="0 0 24 24"
+    >
+      {icon === "role" ? (
+        <>
+          <path d="M8 7V6a3 3 0 0 1 3-3h2a3 3 0 0 1 3 3v1" />
+          <path d="M5 7h14v12H5z" />
+          <path d="M9 12h6" />
+        </>
+      ) : null}
+      {icon === "organization" ? (
+        <>
+          <path d="M6 20V5h8v15" />
+          <path d="M14 9h4v11" />
+          <path d="M9 8h2" />
+          <path d="M9 12h2" />
+          <path d="M9 16h2" />
+        </>
+      ) : null}
+      {icon === "email" ? (
+        <>
+          <path d="M4 6h16v12H4z" />
+          <path d="m4 7 8 6 8-6" />
+        </>
+      ) : null}
+      {icon === "phone" ? (
+        <path d="M7 4h3l1.2 4-2 1.1c1 2.1 2.6 3.7 4.7 4.7l1.1-2 4 1.2v3c0 1.1-.9 2-2 2C10.9 18 6 13.1 6 6c0-1.1.9-2 1-2Z" />
+      ) : null}
+    </svg>
   );
 }
