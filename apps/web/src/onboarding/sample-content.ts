@@ -1,15 +1,5 @@
 import type { ResumeDocument } from "@resume-builder/core";
 
-/**
- * The document rendered inside template thumbnails.
- *
- * Deliberately short. At thumbnail scale nobody reads the words — what reads
- * is *structure*: header weight, ruled vs unruled headings, spacing rhythm,
- * where the accent lands. So this carries one of each shape and stops.
- *
- * It is never editable and never saved. It exists so the picker can render the
- * real templates rather than shipping screenshots that drift out of date.
- */
 export const TEMPLATE_SAMPLE: ResumeDocument = {
   schemaVersion: 2,
   meta: {
@@ -19,9 +9,9 @@ export const TEMPLATE_SAMPLE: ResumeDocument = {
     profileType: "experienced",
   },
   design: {
-    templateId: "atlas",
+    templateId: "meridian",
     pageSize: "A4",
-    fontPairing: "source",
+    fontPairing: "neue",
     typeScale: "normal",
     density: "normal",
     margins: "normal",
@@ -36,7 +26,12 @@ export const TEMPLATE_SAMPLE: ResumeDocument = {
     email: "amara@example.com",
     phone: "+263 77 000 0000",
     links: [
-      { id: "s-l1", type: "linkedin", label: "LinkedIn", value: "linkedin.com/in/example" },
+      {
+        id: "s-l1",
+        type: "linkedin",
+        label: "LinkedIn",
+        value: "linkedin.com/in/example",
+      },
     ],
     photo: null,
   },
@@ -55,8 +50,16 @@ export const TEMPLATE_SAMPLE: ResumeDocument = {
           startDate: "2023-02",
           endDate: "present",
           bullets: [
-            { id: "s-x1b1", order: 0, text: "Grew mobile wallet from 90,000 to 400,000 monthly active users in 19 months." },
-            { id: "s-x1b2", order: 1, text: "Cut onboarding drop-off from 61% to 28% by rebuilding identity verification." },
+            {
+              id: "s-x1b1",
+              order: 0,
+              text: "Grew mobile wallet from 90,000 to 400,000 monthly active users in 19 months.",
+            },
+            {
+              id: "s-x1b2",
+              order: 1,
+              text: "Cut onboarding drop-off from 61% to 28% by rebuilding identity verification.",
+            },
           ],
         },
         {
@@ -68,7 +71,11 @@ export const TEMPLATE_SAMPLE: ResumeDocument = {
           startDate: "2020-06",
           endDate: "2023-01",
           bullets: [
-            { id: "s-x2b1", order: 0, text: "Launched merchant settlement reporting used by 2,300 sellers at launch." },
+            {
+              id: "s-x2b1",
+              order: 0,
+              text: "Launched merchant settlement reporting used by 2,300 sellers at launch.",
+            },
           ],
         },
       ],
@@ -89,8 +96,18 @@ export const TEMPLATE_SAMPLE: ResumeDocument = {
     },
     skills: {
       items: [
-        { id: "s-k1", order: 0, groupLabel: "Product", entries: ["Discovery", "Roadmapping", "Pricing"] },
-        { id: "s-k2", order: 1, groupLabel: "Technical", entries: ["SQL", "Python", "Figma"] },
+        {
+          id: "s-k1",
+          order: 0,
+          groupLabel: "Product",
+          entries: ["Discovery", "Roadmapping", "Pricing"],
+        },
+        {
+          id: "s-k2",
+          order: 1,
+          groupLabel: "Technical",
+          entries: ["SQL", "Python", "Figma"],
+        },
       ],
     },
     hobbies: { items: [] },

@@ -15,7 +15,7 @@ export {
 } from "./pagination/paginate";
 
 export type PageSize = "A4";
-export type TemplateId = "atlas" | "meridian" | "quill" | "slate" | "lumen";
+export type TemplateId = "meridian" | "slate";
 export type ProfileType = "general" | "earlyCareer" | "experienced" | "changer";
 export type LinkType = "email" | "phone" | "url" | "linkedin" | "github" | "custom";
 
@@ -148,7 +148,7 @@ export type ResumeSection = RenderableResumeSection;
 export interface LegacyResumeDocumentV1 {
   schemaVersion: 1;
   meta: ResumeDocument["meta"];
-  design: ResumeDocument["design"];
+  design: Omit<ResumeDocument["design"], "templateId"> & { templateId: string };
   header: {
     fullName: string;
     headline?: string;
@@ -218,11 +218,8 @@ function getSectionOrder(resume: ResumeDocument): Array<ResumeSection["type"]> {
   }
 
   switch (resume.design.templateId) {
-    case "atlas":
     case "meridian":
-    case "quill":
     case "slate":
-    case "lumen":
       return ["summary", "experience", "education", "skills", "hobbies", "references"];
   }
 }
@@ -267,8 +264,13 @@ export function normalizeResumeDocument(document: ResumeDocument): ResumeDocumen
     design: {
       ...document.design,
       pageSize: "A4",
+      templateId: normalizeTemplateId(document.design.templateId),
     },
   };
+}
+
+function normalizeTemplateId(templateId: string): TemplateId {
+  return templateId === "meridian" ? "meridian" : "slate";
 }
 
 function getSummarySection(resume: ResumeDocument): SummarySection {
@@ -362,7 +364,10 @@ function migrateV1ToV2(document: LegacyResumeDocumentV1): ResumeDocument {
   return {
     schemaVersion: 2,
     meta: document.meta,
-    design: document.design,
+    design: {
+      ...document.design,
+      templateId: normalizeTemplateId(document.design.templateId),
+    },
     personal: {
       firstName,
       lastName,
@@ -420,9 +425,9 @@ export const sampleResume: ResumeDocument = {
     profileType: "experienced",
   },
   design: {
-    templateId: "atlas",
+    templateId: "slate",
     pageSize: "A4",
-    fontPairing: "source",
+    fontPairing: "contrast",
     typeScale: "normal",
     density: "normal",
     margins: "normal",

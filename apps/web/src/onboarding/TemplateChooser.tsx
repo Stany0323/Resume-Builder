@@ -11,20 +11,6 @@ import {
 } from "@resume-builder/render";
 import { TEMPLATE_SAMPLE } from "./sample-content";
 
-/**
- * First-run template picker.
- *
- * Thumbnails are LIVE RENDERS of the real templates, scaled down — not
- * screenshots. A screenshot is a second source of truth that drifts the first
- * time a template changes and nobody notices; a scaled render cannot.
- *
- * IMPORTANT: this mounts ResumePreview once per template, so several copies of
- * every `data-block-id` exist in the DOM while it's open. Safe only because the
- * chooser and the editor are never mounted together, and /?measure=1 renders
- * neither. Keep them mutually exclusive — otherwise measurement silently reads
- * the wrong nodes.
- */
-
 const THUMBNAIL_SCALE = 0.26;
 
 export function TemplateChooser({
@@ -42,8 +28,9 @@ export function TemplateChooser({
       <header className="chooser-header">
         <h1>Pick a starting point</h1>
         <p>
-          Five typographic systems, not five colour schemes. All of them parse cleanly in applicant tracking systems,
-          and you can switch at any time without losing a word.
+          Choose a photo-ready layout or a technical no-photo layout. Both parse
+          cleanly in applicant tracking systems, and you can switch at any time
+          without losing a word.
         </p>
       </header>
 
@@ -59,10 +46,16 @@ export function TemplateChooser({
             <TemplateThumbnail accent={accent} templateId={id} />
             <span className="chooser-card-meta">
               <span className="chooser-card-name">{TEMPLATES[id].label}</span>
-              <span className="chooser-card-tagline">{TEMPLATES[id].tagline}</span>
-              {TEMPLATES[id].supportsPhoto ? <span className="photo-badge">Photo</span> : null}
+              <span className="chooser-card-tagline">
+                {TEMPLATES[id].tagline}
+              </span>
+              {TEMPLATES[id].supportsPhoto ? (
+                <span className="photo-badge">Photo</span>
+              ) : null}
             </span>
-            <span className="chooser-card-description">{TEMPLATES[id].description}</span>
+            <span className="chooser-card-description">
+              {TEMPLATES[id].description}
+            </span>
           </button>
         ))}
       </div>
@@ -86,7 +79,11 @@ export function TemplateChooser({
       </fieldset>
 
       <div className="chooser-actions">
-        <button className="primary" onClick={() => onChoose(selected, accent)} type="button">
+        <button
+          className="primary"
+          onClick={() => onChoose(selected, accent)}
+          type="button"
+        >
           Start with {TEMPLATES[selected].label}
         </button>
         {onSkip ? (
@@ -99,14 +96,6 @@ export function TemplateChooser({
   );
 }
 
-/**
- * A real template render, scaled. The outer box carries the scaled dimensions
- * so surrounding layout needn't know a transform is happening.
- *
- * Uses applyTemplate() so each thumbnail shows the pairing the template was
- * designed around — otherwise every card renders in whatever font the sample
- * happens to carry, and they all look the same.
- */
 export function TemplateThumbnail({
   accent,
   scale = THUMBNAIL_SCALE,
@@ -119,7 +108,10 @@ export function TemplateThumbnail({
   const resume: ResumeDocument = {
     ...TEMPLATE_SAMPLE,
     design: applyTemplate(
-      { ...TEMPLATE_SAMPLE.design, accent: accent ?? TEMPLATE_SAMPLE.design.accent },
+      {
+        ...TEMPLATE_SAMPLE.design,
+        accent: accent ?? TEMPLATE_SAMPLE.design.accent,
+      },
       templateId,
     ),
   };
@@ -137,7 +129,11 @@ export function TemplateThumbnail({
     >
       <span
         className="template-thumbnail-inner"
-        style={{ transform: `scale(${scale})`, width: page.width, height: page.height }}
+        style={{
+          transform: `scale(${scale})`,
+          width: page.width,
+          height: page.height,
+        }}
       >
         <ResumePreview resume={resume} />
       </span>

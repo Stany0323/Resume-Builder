@@ -1,3 +1,5 @@
+import React from "react";
+
 export function DateRange({ startDate, endDate }: { startDate?: string; endDate?: string }) {
   const text = formatDateRange(startDate, endDate);
 

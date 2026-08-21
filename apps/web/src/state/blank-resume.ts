@@ -1,13 +1,5 @@
 import type { ResumeDocument } from "@resume-builder/core";
 
-/**
- * A brand-new, empty resume. The app boots into this — never into a fixture.
- *
- * Everything starts empty so each section shows its empty state and its
- * "+ Add …" action, which is how the user learns what the form contains.
- * References defaults to "omitted" (template-independent, see FIXTURES.v2.md)
- * so an untouched form produces no References section at all.
- */
 export function createBlankResume(): ResumeDocument {
   return {
     schemaVersion: 2,
@@ -18,9 +10,9 @@ export function createBlankResume(): ResumeDocument {
       profileType: "general",
     },
     design: {
-      templateId: "atlas",
+      templateId: "slate",
       pageSize: "A4",
-      fontPairing: "source",
+      fontPairing: "contrast",
       typeScale: "normal",
       density: "normal",
       margins: "normal",
@@ -46,7 +38,6 @@ export function createBlankResume(): ResumeDocument {
   };
 }
 
-/** True when nothing has been entered — used to decide whether to prompt on import. */
 export function isBlankResume(resume: ResumeDocument): boolean {
   const { personal, content } = resume;
 

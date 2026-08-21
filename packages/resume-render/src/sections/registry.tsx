@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import React, { type ReactNode } from "react";
 import {
   byOrder,
   type EducationSection,
@@ -34,9 +34,12 @@ function renderExperience(section: ExperienceSection) {
   return byOrder(section.items).map((item) => (
     <div className="resume-item" key={item.id}>
       <p data-block-id={`section:${section.id}:item:${item.id}`}>
-        <strong>{item.role}</strong>, {item.organization}
-        {item.location ? `, ${item.location}` : ""}
+        <strong>{item.role}</strong>
         <DateRange startDate={item.startDate} endDate={item.endDate} />
+      </p>
+      <p className="resume-item-meta">
+        {item.organization}
+        {item.location ? `, ${item.location}` : ""}
       </p>
       {typeof item.summary === "string" && item.summary.length > 0 ? (
         <p data-block-id={`section:${section.id}:item:${item.id}:summary`}>{item.summary}</p>
@@ -50,9 +53,12 @@ function renderEducation(section: EducationSection) {
   return byOrder(section.items).map((item) => (
     <div className="resume-item" key={item.id}>
       <p data-block-id={`section:${section.id}:item:${item.id}`}>
-        <strong>{item.degree}</strong>, {item.institution}
-        {item.location ? `, ${item.location}` : ""}
+        <strong>{item.degree}</strong>
         <DateRange startDate={item.startDate} endDate={item.endDate} />
+      </p>
+      <p className="resume-item-meta">
+        {item.institution}
+        {item.location ? `, ${item.location}` : ""}
       </p>
       {item.detail ? <p data-block-id={`section:${section.id}:item:${item.id}:detail`}>{item.detail}</p> : null}
       <Bullets sectionId={section.id} itemId={item.id} bullets={item.bullets} />
