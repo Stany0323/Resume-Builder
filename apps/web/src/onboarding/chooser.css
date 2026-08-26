@@ -1,10 +1,12 @@
 /* apps/web/src/onboarding/chooser.css — first-run template chooser */
 
 .chooser {
+  height: 100vh;
   max-width: 78rem;
-  min-height: 100vh;
+  overflow: auto;
   padding: 3.25rem 1.5rem 4rem;
   margin: 0 auto;
+  scrollbar-gutter: stable;
 }
 
 .chooser-header {
