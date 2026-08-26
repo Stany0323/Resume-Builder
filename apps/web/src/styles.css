@@ -315,9 +315,50 @@ button {
   transition: transform 120ms ease, color 120ms ease;
 }
 
+.form-section-title span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .form-section-toggle[aria-expanded="true"] .form-section-title svg {
   transform: rotate(90deg);
   color: var(--accent);
+}
+
+.form-section-meta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  flex: 0 0 auto;
+}
+
+.priority-chip {
+  max-width: 7rem;
+  padding: 0.16rem 0.42rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-subtle);
+  color: var(--text-muted);
+  font-size: 10.5px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.priority-chip[data-priority="recommended"] {
+  border-color: color-mix(in srgb, var(--accent) 26%, transparent);
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface));
+  color: var(--accent);
+}
+
+.priority-chip[data-priority="useful"] {
+  border-color: color-mix(in srgb, var(--focus) 18%, transparent);
+  background: color-mix(in srgb, var(--focus) 6%, var(--surface));
+  color: color-mix(in srgb, var(--focus) 82%, var(--text));
 }
 
 .form-section-count {
@@ -357,6 +398,67 @@ button {
 
 .field-message {
   color: var(--danger);
+}
+
+.strategy-card {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface-subtle);
+}
+
+.strategy-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: var(--text-strong);
+  font-size: 13px;
+}
+
+.strategy-card-header strong {
+  font-weight: 800;
+}
+
+.strategy-card-header span {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.strategy-checks {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.strategy-checks li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.strategy-checks svg {
+  flex: 0 0 auto;
+  margin-top: 0.05rem;
+  color: var(--danger);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.strategy-checks li[data-met="true"] {
+  color: var(--text);
+}
+
+.strategy-checks li[data-met="true"] svg {
+  color: var(--accent);
 }
 
 .counter-line {
@@ -617,6 +719,10 @@ button {
 
   .dashboard-actions {
     gap: 8px;
+  }
+
+  .priority-chip {
+    max-width: 5.5rem;
   }
 
   .toolbar {

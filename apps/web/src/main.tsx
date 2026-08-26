@@ -12,7 +12,13 @@ import {
   type ProjectItem,
   type ResumeDocument,
 } from "@resume-builder/core";
-import { ChevronRight, FileText, LayoutGrid } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  ChevronRight,
+  FileText,
+  LayoutGrid,
+} from "lucide-react";
 import { ResumePreview, applyTemplate } from "@resume-builder/render";
 
 import { TemplateChooser } from "./onboarding/TemplateChooser";
@@ -66,6 +72,12 @@ type SidebarSectionId =
   | "summary";
 
 type EntryLogo = { assetId: string };
+type SectionPriority = "recommended" | "useful" | "optional";
+type StrategyCheck = {
+  id: string;
+  label: string;
+  met: boolean;
+};
 
 const LOGO_OUTPUT_SIZE = 256;
 const LOGO_IMAGE_QUALITY = 0.86;
@@ -255,6 +267,8 @@ function Editor({
     [resume.content.certifications.items],
   );
   const sidebarOrder = getEditorSidebarOrder(resume.meta.profileType);
+  const sectionPriorities = getSectionPriorities(resume.meta.profileType);
+  const strategyChecks = getStrategyChecks(resume);
   const summaryLabel = getSummaryLabel(resume.meta.profileType);
   const profileLabel = getProfileLabel(resume.meta.profileType);
 
@@ -349,6 +363,7 @@ function Editor({
             sectionRef={(node) => {
               sidebarSectionRefs.current.personal = node;
             }}
+            priority={sectionPriorities.personal}
             title="Personal Info"
           >
             <PersonalPanel
@@ -376,6 +391,7 @@ function Editor({
             <GoalPanel
               onChange={(patch) => setMeta(patch)}
               profileType={resume.meta.profileType}
+              strategyChecks={strategyChecks}
               targetRole={resume.meta.targetRole ?? ""}
             />
           </SidebarSection>
@@ -388,6 +404,7 @@ function Editor({
             sectionRef={(node) => {
               sidebarSectionRefs.current.summary = node;
             }}
+            priority={sectionPriorities.summary}
             title={summaryLabel}
           >
             <SummaryPanel
@@ -408,6 +425,7 @@ function Editor({
             sectionRef={(node) => {
               sidebarSectionRefs.current.experience = node;
             }}
+            priority={sectionPriorities.experience}
             title="Experience"
           >
             {orderedExperience.length > 0 ? (
@@ -500,6 +518,7 @@ function Editor({
             sectionRef={(node) => {
               sidebarSectionRefs.current.education = node;
             }}
+            priority={sectionPriorities.education}
             title="Education"
           >
             {orderedEducation.length === 0 ? (
@@ -576,6 +595,7 @@ function Editor({
             sectionRef={(node) => {
               sidebarSectionRefs.current.projects = node;
             }}
+            priority={sectionPriorities.projects}
             title="Projects"
           >
             {orderedProjects.length === 0 ? (
@@ -678,6 +698,7 @@ function Editor({
             sectionRef={(node) => {
               sidebarSectionRefs.current.certifications = node;
             }}
+            priority={sectionPriorities.certifications}
             title="Certifications"
           >
             {orderedCertifications.length === 0 ? (
@@ -746,6 +767,7 @@ function Editor({
             sectionRef={(node) => {
               sidebarSectionRefs.current.skills = node;
             }}
+            priority={sectionPriorities.skills}
             title="Skills"
           >
             <SkillsPanel
@@ -763,6 +785,7 @@ function Editor({
             sectionRef={(node) => {
               sidebarSectionRefs.current.languages = node;
             }}
+            priority={sectionPriorities.languages}
             title="Languages"
           >
             <LanguagesPanel
@@ -780,6 +803,7 @@ function Editor({
             sectionRef={(node) => {
               sidebarSectionRefs.current.hobbies = node;
             }}
+            priority={sectionPriorities.hobbies}
             title="Hobbies"
           >
             <HobbiesPanel
@@ -801,6 +825,7 @@ function Editor({
             sectionRef={(node) => {
               sidebarSectionRefs.current.references = node;
             }}
+            priority={sectionPriorities.references}
             title="References"
           >
             <ReferencesPanel
@@ -824,12 +849,16 @@ function Editor({
 function GoalPanel({
   onChange,
   profileType,
+  strategyChecks,
   targetRole,
 }: {
   onChange: (patch: Partial<ResumeDocument["meta"]>) => void;
   profileType: ProfileType;
+  strategyChecks: StrategyCheck[];
   targetRole: string;
 }) {
+  const completeCount = strategyChecks.filter((check) => check.met).length;
+
   return (
     <>
       <label>
@@ -854,6 +883,26 @@ function GoalPanel({
         value={targetRole}
       />
       <p className="form-note">{getProfileGuidance(profileType)}</p>
+      <div className="strategy-card">
+        <div className="strategy-card-header">
+          <strong>Resume focus</strong>
+          <span>
+            {completeCount}/{strategyChecks.length}
+          </span>
+        </div>
+        <ul className="strategy-checks">
+          {strategyChecks.map((check) => (
+            <li data-met={check.met ? "true" : "false"} key={check.id}>
+              {check.met ? (
+                <CheckCircle2 aria-hidden="true" size={15} strokeWidth={2.2} />
+              ) : (
+                <AlertCircle aria-hidden="true" size={15} strokeWidth={2.2} />
+              )}
+              <span>{check.label}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
     </>
   );
 }
@@ -867,6 +916,12 @@ const PROFILE_OPTIONS: Array<{ label: string; value: ProfileType }> = [
   { label: "Attachee", value: "attachee" },
   { label: "Career changer", value: "careerChanger" },
 ];
+
+const SECTION_PRIORITY_LABELS: Record<SectionPriority, string> = {
+  recommended: "Recommended",
+  useful: "Useful",
+  optional: "Optional",
+};
 
 function getEditorSidebarOrder(profileType: ProfileType): SidebarSectionId[] {
   if (["attachee", "graduate", "intern"].includes(profileType)) {
@@ -932,6 +987,168 @@ function getEditorSidebarOrder(profileType: ProfileType): SidebarSectionId[] {
   ];
 }
 
+function getSectionPriorities(
+  profileType: ProfileType,
+): Partial<Record<SidebarSectionId, SectionPriority>> {
+  const base: Partial<Record<SidebarSectionId, SectionPriority>> = {
+    personal: "recommended",
+    summary: "recommended",
+    languages: "useful",
+    hobbies: "optional",
+  };
+
+  switch (profileType) {
+    case "attachee":
+      return {
+        ...base,
+        education: "recommended",
+        skills: "recommended",
+        projects: "recommended",
+        certifications: "useful",
+        experience: "useful",
+        references: "recommended",
+      };
+    case "careerChanger":
+      return {
+        ...base,
+        skills: "recommended",
+        projects: "recommended",
+        experience: "recommended",
+        certifications: "useful",
+        education: "useful",
+        references: "optional",
+      };
+    case "graduate":
+    case "intern":
+      return {
+        ...base,
+        education: "recommended",
+        projects: "recommended",
+        skills: "recommended",
+        certifications: "useful",
+        experience: "useful",
+        references: profileType === "intern" ? "recommended" : "useful",
+      };
+    case "professional":
+      return {
+        ...base,
+        experience: "recommended",
+        skills: "recommended",
+        certifications: "useful",
+        education: "useful",
+        projects: "optional",
+        references: "optional",
+      };
+  }
+}
+
+function getStrategyChecks(resume: ResumeDocument): StrategyCheck[] {
+  const common: StrategyCheck[] = [
+    {
+      id: "target-role",
+      label: "Set a target role",
+      met: Boolean(resume.meta.targetRole?.trim()),
+    },
+    {
+      id: "contact",
+      label: "Add name, email and phone",
+      met: Boolean(
+        resume.personal.firstName.trim() &&
+          resume.personal.lastName.trim() &&
+          resume.personal.email.trim() &&
+          resume.personal.phone.trim(),
+      ),
+    },
+    {
+      id: "summary",
+      label: `Write the ${getSummaryLabel(resume.meta.profileType).toLowerCase()}`,
+      met: resume.content.summary.text.trim().length >= 80,
+    },
+  ];
+
+  switch (resume.meta.profileType) {
+    case "attachee":
+      return [
+        ...common,
+        {
+          id: "education",
+          label: "Add your institution and programme",
+          met: hasFilledEducation(resume),
+        },
+        {
+          id: "skills",
+          label: "Add practical skills",
+          met: countSkills(resume) >= 4,
+        },
+        {
+          id: "references",
+          label: "Add at least one referee",
+          met:
+            resume.content.references.mode === "listed" &&
+            resume.content.references.items.length > 0,
+        },
+      ];
+    case "careerChanger":
+      return [
+        ...common,
+        {
+          id: "skills",
+          label: "Lead with transferable skills",
+          met: countSkills(resume) >= 6,
+        },
+        {
+          id: "projects",
+          label: "Add proof for the new direction",
+          met: resume.content.projects.items.length > 0,
+        },
+        {
+          id: "experience",
+          label: "Connect past work to the target role",
+          met: hasAchievementBullets(resume.content.experience.items),
+        },
+      ];
+    case "graduate":
+    case "intern":
+      return [
+        ...common,
+        {
+          id: "education",
+          label: "Add education details",
+          met: hasFilledEducation(resume),
+        },
+        {
+          id: "projects",
+          label: "Add at least one project",
+          met: resume.content.projects.items.length > 0,
+        },
+        {
+          id: "skills",
+          label: "Add 4 or more relevant skills",
+          met: countSkills(resume) >= 4,
+        },
+      ];
+    case "professional":
+      return [
+        ...common,
+        {
+          id: "experience",
+          label: "Add recent experience",
+          met: resume.content.experience.items.length > 0,
+        },
+        {
+          id: "achievements",
+          label: "Add measurable achievements",
+          met: hasAchievementBullets(resume.content.experience.items),
+        },
+        {
+          id: "skills",
+          label: "Add role-specific skills",
+          met: countSkills(resume) >= 6,
+        },
+      ];
+  }
+}
+
 function getSummaryLabel(profileType: ProfileType) {
   return ["attachee", "graduate", "intern"].includes(profileType)
     ? "Career Objective"
@@ -958,6 +1175,28 @@ function getProfileGuidance(profileType: ProfileType) {
     case "professional":
       return "Lead with experience, measurable achievements and role-specific strengths.";
   }
+}
+
+function hasFilledEducation(resume: ResumeDocument) {
+  return resume.content.education.items.some(
+    (item) => item.degree.trim() && item.institution.trim(),
+  );
+}
+
+function countSkills(resume: ResumeDocument) {
+  return resume.content.skills.items.reduce(
+    (total, group) =>
+      total + group.entries.filter((entry) => entry.trim()).length,
+    0,
+  );
+}
+
+function hasAchievementBullets(
+  items: Array<{ bullets: Array<{ text: string }> }>,
+) {
+  return items.some((item) =>
+    item.bullets.some((bullet) => /\d|%|\$|£|€|x\b/i.test(bullet.text)),
+  );
 }
 
 function sortDatedItems<T extends { endDate: string; order: number }>(
@@ -1006,6 +1245,7 @@ function SidebarSection({
   isOpen,
   onToggle,
   order,
+  priority,
   sectionRef,
   title,
 }: {
@@ -1015,6 +1255,7 @@ function SidebarSection({
   isOpen: boolean;
   onToggle: () => void;
   order?: number;
+  priority?: SectionPriority;
   sectionRef?: (node: HTMLElement | null) => void;
   title: string;
 }) {
@@ -1035,6 +1276,7 @@ function SidebarSection({
         id={headingId}
         isOpen={isOpen}
         onToggle={onToggle}
+        priority={priority}
         title={title}
       />
       <div className="form-section-body" hidden={!isOpen} id={bodyId}>
@@ -1050,6 +1292,7 @@ function FormSectionHeader({
   id,
   isOpen,
   onToggle,
+  priority,
   title,
 }: {
   bodyId: string;
@@ -1057,6 +1300,7 @@ function FormSectionHeader({
   id: string;
   isOpen: boolean;
   onToggle: () => void;
+  priority?: SectionPriority;
   title: string;
 }) {
   return (
@@ -1073,9 +1317,16 @@ function FormSectionHeader({
             <ChevronRight aria-hidden="true" size={16} strokeWidth={2.2} />
             <span>{title}</span>
           </span>
-          {typeof count === "number" ? (
-            <span className="form-section-count">{count}</span>
-          ) : null}
+          <span className="form-section-meta">
+            {priority ? (
+              <span className="priority-chip" data-priority={priority}>
+                {SECTION_PRIORITY_LABELS[priority]}
+              </span>
+            ) : null}
+            {typeof count === "number" ? (
+              <span className="form-section-count">{count}</span>
+            ) : null}
+          </span>
         </button>
       </h2>
     </div>
