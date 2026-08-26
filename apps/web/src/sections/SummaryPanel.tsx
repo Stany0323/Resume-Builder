@@ -1,3 +1,4 @@
+import type { ProfileType } from "@resume-builder/core";
 import { ProseField } from "./fields";
 
 /**
@@ -13,21 +14,28 @@ const SHORT_WORDS = 25;
 const LONG_WORDS = 90;
 
 export function SummaryPanel({
+  label = "Summary",
   onChange,
+  profileType = "professional",
+  targetRole,
   text,
 }: {
+  label?: string;
   onChange: (text: string) => void;
+  profileType?: ProfileType;
+  targetRole?: string;
   text: string;
 }) {
   const trimmed = text.trim();
+  const prompt = getEmptyPrompt(profileType, targetRole);
 
   if (trimmed === "") {
     return (
       <>
         <p className="form-note">
-          Three or four sentences. What you do, how long you’ve done it, and the thing you’re best at.
+          {prompt}
         </p>
-        <ProseField label="Summary" onChange={onChange} rows={5} value={text} />
+        <ProseField label={label} onChange={onChange} rows={5} value={text} />
       </>
     );
   }
@@ -38,18 +46,26 @@ export function SummaryPanel({
     <>
       <ProseField
         advisory={`${words} ${words === 1 ? "word" : "words"}`}
-        label="Summary"
+        label={label}
         onChange={onChange}
         rows={5}
         value={text}
       />
-      <SummaryAdvice text={trimmed} words={words} />
+      <SummaryAdvice profileType={profileType} text={trimmed} words={words} />
     </>
   );
 }
 
-function SummaryAdvice({ text, words }: { text: string; words: number }) {
-  const advice = adviseOnSummary(text, words);
+function SummaryAdvice({
+  profileType,
+  text,
+  words,
+}: {
+  profileType: ProfileType;
+  text: string;
+  words: number;
+}) {
+  const advice = adviseOnSummary(text, words, profileType);
 
   if (!advice) {
     return null;
@@ -69,7 +85,11 @@ function SummaryAdvice({ text, words }: { text: string; words: number }) {
  * summary written in the first person should be told about the "I", not that
  * it's a little short, because that's the more actionable of the two.
  */
-export function adviseOnSummary(text: string, words: number): string | null {
+export function adviseOnSummary(
+  text: string,
+  words: number,
+  profileType: ProfileType = "professional",
+): string | null {
   // Below this there isn't enough text for style advice to be meaningful.
   if (words < BARELY_STARTED_WORDS) {
     return "Keep going — a summary needs a sentence or two to do any work.";
@@ -79,7 +99,7 @@ export function adviseOnSummary(text: string, words: number): string | null {
     return "Résumé summaries usually drop “I” — “Product manager with eight years…” rather than “I am a product manager…”.";
   }
 
-  if (SEEKING.test(text)) {
+  if (SEEKING.test(text) && !isEarlyProfile(profileType)) {
     return "Leading with what you’re looking for is weaker than leading with what you’ve done.";
   }
 
@@ -100,3 +120,21 @@ export function adviseOnSummary(text: string, words: number): string | null {
 
 const FIRST_PERSON = /\b(?:I|I'm|I’m|I am|my|My)\b/;
 const SEEKING = /\b(?:seeking|looking for|hoping to|aspiring|in search of)\b/i;
+
+function getEmptyPrompt(profileType: ProfileType, targetRole: string | undefined) {
+  const role = targetRole?.trim();
+
+  if (isEarlyProfile(profileType)) {
+    return role
+      ? `Two or three sentences. State the ${role} you want, your field of study, and the practical skills or projects that prove readiness.`
+      : "Two or three sentences. State the opportunity you want, your field of study, and the practical skills or projects that prove readiness.";
+  }
+
+  return role
+    ? `Three or four sentences. Show the ${role} you do, your experience level, and the strongest result or skill you bring.`
+    : "Three or four sentences. What you do, how long you’ve done it, and the thing you’re best at.";
+}
+
+function isEarlyProfile(profileType: ProfileType) {
+  return ["attachee", "graduate", "intern"].includes(profileType);
+}

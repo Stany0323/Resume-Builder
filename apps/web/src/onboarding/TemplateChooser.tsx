@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { ResumeDocument } from "@resume-builder/core";
+import type { ProfileType, ResumeDocument } from "@resume-builder/core";
 import {
   ACCENTS,
   PAGE_DIMENSIONS,
@@ -13,52 +13,133 @@ import { TEMPLATE_SAMPLE } from "./sample-content";
 
 const THUMBNAIL_SCALE = 0.26;
 
+const PROFILE_OPTIONS: Array<{
+  description: string;
+  label: string;
+  value: ProfileType;
+}> = [
+  {
+    description: "Lead with impact, experience, leadership and measurable wins.",
+    label: "Professional",
+    value: "professional",
+  },
+  {
+    description: "Make education, projects and early proof do more of the work.",
+    label: "Graduate",
+    value: "graduate",
+  },
+  {
+    description: "Show readiness through coursework, skills, projects and referees.",
+    label: "Intern",
+    value: "intern",
+  },
+  {
+    description: "Focus on practical skills, field of study and attachment goals.",
+    label: "Attachee",
+    value: "attachee",
+  },
+  {
+    description: "Bring transferable skills forward and connect them to the new role.",
+    label: "Career changer",
+    value: "careerChanger",
+  },
+];
+
 export function TemplateChooser({
   onChoose,
   onSkip,
 }: {
-  onChoose: (templateId: TemplateId, accent: Accent) => void;
+  onChoose: (choice: {
+    accent: Accent;
+    profileType: ProfileType;
+    targetRole: string;
+    templateId: TemplateId;
+  }) => void;
   onSkip?: () => void;
 }) {
   const [selected, setSelected] = useState<TemplateId>("meridian");
   const [accent, setAccent] = useState<Accent>("slate");
+  const [profileType, setProfileType] = useState<ProfileType>("professional");
+  const [targetRole, setTargetRole] = useState("");
 
   return (
     <main className="chooser">
       <header className="chooser-header">
-        <h1>Pick a starting point</h1>
+        <h1>Shape your resume</h1>
         <p>
-          Choose a photo-ready layout or a technical no-photo layout. Both parse
-          cleanly in applicant tracking systems, and you can switch at any time
-          without losing a word.
+          Start with the kind of resume you need, then choose a clean layout.
+          The builder will arrange sections and prompts around that goal.
         </p>
       </header>
 
-      <div className="chooser-grid">
-        {(Object.keys(TEMPLATES) as TemplateId[]).map((id) => (
-          <button
-            aria-pressed={selected === id}
-            className="chooser-card"
-            key={id}
-            onClick={() => setSelected(id)}
-            type="button"
-          >
-            <TemplateThumbnail accent={accent} templateId={id} />
-            <span className="chooser-card-meta">
-              <span className="chooser-card-name">{TEMPLATES[id].label}</span>
-              <span className="chooser-card-tagline">
-                {TEMPLATES[id].tagline}
+      <section className="chooser-block" aria-labelledby="profile-heading">
+        <div className="chooser-block-header">
+          <h2 id="profile-heading">What are you building?</h2>
+          <p>Pick the path that best matches this application.</p>
+        </div>
+        <div className="profile-grid">
+          {PROFILE_OPTIONS.map((option) => (
+            <button
+              aria-pressed={profileType === option.value}
+              className="profile-card"
+              key={option.value}
+              onClick={() => setProfileType(option.value)}
+              type="button"
+            >
+              <span>{option.label}</span>
+              <small>{option.description}</small>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="chooser-block target-role-block" aria-labelledby="target-role-heading">
+        <div className="chooser-block-header">
+          <h2 id="target-role-heading">Target role</h2>
+          <p>This keeps the resume focused before scoring and server suggestions arrive.</p>
+        </div>
+        <label className="target-role-field">
+          <span className="visually-hidden">Target role</span>
+          <input
+            onChange={(event) => setTargetRole(event.target.value)}
+            placeholder={getTargetRolePlaceholder(profileType)}
+            type="text"
+            value={targetRole}
+          />
+        </label>
+      </section>
+
+      <section className="chooser-block" aria-labelledby="template-heading">
+        <div className="chooser-block-header">
+          <h2 id="template-heading">Choose a layout</h2>
+          <p>You can switch later without losing your content.</p>
+        </div>
+        <div className="chooser-grid">
+          {(Object.keys(TEMPLATES) as TemplateId[]).map((id) => (
+            <button
+              aria-pressed={selected === id}
+              className="chooser-card"
+              key={id}
+              onClick={() => setSelected(id)}
+              type="button"
+            >
+              <TemplateThumbnail accent={accent} templateId={id} />
+              <span className="chooser-card-meta">
+                <span className="chooser-card-name">{TEMPLATES[id].label}</span>
+                <span className="chooser-card-tagline">
+                  {TEMPLATES[id].tagline}
+                </span>
+                {TEMPLATES[id].supportsPhoto ? (
+                  <span className="photo-badge">Photo</span>
+                ) : null}
               </span>
-              {TEMPLATES[id].supportsPhoto ? (
-                <span className="photo-badge">Photo</span>
-              ) : null}
-            </span>
-            <span className="chooser-card-description">
-              {TEMPLATES[id].description}
-            </span>
-          </button>
-        ))}
-      </div>
+              <span className="chooser-card-description">
+                {TEMPLATES[id].description}
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
 
       <fieldset className="chooser-accents">
         <legend>Accent</legend>
@@ -81,10 +162,17 @@ export function TemplateChooser({
       <div className="chooser-actions">
         <button
           className="primary"
-          onClick={() => onChoose(selected, accent)}
+          onClick={() =>
+            onChoose({
+              accent,
+              profileType,
+              targetRole: targetRole.trim(),
+              templateId: selected,
+            })
+          }
           type="button"
         >
-          Start with {TEMPLATES[selected].label}
+          Start building
         </button>
         {onSkip ? (
           <button className="link-button" onClick={onSkip} type="button">
@@ -94,6 +182,21 @@ export function TemplateChooser({
       </div>
     </main>
   );
+}
+
+function getTargetRolePlaceholder(profileType: ProfileType) {
+  switch (profileType) {
+    case "attachee":
+      return "Accounting attachment";
+    case "careerChanger":
+      return "Junior UX Designer";
+    case "graduate":
+      return "Graduate software developer";
+    case "intern":
+      return "Marketing intern";
+    case "professional":
+      return "Senior Product Manager";
+  }
 }
 
 export function TemplateThumbnail({

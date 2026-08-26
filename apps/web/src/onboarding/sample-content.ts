@@ -6,7 +6,8 @@ export const TEMPLATE_SAMPLE: ResumeDocument = {
     id: "template-sample",
     title: "Template sample",
     updatedAt: "2026-01-01T00:00:00.000Z",
-    profileType: "experienced",
+    profileType: "professional",
+    targetRole: "Senior Product Manager",
   },
   design: {
     templateId: "meridian",

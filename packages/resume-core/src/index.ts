@@ -16,7 +16,7 @@ export {
 
 export type PageSize = "A4";
 export type TemplateId = "meridian" | "slate";
-export type ProfileType = "general" | "earlyCareer" | "experienced" | "changer";
+export type ProfileType = "attachee" | "careerChanger" | "graduate" | "intern" | "professional";
 export type LinkType = "email" | "phone" | "url" | "linkedin" | "github" | "custom";
 
 export interface OrderedNode {
@@ -32,6 +32,7 @@ export interface ResumeDocument {
     title: string;
     updatedAt: string;
     profileType: ProfileType;
+    targetRole?: string;
   };
   design: {
     templateId: TemplateId;
@@ -161,7 +162,7 @@ export type ResumeSection = RenderableResumeSection;
 
 export interface LegacyResumeDocumentV1 {
   schemaVersion: 1;
-  meta: ResumeDocument["meta"];
+  meta: Omit<ResumeDocument["meta"], "profileType"> & { profileType: string };
   design: Omit<ResumeDocument["design"], "templateId"> & { templateId: string };
   header: {
     fullName: string;
@@ -228,8 +229,12 @@ export function getRenderableSections(resume: ResumeDocument): ResumeSection[] {
 }
 
 function getSectionOrder(resume: ResumeDocument): Array<ResumeSection["type"]> {
-  if (resume.meta.profileType === "earlyCareer") {
+  if (["attachee", "graduate", "intern"].includes(resume.meta.profileType)) {
     return ["summary", "education", "experience", "skills", "languages", "hobbies", "references"];
+  }
+
+  if (resume.meta.profileType === "careerChanger") {
+    return ["summary", "skills", "experience", "education", "languages", "hobbies", "references"];
   }
 
   switch (resume.design.templateId) {
@@ -276,6 +281,11 @@ export function migrateResumeDocument(document: ResumeDocument | LegacyResumeDoc
 export function normalizeResumeDocument(document: ResumeDocument): ResumeDocument {
   return {
     ...document,
+    meta: {
+      ...document.meta,
+      profileType: normalizeProfileType(document.meta.profileType),
+      targetRole: normalizeOptionalString(document.meta.targetRole),
+    },
     design: {
       ...document.design,
       pageSize: "A4",
@@ -292,15 +302,44 @@ function normalizeTemplateId(templateId: string): TemplateId {
   return templateId === "meridian" ? "meridian" : "slate";
 }
 
+function normalizeProfileType(profileType: string): ProfileType {
+  switch (profileType) {
+    case "attachee":
+    case "careerChanger":
+    case "graduate":
+    case "intern":
+    case "professional":
+      return profileType;
+    case "changer":
+      return "careerChanger";
+    case "earlyCareer":
+    case "general":
+      return "graduate";
+    case "experienced":
+    default:
+      return "professional";
+  }
+}
+
+function normalizeOptionalString(value: unknown) {
+  return typeof value === "string" && value.trim() ? value : undefined;
+}
+
 function getSummarySection(resume: ResumeDocument): SummarySection {
   return {
     id: "summary",
     type: "summary",
-    title: "Summary",
+    title: getSummaryTitle(resume.meta.profileType),
     items: resume.content.summary.text.trim()
       ? [{ id: "summary", order: 0, text: resume.content.summary.text }]
       : [],
   };
+}
+
+function getSummaryTitle(profileType: ProfileType) {
+  return ["attachee", "graduate", "intern"].includes(profileType)
+    ? "Career Objective"
+    : "Professional Summary";
 }
 
 function getEducationSection(resume: ResumeDocument): EducationSection {
@@ -391,7 +430,11 @@ function migrateV1ToV2(document: LegacyResumeDocumentV1): ResumeDocument {
 
   return {
     schemaVersion: 2,
-    meta: document.meta,
+    meta: {
+      ...document.meta,
+      profileType: normalizeProfileType(document.meta.profileType),
+      targetRole: normalizeOptionalString(document.meta.targetRole),
+    },
     design: {
       ...document.design,
       templateId: normalizeTemplateId(document.design.templateId),
@@ -451,7 +494,8 @@ export const sampleResume: ResumeDocument = {
     id: "sample",
     title: "Sample Resume",
     updatedAt: "2026-08-20T08:00:00.000Z",
-    profileType: "experienced",
+    profileType: "professional",
+    targetRole: "Senior Product Manager",
   },
   design: {
     templateId: "slate",

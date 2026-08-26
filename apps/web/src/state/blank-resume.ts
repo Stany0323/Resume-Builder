@@ -7,7 +7,7 @@ export function createBlankResume(): ResumeDocument {
       id: crypto.randomUUID(),
       title: "Untitled resume",
       updatedAt: new Date().toISOString(),
-      profileType: "general",
+      profileType: "graduate",
     },
     design: {
       templateId: "slate",

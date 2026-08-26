@@ -28,6 +28,116 @@
   text-wrap: pretty;
 }
 
+.chooser-block {
+  margin-top: 1.65rem;
+}
+
+.chooser-block:first-of-type {
+  margin-top: 0;
+}
+
+.chooser-block-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.8rem;
+}
+
+.chooser-block-header h2 {
+  margin: 0;
+  color: var(--text-strong, #14191f);
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.chooser-block-header p {
+  max-width: 24rem;
+  margin: 0;
+  color: var(--text-muted, #5f6b76);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  text-align: right;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.75rem;
+}
+
+.profile-card {
+  min-height: 7.25rem;
+  display: grid;
+  align-content: start;
+  gap: 0.45rem;
+  padding: 0.9rem;
+  border: 1px solid var(--border, #dfe2e8);
+  border-radius: var(--radius-card, 8px);
+  background: var(--surface, #fff);
+  color: var(--text, #1d232a);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+}
+
+.profile-card span {
+  color: var(--text-strong, #14191f);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.profile-card small {
+  color: var(--text-muted, #5f6b76);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.profile-card:hover {
+  border-color: color-mix(in srgb, var(--accent, #47506b) 55%, transparent);
+  box-shadow: var(--shadow-pop, 0 6px 18px rgba(20, 24, 33, 0.08));
+  transform: translateY(-2px);
+}
+
+.profile-card[aria-pressed="true"] {
+  border-color: var(--accent, #47506b);
+  box-shadow: inset 0 0 0 1px var(--accent, #47506b), 0 6px 18px rgba(20, 24, 33, 0.1);
+}
+
+.profile-card:focus-visible {
+  outline: 2px solid var(--accent, #47506b);
+  outline-offset: 3px;
+}
+
+.target-role-block {
+  max-width: 42rem;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.target-role-field input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 0.95rem;
+  border: 1px solid var(--border, #d9dee5);
+  border-radius: var(--radius-control, 6px);
+  background: var(--surface, #fff);
+  color: var(--text, #1d232a);
+  font-size: 0.95rem;
+}
+
+.target-role-field input:focus {
+  border-color: var(--focus, #243f64);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus, #243f64) 14%, transparent);
+  outline: none;
+}
+
+.target-role-field input::placeholder {
+  color: var(--text-soft, #7d8791);
+}
+
 .chooser-grid {
   display: grid;
   gap: 1.1rem;
@@ -166,7 +276,15 @@
     transition: none;
   }
 
+  .profile-card {
+    transition: none;
+  }
+
   .chooser-card:hover {
+    transform: none;
+  }
+
+  .profile-card:hover {
     transform: none;
   }
 }
@@ -179,5 +297,13 @@
   .chooser-grid {
     grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
     gap: 0.75rem;
+  }
+
+  .chooser-block-header {
+    display: grid;
+  }
+
+  .chooser-block-header p {
+    text-align: left;
   }
 }

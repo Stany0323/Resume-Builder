@@ -7,14 +7,13 @@ import {
   splitBulletLines,
   type EducationItem,
   type ExperienceItem,
+  type ProfileType,
   type ResumeDocument,
 } from "@resume-builder/core";
 import { ChevronRight, FileText, LayoutGrid } from "lucide-react";
 import {
   ResumePreview,
   applyTemplate,
-  type Accent,
-  type TemplateId,
 } from "@resume-builder/render";
 
 import { TemplateChooser } from "./onboarding/TemplateChooser";
@@ -57,6 +56,7 @@ type EducationTextField = "degree" | "institution" | "location";
 type SidebarSectionId =
   | "education"
   | "experience"
+  | "goal"
   | "hobbies"
   | "languages"
   | "personal"
@@ -140,9 +140,14 @@ function Root() {
   if (phase === "choosing") {
     return (
       <TemplateChooser
-        onChoose={(templateId: TemplateId, accent: Accent) => {
+        onChoose={({ accent, profileType, targetRole, templateId }) => {
           setResume({
             ...resume,
+            meta: {
+              ...resume.meta,
+              profileType,
+              targetRole: targetRole || undefined,
+            },
             design: applyTemplate({ ...resume.design, accent }, templateId),
           });
           setPhase("editing");
@@ -177,6 +182,8 @@ function Editor({
     key: TKey,
     value: ResumeDocument["content"][TKey],
   ) => setResume({ ...resume, content: { ...resume.content, [key]: value } });
+  const setMeta = (patch: Partial<ResumeDocument["meta"]>) =>
+    setResume({ ...resume, meta: { ...resume.meta, ...patch } });
 
   const experience = useItemList(resume.content.experience.items, (items) =>
     setContent("experience", { items }),
@@ -185,7 +192,7 @@ function Editor({
     setContent("education", { items }),
   );
   const [activeSidebarSection, setActiveSidebarSection] =
-    useState<SidebarSectionId | null>("personal");
+    useState<SidebarSectionId | null>("goal");
   const sidebarScrollRef = useRef<HTMLDivElement>(null);
   const sidebarSectionRefs = useRef<
     Partial<Record<SidebarSectionId, HTMLElement | null>>
@@ -231,6 +238,9 @@ function Editor({
     () => sortDatedItems(resume.content.education.items),
     [resume.content.education.items],
   );
+  const sidebarOrder = getEditorSidebarOrder(resume.meta.profileType);
+  const summaryLabel = getSummaryLabel(resume.meta.profileType);
+  const profileLabel = getProfileLabel(resume.meta.profileType);
 
   const addExperience = () =>
     experience.add({
@@ -263,7 +273,11 @@ function Editor({
           </span>
           <div>
             <h1>Resume Builder</h1>
-            <p>Create a professional resume that gets you hired</p>
+            <p>
+              {resume.meta.targetRole
+                ? `${profileLabel} resume for ${resume.meta.targetRole}`
+                : `${profileLabel} resume`}
+            </p>
           </div>
         </div>
         <div className="dashboard-actions">
@@ -295,6 +309,7 @@ function Editor({
             id="personal"
             isOpen={activeSidebarSection === "personal"}
             onToggle={() => toggleSidebarSection("personal")}
+            order={sidebarOrder.indexOf("personal")}
             sectionRef={(node) => {
               sidebarSectionRefs.current.personal = node;
             }}
@@ -313,16 +328,37 @@ function Editor({
           </SidebarSection>
 
           <SidebarSection
+            id="goal"
+            isOpen={activeSidebarSection === "goal"}
+            onToggle={() => toggleSidebarSection("goal")}
+            order={sidebarOrder.indexOf("goal")}
+            sectionRef={(node) => {
+              sidebarSectionRefs.current.goal = node;
+            }}
+            title="Goal"
+          >
+            <GoalPanel
+              onChange={(patch) => setMeta(patch)}
+              profileType={resume.meta.profileType}
+              targetRole={resume.meta.targetRole ?? ""}
+            />
+          </SidebarSection>
+
+          <SidebarSection
             id="summary"
             isOpen={activeSidebarSection === "summary"}
             onToggle={() => toggleSidebarSection("summary")}
+            order={sidebarOrder.indexOf("summary")}
             sectionRef={(node) => {
               sidebarSectionRefs.current.summary = node;
             }}
-            title="Summary"
+            title={summaryLabel}
           >
             <SummaryPanel
+              label={summaryLabel}
               onChange={(text) => setContent("summary", { text })}
+              profileType={resume.meta.profileType}
+              targetRole={resume.meta.targetRole}
               text={resume.content.summary.text}
             />
           </SidebarSection>
@@ -332,6 +368,7 @@ function Editor({
             id="experience"
             isOpen={activeSidebarSection === "experience"}
             onToggle={() => toggleSidebarSection("experience")}
+            order={sidebarOrder.indexOf("experience")}
             sectionRef={(node) => {
               sidebarSectionRefs.current.experience = node;
             }}
@@ -423,6 +460,7 @@ function Editor({
             id="education"
             isOpen={activeSidebarSection === "education"}
             onToggle={() => toggleSidebarSection("education")}
+            order={sidebarOrder.indexOf("education")}
             sectionRef={(node) => {
               sidebarSectionRefs.current.education = node;
             }}
@@ -498,6 +536,7 @@ function Editor({
             id="skills"
             isOpen={activeSidebarSection === "skills"}
             onToggle={() => toggleSidebarSection("skills")}
+            order={sidebarOrder.indexOf("skills")}
             sectionRef={(node) => {
               sidebarSectionRefs.current.skills = node;
             }}
@@ -514,6 +553,7 @@ function Editor({
             id="languages"
             isOpen={activeSidebarSection === "languages"}
             onToggle={() => toggleSidebarSection("languages")}
+            order={sidebarOrder.indexOf("languages")}
             sectionRef={(node) => {
               sidebarSectionRefs.current.languages = node;
             }}
@@ -530,6 +570,7 @@ function Editor({
             id="hobbies"
             isOpen={activeSidebarSection === "hobbies"}
             onToggle={() => toggleSidebarSection("hobbies")}
+            order={sidebarOrder.indexOf("hobbies")}
             sectionRef={(node) => {
               sidebarSectionRefs.current.hobbies = node;
             }}
@@ -550,6 +591,7 @@ function Editor({
             id="references"
             isOpen={activeSidebarSection === "references"}
             onToggle={() => toggleSidebarSection("references")}
+            order={sidebarOrder.indexOf("references")}
             sectionRef={(node) => {
               sidebarSectionRefs.current.references = node;
             }}
@@ -573,7 +615,121 @@ function Editor({
   );
 }
 
+function GoalPanel({
+  onChange,
+  profileType,
+  targetRole,
+}: {
+  onChange: (patch: Partial<ResumeDocument["meta"]>) => void;
+  profileType: ProfileType;
+  targetRole: string;
+}) {
+  return (
+    <>
+      <label>
+        Resume type
+        <select
+          onChange={(event) =>
+            onChange({ profileType: event.target.value as ProfileType })
+          }
+          value={profileType}
+        >
+          {PROFILE_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <TextField
+        hint="Used later for matching, scoring and smarter suggestions."
+        label="Target role"
+        onChange={(value) =>
+          onChange({ targetRole: emptyToUndefined(value) })
+        }
+        value={targetRole}
+      />
+      <p className="form-note">{getProfileGuidance(profileType)}</p>
+    </>
+  );
+}
+
 /* ---------------------------------------------------------------- helpers */
+
+const PROFILE_OPTIONS: Array<{ label: string; value: ProfileType }> = [
+  { label: "Professional", value: "professional" },
+  { label: "Graduate / Entry-level", value: "graduate" },
+  { label: "Intern", value: "intern" },
+  { label: "Attachee", value: "attachee" },
+  { label: "Career changer", value: "careerChanger" },
+];
+
+function getEditorSidebarOrder(profileType: ProfileType): SidebarSectionId[] {
+  if (["attachee", "graduate", "intern"].includes(profileType)) {
+    return [
+      "goal",
+      "personal",
+      "summary",
+      "education",
+      "skills",
+      "experience",
+      "languages",
+      "hobbies",
+      "references",
+    ];
+  }
+
+  if (profileType === "careerChanger") {
+    return [
+      "goal",
+      "personal",
+      "summary",
+      "skills",
+      "experience",
+      "education",
+      "languages",
+      "hobbies",
+      "references",
+    ];
+  }
+
+  return [
+    "goal",
+    "personal",
+    "summary",
+    "experience",
+    "education",
+    "skills",
+    "languages",
+    "hobbies",
+    "references",
+  ];
+}
+
+function getSummaryLabel(profileType: ProfileType) {
+  return ["attachee", "graduate", "intern"].includes(profileType)
+    ? "Career Objective"
+    : "Professional Summary";
+}
+
+function getProfileLabel(profileType: ProfileType) {
+  return PROFILE_OPTIONS.find((option) => option.value === profileType)?.label ?? "Professional";
+}
+
+function getProfileGuidance(profileType: ProfileType) {
+  switch (profileType) {
+    case "attachee":
+      return "Lead with education, practical skills, field of study and attachment goals.";
+    case "careerChanger":
+      return "Lead with transferable skills and connect your past work to the new role.";
+    case "graduate":
+      return "Lead with education, projects, certifications and early proof.";
+    case "intern":
+      return "Lead with coursework, practical skills, projects and readiness.";
+    case "professional":
+      return "Lead with experience, measurable achievements and role-specific strengths.";
+  }
+}
 
 function sortDatedItems<T extends { endDate: string; order: number }>(
   items: T[],
@@ -610,6 +766,7 @@ function SidebarSection({
   id,
   isOpen,
   onToggle,
+  order,
   sectionRef,
   title,
 }: {
@@ -618,6 +775,7 @@ function SidebarSection({
   id: SidebarSectionId;
   isOpen: boolean;
   onToggle: () => void;
+  order?: number;
   sectionRef?: (node: HTMLElement | null) => void;
   title: string;
 }) {
@@ -630,6 +788,7 @@ function SidebarSection({
       aria-labelledby={headingId}
       data-open={isOpen ? "true" : "false"}
       ref={sectionRef}
+      style={typeof order === "number" ? { order } : undefined}
     >
       <FormSectionHeader
         bodyId={bodyId}
