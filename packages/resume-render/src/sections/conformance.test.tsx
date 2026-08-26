@@ -19,7 +19,7 @@ describe("section render/block conformance", () => {
   });
 
   it("renders the same data-block-id sequence that core extracts", () => {
-    const resume = fixture3Page as ResumeDocument;
+    const resume = fixtureWithEverySection();
     const visibleSections = getRenderableSections(resume).filter(hasVisibleSectionContent);
 
     expect(new Set(visibleSections.map((section) => section.type))).toEqual(new Set(SECTION_TYPES));
@@ -38,7 +38,7 @@ describe("section render/block conformance", () => {
   });
 
   it("renders the same document-level data-block-id sequence that core extracts", () => {
-    const resume = fixture3Page as ResumeDocument;
+    const resume = fixtureWithEverySection();
     const renderedMarkup = renderToStaticMarkup(<ResumePreview resume={resume} />);
 
     expect(extractDataBlockIds(renderedMarkup)).toEqual(
@@ -79,6 +79,50 @@ describe("section render/block conformance", () => {
     expect(renderedMarkup).toContain("out of 5");
   });
 });
+
+function fixtureWithEverySection(): ResumeDocument {
+  return {
+    ...fixture3Page as ResumeDocument,
+    content: {
+      ...(fixture3Page as ResumeDocument).content,
+      projects: {
+        items: [
+          {
+            id: "p1",
+            order: 0,
+            name: "Settlement Replay Verifier",
+            role: "Maintainer",
+            tools: "Rust, PostgreSQL",
+            link: "github.com/example-tendai/replay-verifier",
+            startDate: "2024-02",
+            endDate: "present",
+            summary: "Open-source test harness for replaying settlement events.",
+            bullets: [
+              {
+                id: "p1b1",
+                order: 0,
+                text: "Adopted by three platform teams before ledger migrations.",
+              },
+            ],
+          },
+        ],
+      },
+      certifications: {
+        items: [
+          {
+            id: "c1",
+            order: 0,
+            name: "AWS Certified Solutions Architect",
+            issuer: "Amazon Web Services",
+            issuedDate: "2024-04",
+            expiryDate: "2027-04",
+            credentialUrl: "aws.amazon.com/verification/example",
+          },
+        ],
+      },
+    },
+  };
+}
 
 function extractDataBlockIds(markup: string) {
   return [...markup.matchAll(/data-block-id="([^"]+)"/g)].map((match) => match[1]);

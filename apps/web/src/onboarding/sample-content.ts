@@ -95,6 +95,39 @@ export const TEMPLATE_SAMPLE: ResumeDocument = {
         },
       ],
     },
+    projects: {
+      items: [
+        {
+          id: "s-p1",
+          order: 0,
+          name: "Merchant onboarding audit",
+          role: "Product lead",
+          tools: "SQL, interviews, Figma",
+          link: "portfolio.example.com/onboarding",
+          startDate: "2024-03",
+          endDate: "2024-05",
+          summary: "Mapped signup friction across field agents and small merchants.",
+          bullets: [
+            {
+              id: "s-p1b1",
+              order: 0,
+              text: "Identified three verification changes later used in a 28% drop-off reduction.",
+            },
+          ],
+        },
+      ],
+    },
+    certifications: {
+      items: [
+        {
+          id: "s-c1",
+          order: 0,
+          name: "Certified Scrum Product Owner",
+          issuer: "Scrum Alliance",
+          issuedDate: "2023-08",
+        },
+      ],
+    },
     skills: {
       items: [
         {

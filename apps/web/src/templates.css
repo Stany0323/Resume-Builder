@@ -331,6 +331,12 @@
   .resume-item,
 .resume-page[data-template="meridian"]
   .resume-section[data-section-type="education"]
+  .resume-item,
+.resume-page[data-template="meridian"]
+  .resume-section[data-section-type="projects"]
+  .resume-item,
+.resume-page[data-template="meridian"]
+  .resume-section[data-section-type="certifications"]
   .resume-item {
   position: relative;
   padding-left: 7.5rem;
@@ -344,6 +350,16 @@
   > .resume-date-range,
 .resume-page[data-template="meridian"]
   .resume-section[data-section-type="education"]
+  .resume-item
+  > .resume-entry-heading
+  > .resume-date-range,
+.resume-page[data-template="meridian"]
+  .resume-section[data-section-type="projects"]
+  .resume-item
+  > .resume-entry-heading
+  > .resume-date-range,
+.resume-page[data-template="meridian"]
+  .resume-section[data-section-type="certifications"]
   .resume-item
   > .resume-entry-heading
   > .resume-date-range {
@@ -433,6 +449,12 @@
   .resume-item,
 .resume-page[data-template="slate"]
   .resume-section[data-section-type="education"]
+  .resume-item,
+.resume-page[data-template="slate"]
+  .resume-section[data-section-type="projects"]
+  .resume-item,
+.resume-page[data-template="slate"]
+  .resume-section[data-section-type="certifications"]
   .resume-item {
   position: relative;
   padding-left: 6.75rem;
@@ -445,6 +467,16 @@
   > .resume-date-range,
 .resume-page[data-template="slate"]
   .resume-section[data-section-type="education"]
+  .resume-item
+  > .resume-entry-heading
+  > .resume-date-range,
+.resume-page[data-template="slate"]
+  .resume-section[data-section-type="projects"]
+  .resume-item
+  > .resume-entry-heading
+  > .resume-date-range,
+.resume-page[data-template="slate"]
+  .resume-section[data-section-type="certifications"]
   .resume-item
   > .resume-entry-heading
   > .resume-date-range {

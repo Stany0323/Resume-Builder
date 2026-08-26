@@ -7,14 +7,13 @@ import {
   splitBulletLines,
   type EducationItem,
   type ExperienceItem,
+  type CertificationItem,
   type ProfileType,
+  type ProjectItem,
   type ResumeDocument,
 } from "@resume-builder/core";
 import { ChevronRight, FileText, LayoutGrid } from "lucide-react";
-import {
-  ResumePreview,
-  applyTemplate,
-} from "@resume-builder/render";
+import { ResumePreview, applyTemplate } from "@resume-builder/render";
 
 import { TemplateChooser } from "./onboarding/TemplateChooser";
 import { DesignPanel } from "./sections/DesignPanel";
@@ -27,7 +26,7 @@ import {
   ReferencesPanel,
   SkillsPanel,
 } from "./sections/panels";
-import { TextField } from "./sections/fields";
+import { ProseField, TextField } from "./sections/fields";
 import {
   AddButton,
   RemoveButton,
@@ -60,6 +59,8 @@ type SidebarSectionId =
   | "hobbies"
   | "languages"
   | "personal"
+  | "projects"
+  | "certifications"
   | "references"
   | "skills"
   | "summary";
@@ -191,6 +192,13 @@ function Editor({
   const education = useItemList(resume.content.education.items, (items) =>
     setContent("education", { items }),
   );
+  const projects = useItemList(resume.content.projects.items, (items) =>
+    setContent("projects", { items }),
+  );
+  const certifications = useItemList(
+    resume.content.certifications.items,
+    (items) => setContent("certifications", { items }),
+  );
   const [activeSidebarSection, setActiveSidebarSection] =
     useState<SidebarSectionId | null>("goal");
   const sidebarScrollRef = useRef<HTMLDivElement>(null);
@@ -238,6 +246,14 @@ function Editor({
     () => sortDatedItems(resume.content.education.items),
     [resume.content.education.items],
   );
+  const orderedProjects = useMemo(
+    () => sortDatedItems(resume.content.projects.items),
+    [resume.content.projects.items],
+  );
+  const orderedCertifications = useMemo(
+    () => sortIssuedItems(resume.content.certifications.items),
+    [resume.content.certifications.items],
+  );
   const sidebarOrder = getEditorSidebarOrder(resume.meta.profileType);
   const summaryLabel = getSummaryLabel(resume.meta.profileType);
   const profileLabel = getProfileLabel(resume.meta.profileType);
@@ -263,6 +279,26 @@ function Editor({
       endDate: currentMonthValue(),
       bullets: [],
     } as EducationItem);
+
+  const addProject = () =>
+    projects.add({
+      id: makeId("p"),
+      order: resume.content.projects.items.length,
+      name: "",
+      startDate: currentMonthValue(),
+      endDate: currentMonthValue(),
+      summary: "",
+      bullets: [],
+    } as ProjectItem);
+
+  const addCertification = () =>
+    certifications.add({
+      id: makeId("c"),
+      order: resume.content.certifications.items.length,
+      name: "",
+      issuer: "",
+      issuedDate: currentMonthValue(),
+    } as CertificationItem);
 
   return (
     <main className="app-shell">
@@ -532,6 +568,176 @@ function Editor({
           </SidebarSection>
 
           <SidebarSection
+            count={orderedProjects.length}
+            id="projects"
+            isOpen={activeSidebarSection === "projects"}
+            onToggle={() => toggleSidebarSection("projects")}
+            order={sidebarOrder.indexOf("projects")}
+            sectionRef={(node) => {
+              sidebarSectionRefs.current.projects = node;
+            }}
+            title="Projects"
+          >
+            {orderedProjects.length === 0 ? (
+              <p className="form-note">
+                Add academic, freelance, volunteer or portfolio work that proves
+                your skills.
+              </p>
+            ) : (
+              <p className="form-note">
+                Ordered automatically, most recent first.
+              </p>
+            )}
+            {orderedProjects.map((item) => (
+              <div className="item-editor" key={item.id}>
+                <div className="item-editor-header">
+                  <TextField
+                    label="Project name"
+                    onChange={(name) => projects.update(item.id, { name })}
+                    value={item.name}
+                  />
+                  <RemoveButton
+                    label={`Remove ${item.name || "project"}`}
+                    onRemove={() => projects.remove(item.id)}
+                  />
+                </div>
+                <div className="field-grid two-columns">
+                  <TextField
+                    label="Role"
+                    onChange={(role) =>
+                      projects.update(item.id, { role: emptyToUndefined(role) })
+                    }
+                    value={item.role ?? ""}
+                  />
+                  <TextField
+                    label="Tools"
+                    onChange={(tools) =>
+                      projects.update(item.id, {
+                        tools: emptyToUndefined(tools),
+                      })
+                    }
+                    value={item.tools ?? ""}
+                  />
+                </div>
+                <TextField
+                  inputMode="url"
+                  label="Link"
+                  onChange={(link) =>
+                    projects.update(item.id, { link: emptyToUndefined(link) })
+                  }
+                  value={item.link ?? ""}
+                />
+                <DateRangeFields
+                  endDate={item.endDate}
+                  onEndDateChange={(value) =>
+                    projects.update(item.id, { endDate: value })
+                  }
+                  onStartDateChange={(value) =>
+                    projects.update(item.id, { startDate: value })
+                  }
+                  startDate={item.startDate}
+                />
+                <DateValidationMessage
+                  endDate={item.endDate}
+                  startDate={item.startDate}
+                />
+                <ProseField
+                  label="Short description"
+                  onChange={(summary) =>
+                    projects.update(item.id, {
+                      summary: emptyToUndefined(summary),
+                    })
+                  }
+                  rows={3}
+                  value={item.summary ?? ""}
+                />
+                <BulletsField
+                  bullets={item.bullets}
+                  onChange={(value) =>
+                    projects.update(item.id, {
+                      bullets: reconcileLines(
+                        item.bullets,
+                        value,
+                        makeBulletId,
+                      ),
+                    })
+                  }
+                />
+              </div>
+            ))}
+            <UndoRow removal={projects.removal} what="Project" />
+            <AddButton label="Add a project" onClick={addProject} />
+          </SidebarSection>
+
+          <SidebarSection
+            count={orderedCertifications.length}
+            id="certifications"
+            isOpen={activeSidebarSection === "certifications"}
+            onToggle={() => toggleSidebarSection("certifications")}
+            order={sidebarOrder.indexOf("certifications")}
+            sectionRef={(node) => {
+              sidebarSectionRefs.current.certifications = node;
+            }}
+            title="Certifications"
+          >
+            {orderedCertifications.length === 0 ? (
+              <p className="form-note">
+                Add licences, certificates, short courses and verified training.
+              </p>
+            ) : (
+              <p className="form-note">
+                Ordered automatically, newest issued date first.
+              </p>
+            )}
+            {orderedCertifications.map((item) => (
+              <div className="item-editor" key={item.id}>
+                <div className="item-editor-header">
+                  <TextField
+                    label="Certification"
+                    onChange={(name) =>
+                      certifications.update(item.id, { name })
+                    }
+                    value={item.name}
+                  />
+                  <RemoveButton
+                    label={`Remove ${item.name || "certification"}`}
+                    onRemove={() => certifications.remove(item.id)}
+                  />
+                </div>
+                <TextField
+                  label="Issuer"
+                  onChange={(issuer) =>
+                    certifications.update(item.id, { issuer })
+                  }
+                  value={item.issuer}
+                />
+                <CertificationDateFields
+                  expiryDate={item.expiryDate}
+                  issuedDate={item.issuedDate}
+                  onExpiryDateChange={(expiryDate) =>
+                    certifications.update(item.id, { expiryDate })
+                  }
+                  onIssuedDateChange={(issuedDate) =>
+                    certifications.update(item.id, { issuedDate })
+                  }
+                />
+                <TextField
+                  inputMode="url"
+                  label="Credential link"
+                  onChange={(credentialUrl) =>
+                    certifications.update(item.id, {
+                      credentialUrl: emptyToUndefined(credentialUrl),
+                    })
+                  }
+                  value={item.credentialUrl ?? ""}
+                />
+              </div>
+            ))}
+            <UndoRow removal={certifications.removal} what="Certification" />
+            <AddButton label="Add a certification" onClick={addCertification} />
+          </SidebarSection>
+
+          <SidebarSection
             count={resume.content.skills.items.length}
             id="skills"
             isOpen={activeSidebarSection === "skills"}
@@ -644,9 +850,7 @@ function GoalPanel({
       <TextField
         hint="Used later for matching, scoring and smarter suggestions."
         label="Target role"
-        onChange={(value) =>
-          onChange({ targetRole: emptyToUndefined(value) })
-        }
+        onChange={(value) => onChange({ targetRole: emptyToUndefined(value) })}
         value={targetRole}
       />
       <p className="form-note">{getProfileGuidance(profileType)}</p>
@@ -666,12 +870,30 @@ const PROFILE_OPTIONS: Array<{ label: string; value: ProfileType }> = [
 
 function getEditorSidebarOrder(profileType: ProfileType): SidebarSectionId[] {
   if (["attachee", "graduate", "intern"].includes(profileType)) {
+    if (profileType === "attachee") {
+      return [
+        "goal",
+        "personal",
+        "summary",
+        "education",
+        "skills",
+        "projects",
+        "certifications",
+        "experience",
+        "languages",
+        "hobbies",
+        "references",
+      ];
+    }
+
     return [
       "goal",
       "personal",
       "summary",
       "education",
+      "projects",
       "skills",
+      "certifications",
       "experience",
       "languages",
       "hobbies",
@@ -685,7 +907,9 @@ function getEditorSidebarOrder(profileType: ProfileType): SidebarSectionId[] {
       "personal",
       "summary",
       "skills",
+      "projects",
       "experience",
+      "certifications",
       "education",
       "languages",
       "hobbies",
@@ -698,8 +922,10 @@ function getEditorSidebarOrder(profileType: ProfileType): SidebarSectionId[] {
     "personal",
     "summary",
     "experience",
-    "education",
     "skills",
+    "certifications",
+    "education",
+    "projects",
     "languages",
     "hobbies",
     "references",
@@ -713,7 +939,10 @@ function getSummaryLabel(profileType: ProfileType) {
 }
 
 function getProfileLabel(profileType: ProfileType) {
-  return PROFILE_OPTIONS.find((option) => option.value === profileType)?.label ?? "Professional";
+  return (
+    PROFILE_OPTIONS.find((option) => option.value === profileType)?.label ??
+    "Professional"
+  );
 }
 
 function getProfileGuidance(profileType: ProfileType) {
@@ -737,6 +966,16 @@ function sortDatedItems<T extends { endDate: string; order: number }>(
   return [...items].sort(
     (a, b) =>
       dateSortValue(b.endDate) - dateSortValue(a.endDate) || a.order - b.order,
+  );
+}
+
+function sortIssuedItems<T extends { issuedDate: string; order: number }>(
+  items: T[],
+) {
+  return [...items].sort(
+    (a, b) =>
+      dateSortValue(b.issuedDate) - dateSortValue(a.issuedDate) ||
+      a.order - b.order,
   );
 }
 
@@ -1027,6 +1266,48 @@ function DateRangeFields({
           type="checkbox"
         />
         Current
+      </label>
+    </div>
+  );
+}
+
+function CertificationDateFields({
+  expiryDate,
+  issuedDate,
+  onExpiryDateChange,
+  onIssuedDateChange,
+}: {
+  expiryDate?: string;
+  issuedDate: string;
+  onExpiryDateChange: (value: string | undefined) => void;
+  onIssuedDateChange: (value: string) => void;
+}) {
+  const hasExpiry = typeof expiryDate === "string";
+
+  return (
+    <div className="date-range-fields">
+      <MonthYearField
+        label="Issued"
+        onChange={onIssuedDateChange}
+        value={issuedDate}
+      />
+      <MonthYearField
+        disabled={!hasExpiry}
+        label="Expiry"
+        onChange={(value) => onExpiryDateChange(value)}
+        value={expiryDate ?? currentMonthValue()}
+      />
+      <label className="checkbox-field">
+        <input
+          checked={!hasExpiry}
+          onChange={(event) =>
+            onExpiryDateChange(
+              event.target.checked ? undefined : currentMonthValue(),
+            )
+          }
+          type="checkbox"
+        />
+        No expiry
       </label>
     </div>
   );

@@ -79,6 +79,12 @@
         }
       ]
     },
+    "projects": {
+      "items": []
+    },
+    "certifications": {
+      "items": []
+    },
     "skills": {
       "items": [
         { "id": "k1", "order": 0, "groupLabel": "Product", "entries": ["Discovery research", "Roadmapping", "Experiment design", "Pricing"] },

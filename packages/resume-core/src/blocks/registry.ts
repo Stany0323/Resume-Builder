@@ -8,6 +8,8 @@ export const SECTION_TYPES = [
   "summary",
   "experience",
   "education",
+  "projects",
+  "certifications",
   "skills",
   "languages",
   "hobbies",
@@ -18,6 +20,8 @@ export const SECTION_BLOCK_EXTRACTORS: Record<SectionType, SectionBlockExtractor
   summary: extractSectionBlocks,
   experience: extractSectionBlocks,
   education: extractSectionBlocks,
+  projects: extractSectionBlocks,
+  certifications: extractSectionBlocks,
   skills: extractSectionBlocks,
   languages: extractSectionBlocks,
   hobbies: extractSectionBlocks,
@@ -58,6 +62,16 @@ function visibleItems(section: ResumeSection) {
 function getOptionalItemBlocks(section: ResumeSection, item: BlockItem): ResumeBlock[] {
   const blocks: ResumeBlock[] = [];
 
+  if (typeof item.link === "string" && item.link.length > 0) {
+    blocks.push({
+      id: `section:${section.id}:item:${item.id}:link`,
+      kind: "item-detail",
+      content: item.link,
+      sectionId: section.id,
+      itemId: item.id,
+    });
+  }
+
   if (typeof item.summary === "string" && item.summary.length > 0) {
     blocks.push({
       id: `section:${section.id}:item:${item.id}:summary`,
@@ -83,6 +97,16 @@ function getOptionalItemBlocks(section: ResumeSection, item: BlockItem): ResumeB
       id: `section:${section.id}:item:${item.id}:credential`,
       kind: "item-detail",
       content: `Credential: ${item.credentialId}`,
+      sectionId: section.id,
+      itemId: item.id,
+    });
+  }
+
+  if (typeof item.credentialUrl === "string" && item.credentialUrl.length > 0) {
+    blocks.push({
+      id: `section:${section.id}:item:${item.id}:credential-url`,
+      kind: "item-detail",
+      content: item.credentialUrl,
       sectionId: section.id,
       itemId: item.id,
     });
@@ -125,6 +149,19 @@ function getItemPrimaryText(section: ResumeSection, item: BlockItem) {
         stringValue(item.institution),
         stringValue(item.location),
         formatDateRangeForBlock(stringValue(item.startDate), stringValue(item.endDate)),
+      ].filter(Boolean).join(", ");
+    case "projects":
+      return [
+        stringValue(item.name),
+        stringValue(item.role),
+        stringValue(item.tools),
+        formatDateRangeForBlock(stringValue(item.startDate), stringValue(item.endDate)),
+      ].filter(Boolean).join(", ");
+    case "certifications":
+      return [
+        stringValue(item.name),
+        stringValue(item.issuer),
+        formatDateRangeForBlock(stringValue(item.issuedDate), stringValue(item.expiryDate)),
       ].filter(Boolean).join(", ");
     case "skills":
       return `${stringValue(item.groupLabel)}: ${stringArrayValue(item.entries).join(", ")}`;

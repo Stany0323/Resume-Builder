@@ -6,6 +6,8 @@ import {
   type HobbiesSection,
   type LanguageLevel,
   type LanguagesSection,
+  type CertificationsSection,
+  type ProjectsSection,
   type ReferencesSection,
   type ResumeSection,
   type SectionType,
@@ -21,6 +23,8 @@ export const SECTION_RENDERERS: Record<SectionType, SectionRenderer> = {
   summary: (section) => renderSummary(section as SummarySection),
   experience: (section) => renderExperience(section as ExperienceSection),
   education: (section) => renderEducation(section as EducationSection),
+  projects: (section) => renderProjects(section as ProjectsSection),
+  certifications: (section) => renderCertifications(section as CertificationsSection),
   skills: (section) => renderSkills(section as SkillsSection),
   languages: (section) => renderLanguages(section as LanguagesSection),
   hobbies: (section) => renderHobbies(section as HobbiesSection),
@@ -85,6 +89,70 @@ function renderEducation(section: EducationSection) {
       <Bullets sectionId={section.id} itemId={item.id} bullets={item.bullets} />
     </div>
   ));
+}
+
+function renderProjects(section: ProjectsSection) {
+  return byOrder(section.items).map((item) => (
+    <div className="resume-item" key={item.id}>
+      <div className="resume-entry-heading" data-block-id={`section:${section.id}:item:${item.id}`}>
+        <div className="resume-entry-copy">
+          <strong>{item.name}</strong>
+          {item.role || item.tools ? (
+            <span className="resume-item-meta">
+              {[item.role, item.tools].filter(Boolean).join(" · ")}
+            </span>
+          ) : null}
+          {item.link ? (
+            <span
+              className="resume-item-meta resume-link-text"
+              data-block-id={`section:${section.id}:item:${item.id}:link`}
+            >
+              {item.link}
+            </span>
+          ) : null}
+        </div>
+        <DateRange startDate={item.startDate} endDate={item.endDate} />
+      </div>
+      {typeof item.summary === "string" && item.summary.length > 0 ? (
+        <p data-block-id={`section:${section.id}:item:${item.id}:summary`}>{item.summary}</p>
+      ) : null}
+      <Bullets sectionId={section.id} itemId={item.id} bullets={item.bullets} />
+    </div>
+  ));
+}
+
+function renderCertifications(section: CertificationsSection) {
+  return byOrder(section.items).map((item) => (
+    <div className="resume-item" key={item.id}>
+      <div className="resume-entry-heading" data-block-id={`section:${section.id}:item:${item.id}`}>
+        <div className="resume-entry-copy">
+          <strong>{item.name}</strong>
+          <span className="resume-item-meta">{item.issuer}</span>
+          {item.credentialUrl ? (
+            <span
+              className="resume-item-meta resume-link-text"
+              data-block-id={`section:${section.id}:item:${item.id}:credential-url`}
+            >
+              {item.credentialUrl}
+            </span>
+          ) : null}
+        </div>
+        <CertificationDate issuedDate={item.issuedDate} expiryDate={item.expiryDate} />
+      </div>
+    </div>
+  ));
+}
+
+function CertificationDate({
+  expiryDate,
+  issuedDate,
+}: {
+  expiryDate?: string;
+  issuedDate: string;
+}) {
+  const text = [issuedDate, expiryDate ? `expires ${expiryDate}` : ""].filter(Boolean).join(" · ");
+
+  return text ? <span className="resume-date-range">{text}</span> : null;
 }
 
 function renderSkills(section: SkillsSection) {

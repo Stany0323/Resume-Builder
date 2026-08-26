@@ -201,6 +201,12 @@
         }
       ]
     },
+    "projects": {
+      "items": []
+    },
+    "certifications": {
+      "items": []
+    },
     "skills": {
       "items": [
         { "id": "k1", "order": 0, "groupLabel": "Languages", "entries": ["Go", "Rust", "Python", "Java", "SQL", "TypeScript", "C"] },

@@ -71,6 +71,8 @@ export interface ResumeContent {
   summary: { text: string };
   education: { items: EducationItem[] };
   experience: { items: ExperienceItem[] };
+  projects: { items: ProjectItem[] };
+  certifications: { items: CertificationItem[] };
   languages: { items: LanguageItem[] };
   skills: { items: SkillsItem[] };
   hobbies: { items: HobbyItem[] };
@@ -84,6 +86,8 @@ export type RenderableResumeSection =
   | SummarySection
   | ExperienceSection
   | EducationSection
+  | ProjectsSection
+  | CertificationsSection
   | LanguagesSection
   | SkillsSection
   | HobbiesSection
@@ -132,6 +136,23 @@ export type EducationItem = ResumeItem & {
   detail?: string;
   bullets: Bullet[];
 };
+export type ProjectItem = ResumeItem & {
+  name: string;
+  role?: string;
+  tools?: string;
+  link?: string;
+  startDate: string;
+  endDate: string;
+  summary?: string | null;
+  bullets: Bullet[];
+};
+export type CertificationItem = ResumeItem & {
+  name: string;
+  issuer: string;
+  issuedDate: string;
+  expiryDate?: string;
+  credentialUrl?: string;
+};
 export type SkillsItem = ResumeItem & {
   groupLabel: string;
   entries: string[];
@@ -153,6 +174,8 @@ export type ReferenceItem = ResumeItem & {
 export type SummarySection = BaseSection<"summary", SummaryItem>;
 export type ExperienceSection = BaseSection<"experience", ExperienceItem>;
 export type EducationSection = BaseSection<"education", EducationItem>;
+export type ProjectsSection = BaseSection<"projects", ProjectItem>;
+export type CertificationsSection = BaseSection<"certifications", CertificationItem>;
 export type LanguagesSection = BaseSection<"languages", LanguageItem>;
 export type SkillsSection = BaseSection<"skills", SkillsItem>;
 export type HobbiesSection = BaseSection<"hobbies", HobbyItem>;
@@ -219,6 +242,8 @@ export function getRenderableSections(resume: ResumeDocument): ResumeSection[] {
     summary: getSummarySection(resume),
     experience: getExperienceSection(resume),
     education: getEducationSection(resume),
+    projects: getProjectsSection(resume),
+    certifications: getCertificationsSection(resume),
     languages: getLanguagesSection(resume),
     skills: getSkillsSection(resume),
     hobbies: getHobbiesSection(resume),
@@ -230,17 +255,21 @@ export function getRenderableSections(resume: ResumeDocument): ResumeSection[] {
 
 function getSectionOrder(resume: ResumeDocument): Array<ResumeSection["type"]> {
   if (["attachee", "graduate", "intern"].includes(resume.meta.profileType)) {
-    return ["summary", "education", "experience", "skills", "languages", "hobbies", "references"];
+    if (resume.meta.profileType === "attachee") {
+      return ["summary", "education", "skills", "projects", "certifications", "experience", "languages", "hobbies", "references"];
+    }
+
+    return ["summary", "education", "projects", "skills", "certifications", "experience", "languages", "hobbies", "references"];
   }
 
   if (resume.meta.profileType === "careerChanger") {
-    return ["summary", "skills", "experience", "education", "languages", "hobbies", "references"];
+    return ["summary", "skills", "projects", "experience", "certifications", "education", "languages", "hobbies", "references"];
   }
 
   switch (resume.design.templateId) {
     case "meridian":
     case "slate":
-      return ["summary", "experience", "education", "skills", "languages", "hobbies", "references"];
+      return ["summary", "experience", "skills", "certifications", "education", "projects", "languages", "hobbies", "references"];
   }
 }
 
@@ -293,6 +322,8 @@ export function normalizeResumeDocument(document: ResumeDocument): ResumeDocumen
     },
     content: {
       ...document.content,
+      projects: document.content.projects ?? { items: [] },
+      certifications: document.content.certifications ?? { items: [] },
       languages: document.content.languages ?? { items: [] },
     },
   };
@@ -357,6 +388,27 @@ function getExperienceSection(resume: ResumeDocument): ExperienceSection {
     type: "experience",
     title: "Experience",
     items: sortDatedItems(resume.content.experience.items),
+  };
+}
+
+function getProjectsSection(resume: ResumeDocument): ProjectsSection {
+  return {
+    id: "projects",
+    type: "projects",
+    title: "Projects",
+    items: sortDatedItems(resume.content.projects.items),
+  };
+}
+
+function getCertificationsSection(resume: ResumeDocument): CertificationsSection {
+  return {
+    id: "certifications",
+    type: "certifications",
+    title: "Certifications",
+    items: [...resume.content.certifications.items].sort((a, b) => {
+      const dateCompare = dateSortValue(b.issuedDate) - dateSortValue(a.issuedDate);
+      return dateCompare || a.order - b.order;
+    }),
   };
 }
 
@@ -455,6 +507,8 @@ function migrateV1ToV2(document: LegacyResumeDocumentV1): ResumeDocument {
       summary: { text: firstVisibleSectionItem(document, "summary")?.text as string ?? "" },
       education: { items: sectionItems<EducationItem>(document, "education") },
       experience: { items: sectionItems<ExperienceItem>(document, "experience") },
+      projects: { items: [] },
+      certifications: { items: [] },
       languages: { items: [] },
       skills: { items: sectionItems<SkillsItem>(document, "skills") },
       hobbies: { items: customTextItems(document).map((item) => ({ id: item.id, order: item.order, text: item.text })) },
@@ -521,6 +575,8 @@ export const sampleResume: ResumeDocument = {
     summary: { text: "Product manager with eight years building payments and lending products for emerging markets." },
     education: { items: [] },
     experience: { items: [] },
+    projects: { items: [] },
+    certifications: { items: [] },
     languages: { items: [] },
     skills: { items: [] },
     hobbies: { items: [] },
