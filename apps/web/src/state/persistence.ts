@@ -13,7 +13,14 @@ const DB_VERSION = 1;
 const STORE = "documents";
 const WORKING_KEY = "working";
 
-export type SaveStatus = "idle" | "saving" | "saved" | "error";
+export type SaveStatus =
+  | "idle"
+  | "saving"
+  | "saved"
+  | "syncing"
+  | "synced"
+  | "offline"
+  | "error";
 
 function openDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -80,7 +87,8 @@ export async function clearWorkingDocument(): Promise<void> {
  */
 export function createAutosave(
   onStatus: (status: SaveStatus) => void,
-  delayMs = 500,
+  syncToCloud?: (resume: ResumeDocument) => Promise<void>,
+  delayMs = 700,
 ) {
   let timer: ReturnType<typeof setTimeout> | null = null;
   let queued: ResumeDocument | null = null;
@@ -96,10 +104,23 @@ export function createAutosave(
 
     onStatus("saving");
     try {
-      await saveWorkingDocument({ ...pending, meta: { ...pending.meta, updatedAt: new Date().toISOString() } });
-      onStatus("saved");
+      const nextDocument = {
+        ...pending,
+        meta: { ...pending.meta, updatedAt: new Date().toISOString() },
+      };
+
+      await saveWorkingDocument(nextDocument);
+
+      if (!syncToCloud) {
+        onStatus("saved");
+        return;
+      }
+
+      onStatus("syncing");
+      await syncToCloud(nextDocument);
+      onStatus("synced");
     } catch {
-      onStatus("error");
+      onStatus(navigator.onLine ? "error" : "offline");
     }
   };
 

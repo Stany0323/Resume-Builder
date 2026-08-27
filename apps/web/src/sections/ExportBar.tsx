@@ -9,7 +9,10 @@ const SAVE_LABEL: Record<SaveStatus, string> = {
   idle: "",
   saving: "Saving…",
   saved: "Saved",
-  error: "Couldn’t save — your work is still here, but not stored locally.",
+  syncing: "Syncing…",
+  synced: "Saved to cloud",
+  offline: "Offline — saved on this device.",
+  error: "Couldn’t sync — your work is saved on this device.",
 };
 
 const SHOW_JSON_CONTROLS = false;

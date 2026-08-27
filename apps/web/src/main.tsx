@@ -44,6 +44,7 @@ import {
   useItemList,
 } from "./sections/list-controls";
 import { createBlankResume } from "./state/blank-resume";
+import { createCloudSync, loadCloudDocument } from "./state/cloud-sync";
 import {
   createAutosave,
   loadWorkingDocument,
@@ -139,23 +140,31 @@ function ResumeApp({
   const [phase, setPhase] = useState<Phase>("loading");
   const [resume, setResume] = useState<ResumeDocument | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
-  const autosave = useRef(createAutosave(setSaveStatus));
+  const autosave = useRef(createAutosave(setSaveStatus, createCloudSync(session)));
 
   useEffect(() => {
     let cancelled = false;
 
-    void loadWorkingDocument().then((stored) => {
+    void Promise.allSettled([
+      loadWorkingDocument(),
+      loadCloudDocument(session),
+    ]).then((results) => {
       if (cancelled) {
         return;
       }
-      setResume(stored ?? createBlankResume());
-      setPhase(stored ? "editing" : "choosing");
+
+      const stored = results[0].status === "fulfilled" ? results[0].value : null;
+      const cloud = results[1].status === "fulfilled" ? results[1].value : null;
+      const nextDocument = cloud ?? stored ?? createBlankResume();
+
+      setResume(nextDocument);
+      setPhase(cloud || stored ? "editing" : "choosing");
     });
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [session]);
 
   useEffect(() => {
     if (phase === "editing" && resume) {

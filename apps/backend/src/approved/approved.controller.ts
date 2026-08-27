@@ -16,12 +16,6 @@ export class ApprovedController {
     const input = parseSearchQuery(query);
     return this.approved.searchSkills(input.query, input.limit);
   }
-
-  @Get("certifications")
-  certifications(@Query() query: unknown) {
-    const input = parseSearchQuery(query);
-    return this.approved.searchCertifications(input.query, input.limit);
-  }
 }
 
 function parseSearchQuery(query: unknown) {

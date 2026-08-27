@@ -33,6 +33,17 @@ export class ResumesService {
 
     const document = input.document as unknown as ResumeDocument;
     const title = input.title ?? document.meta.title;
+    const existing = await this.prisma.resume.findFirst({
+      where: { id: document.meta.id, userId: user.id },
+      select: { revision: true },
+    });
+
+    if (existing) {
+      return this.sync(user, document.meta.id, {
+        ...input,
+        baseRevision: existing.revision,
+      });
+    }
 
     const resume = await this.prisma.resume.create({
       data: {

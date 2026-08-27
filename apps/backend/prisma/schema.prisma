@@ -48,7 +48,7 @@ model Resume {
 }
 
 model ResumeVersion {
-  id           String   @id @default(uuid())
+  id           String   @id @default(dbgenerated("gen_random_uuid()"))
   resumeId     String   @map("resume_id")
   revision     Int
   snapshotJson Json     @map("snapshot_json")
@@ -62,7 +62,7 @@ model ResumeVersion {
 }
 
 model Asset {
-  id        String   @id @default(uuid())
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
   userId    String   @map("user_id")
   kind      String
   url       String
@@ -75,22 +75,11 @@ model Asset {
 }
 
 model ApprovedSkill {
-  id        String   @id @default(uuid())
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
   name      String   @unique
   category  String?
   approved  Boolean  @default(true)
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("skills")
-}
-
-model ApprovedCertification {
-  id        String   @id @default(uuid())
-  name      String
-  provider  String?
-  approved  Boolean  @default(true)
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@unique([name, provider])
-  @@map("certifications")
 }

@@ -35,34 +35,6 @@ export class ApprovedService {
 
     return { skills };
   }
-
-  async searchCertifications(query = "", limit = DEFAULT_LIMIT) {
-    const take = clampLimit(limit);
-    const where = {
-      approved: true,
-      ...(query.trim()
-        ? {
-            name: {
-              contains: query.trim(),
-              mode: "insensitive" as const,
-            },
-          }
-        : {}),
-    };
-
-    const certifications = await this.prisma.approvedCertification.findMany({
-      where,
-      orderBy: [{ name: "asc" }, { provider: "asc" }],
-      take,
-      select: {
-        id: true,
-        name: true,
-        provider: true,
-      },
-    });
-
-    return { certifications };
-  }
 }
 
 function clampLimit(limit: number) {

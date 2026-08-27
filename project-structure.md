@@ -201,10 +201,17 @@ It currently supports:
 - Resume create, list, fetch, sync, and version-history endpoints
 - Revision-based conflict detection for sync
 - Approved skills search endpoint
-- Approved certifications search endpoint
 - Environment sample for local database setup
 
-This is not yet connected to the editor UI. The frontend still saves locally first, and the next major product step is to wire the editor to these APIs with debounced autosave and server-backed dropdowns.
+The frontend now has the first sync wiring:
+
+- Supabase email/password auth gate
+- Local-first autosave remains in IndexedDB
+- Cloud resume load tries the backend first, then falls back to local storage
+- Debounced autosave saves locally, then syncs to the backend with the Supabase access token
+- Save states distinguish local save, cloud sync, offline, and sync failure
+
+The database migration file exists, but the direct Supabase `db.*:5432` connection was not reachable from the local machine. The next operational requirement is the Supabase pooler/session connection string so Prisma can apply the migration and seed approved data.
 
 ## Known UI And Export Limitations
 
@@ -282,13 +289,13 @@ Fields that should be approved or autocomplete-driven:
 - Fields of study
 - Languages
 - Countries, cities, and locations
-- Certifications
 - Employment types
 - Seniority levels
 - Achievement/action verbs
 
 Fields that should stay free text:
 
+- Certifications
 - Professional summary
 - Career objective
 - Work achievement bullets
@@ -482,12 +489,6 @@ companies
   logo_url
   approved
 
-certifications
-  id
-  name
-  provider
-  approved
-
 languages
   id
   name
@@ -517,7 +518,6 @@ Recommended API groups:
 /job-titles/search
 /institutions/search
 /companies/search
-/certifications/search
 /languages/search
 /assets
 /analysis/job-match
