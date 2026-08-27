@@ -552,11 +552,6 @@
     display: contents;
   }
 
-  .resume-preview-page-shell + .resume-preview-page-shell .resume-page {
-    break-before: page;
-    page-break-before: always;
-  }
-
   .resume-preview-page-shell .resume-page {
     width: var(--resume-page-width);
     min-height: var(--resume-page-height);
