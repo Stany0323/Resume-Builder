@@ -102,17 +102,17 @@ function renderProjects(section: ProjectsSection) {
               {[item.role, item.tools].filter(Boolean).join(" · ")}
             </span>
           ) : null}
-          {item.link ? (
-            <span
-              className="resume-item-meta resume-link-text"
-              data-block-id={`section:${section.id}:item:${item.id}:link`}
-            >
-              {item.link}
-            </span>
-          ) : null}
         </div>
         <DateRange startDate={item.startDate} endDate={item.endDate} />
       </div>
+      {item.link ? (
+        <p
+          className="resume-link-text"
+          data-block-id={`section:${section.id}:item:${item.id}:link`}
+        >
+          {item.link}
+        </p>
+      ) : null}
       {typeof item.summary === "string" && item.summary.length > 0 ? (
         <p data-block-id={`section:${section.id}:item:${item.id}:summary`}>{item.summary}</p>
       ) : null}
@@ -128,17 +128,17 @@ function renderCertifications(section: CertificationsSection) {
         <div className="resume-entry-copy">
           <strong>{item.name}</strong>
           <span className="resume-item-meta">{item.issuer}</span>
-          {item.credentialUrl ? (
-            <span
-              className="resume-item-meta resume-link-text"
-              data-block-id={`section:${section.id}:item:${item.id}:credential-url`}
-            >
-              {item.credentialUrl}
-            </span>
-          ) : null}
         </div>
         <CertificationDate issuedDate={item.issuedDate} expiryDate={item.expiryDate} />
       </div>
+      {item.credentialUrl ? (
+        <p
+          className="resume-link-text"
+          data-block-id={`section:${section.id}:item:${item.id}:credential-url`}
+        >
+          {item.credentialUrl}
+        </p>
+      ) : null}
     </div>
   ));
 }

@@ -49,7 +49,7 @@ export function ExportBar({
         <button
           className="primary"
           disabled={!canPrintReliably()}
-          onClick={() => printResume(resume)}
+          onClick={() => void printResume(resume)}
           title={canPrintReliably() ? undefined : "Printing to PDF isn’t reliable on mobile — use a desktop browser."}
           type="button"
         >

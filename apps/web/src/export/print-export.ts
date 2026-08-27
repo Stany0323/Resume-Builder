@@ -2,7 +2,7 @@ import type { ResumeDocument } from "@resume-builder/core";
 
 /**
  * Interim download path: the browser's own print-to-PDF, driven by the exact
- * same `ResumePreview` components and CSS the editor renders.
+ * same paged `ResumePreview` components and CSS the editor renders.
  *
  * ANTI-FORK TRIPWIRE (plan §9.2). This path exists only because it costs
  * almost nothing on top of the shared render path. It must never grow into a
@@ -21,7 +21,9 @@ const STYLE_ID = "resume-print-page-box";
 
 const A4_PAGE_SIZE = "210mm 297mm";
 
-export function printResume(resume: ResumeDocument): void {
+export async function printResume(resume: ResumeDocument): Promise<void> {
+  await waitForPagedPreview();
+
   const style = document.createElement("style");
 
   style.id = STYLE_ID;
@@ -33,9 +35,7 @@ export function printResume(resume: ResumeDocument): void {
 
     @media print {
       body[data-printing="true"] .resume-page {
-        min-height: auto;
-        -webkit-box-decoration-break: clone;
-        box-decoration-break: clone;
+        box-shadow: none;
       }
     }
   `;
@@ -60,6 +60,41 @@ export function printResume(resume: ResumeDocument): void {
   }, 60_000);
 
   window.print();
+}
+
+function waitForPagedPreview() {
+  const existing = document.querySelector<HTMLElement>(".resume-preview-pages[data-paged-ready=\"true\"]");
+
+  if (existing) {
+    return Promise.resolve();
+  }
+
+  return new Promise<void>((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      observer.disconnect();
+      window.clearTimeout(timeout);
+      resolve();
+    };
+    const observer = new MutationObserver(() => {
+      if (document.querySelector(".resume-preview-pages[data-paged-ready=\"true\"]")) {
+        finish();
+      }
+    });
+    const timeout = window.setTimeout(finish, 1_200);
+
+    observer.observe(document.body, {
+      attributeFilter: ["data-paged-ready"],
+      attributes: true,
+      childList: true,
+      subtree: true,
+    });
+  });
 }
 
 /**

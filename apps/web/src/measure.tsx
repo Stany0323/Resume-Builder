@@ -82,12 +82,36 @@ window.__resumeMeasure = {
 };
 
 function measureBlocks(): MeasuredBlock[] {
+  const page = document.querySelector<HTMLElement>(".resume-page");
+  const pageStyle = page ? getComputedStyle(page) : null;
+  let cursorBottom = page
+    ? page.getBoundingClientRect().top + numberValue(pageStyle?.paddingTop ?? "0")
+    : 0;
+
   return [...document.querySelectorAll<HTMLElement>("[data-block-id]")]
     .map((element) => ({
       id: element.dataset.blockId ?? "",
-      height: element.getBoundingClientRect().height,
+      height: measureBlockAdvance(element, (bottom) => {
+        const height = Math.max(0, bottom - cursorBottom);
+        cursorBottom = Math.max(cursorBottom, bottom);
+        return height;
+      }),
     }))
     .filter((block) => block.id);
+}
+
+function measureBlockAdvance(
+  element: HTMLElement,
+  commit: (bottom: number) => number,
+) {
+  const style = getComputedStyle(element);
+  const rect = element.getBoundingClientRect();
+
+  return commit(rect.bottom + numberValue(style.marginBottom));
+}
+
+function numberValue(value: string) {
+  return Number.parseFloat(value) || 0;
 }
 
 function getFontHash() {

@@ -850,7 +850,7 @@ function Editor({
 
       <section className="workspace" aria-label="Resume workspace">
         <section className="preview-stage" aria-label="Resume preview">
-          <ResumePreview resume={resume} />
+          <ResumePreview mode="paged" resume={resume} />
         </section>
       </section>
     </main>

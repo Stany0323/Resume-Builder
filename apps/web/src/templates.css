@@ -14,6 +14,34 @@
   -webkit-font-smoothing: antialiased;
 }
 
+.resume-preview-pages {
+  display: grid;
+  justify-content: center;
+  gap: 1.4rem;
+}
+
+.resume-preview-page-shell {
+  display: grid;
+  justify-items: center;
+  gap: 0.45rem;
+}
+
+.resume-page-fill {
+  color: color-mix(in srgb, var(--text-muted, #5f6b76) 82%, transparent);
+  font: 700 11px/1.2 Inter, ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.resume-measure-copy {
+  position: fixed;
+  inset: 0 auto auto 0;
+  pointer-events: none;
+  visibility: hidden;
+  z-index: -1;
+  margin: 0;
+  box-shadow: none;
+}
+
 .resume-page h2,
 .resume-page h3 {
   margin: 0;
@@ -511,4 +539,35 @@
   font-family: var(--resume-font-mono);
   font-size: calc(var(--resume-font-size) * 0.85);
   font-weight: 600;
+}
+
+@media print {
+  .resume-preview-pages {
+    display: block;
+    margin: 0;
+    padding: 0;
+  }
+
+  .resume-preview-page-shell {
+    display: contents;
+  }
+
+  .resume-preview-page-shell + .resume-preview-page-shell .resume-page {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  .resume-preview-page-shell .resume-page {
+    width: var(--resume-page-width);
+    min-height: var(--resume-page-height);
+    height: var(--resume-page-height);
+    margin: 0;
+    box-shadow: none;
+    overflow: hidden;
+  }
+
+  .resume-page-fill,
+  .resume-measure-copy {
+    display: none !important;
+  }
 }
