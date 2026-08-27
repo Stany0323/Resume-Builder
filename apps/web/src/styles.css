@@ -169,7 +169,7 @@ button {
   border-right: 1px solid var(--border);
   background: var(--surface);
   display: grid;
-  grid-template-rows: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
   min-height: 0;
   overflow: hidden;
   scrollbar-gutter: stable;
@@ -185,6 +185,76 @@ button {
   padding-bottom: calc(min(56vh, 520px) + 32px);
   scrollbar-gutter: stable;
   scroll-padding-top: 18px;
+}
+
+.resume-progress-footer {
+  display: grid;
+  gap: 0.48rem;
+  padding: 0.8rem 1.5rem 1rem;
+  border-top: 1px solid var(--border);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 94%, transparent), var(--surface)),
+    var(--surface);
+  box-shadow: 0 -10px 22px rgba(24, 34, 45, 0.04);
+}
+
+.resume-progress-copy,
+.resume-progress-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  min-width: 0;
+}
+
+.resume-progress-copy span {
+  color: var(--text-strong);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.resume-progress-copy strong {
+  color: var(--accent);
+  font-size: 18px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.resume-progress-track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--border) 62%, var(--surface));
+}
+
+.resume-progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 72%, var(--focus)));
+  transition: width 180ms ease-out;
+}
+
+.resume-progress-meta,
+.resume-progress-footer p {
+  color: var(--text-muted);
+  font-size: 11.5px;
+  line-height: 1.35;
+}
+
+.resume-progress-meta span,
+.resume-progress-footer p {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.resume-progress-meta span:last-child {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.resume-progress-footer p {
+  margin: 0;
 }
 
 .toolbar-content .form-section:first-child {
@@ -728,7 +798,7 @@ button {
   .toolbar {
     grid-column: 1;
     grid-row: 2;
-    grid-template-rows: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
     border-right: 0;
     border-bottom: 1px solid var(--border);
     min-height: 0;
@@ -737,6 +807,10 @@ button {
 
   .toolbar-content {
     padding: 16px 18px 18px;
+  }
+
+  .resume-progress-footer {
+    padding: 0.7rem 1.125rem 0.8rem;
   }
 
   .workspace {

@@ -78,6 +78,11 @@ type StrategyCheck = {
   label: string;
   met: boolean;
 };
+type ResumeProgress = {
+  completed: number;
+  percent: number;
+  total: number;
+};
 
 const LOGO_OUTPUT_SIZE = 256;
 const LOGO_IMAGE_QUALITY = 0.86;
@@ -269,6 +274,7 @@ function Editor({
   const sidebarOrder = getEditorSidebarOrder(resume.meta.profileType);
   const sectionPriorities = getSectionPriorities(resume.meta.profileType);
   const strategyChecks = getStrategyChecks(resume);
+  const resumeProgress = getResumeProgress(strategyChecks);
   const summaryLabel = getSummaryLabel(resume.meta.profileType);
   const profileLabel = getProfileLabel(resume.meta.profileType);
 
@@ -835,6 +841,11 @@ function Editor({
             />
           </SidebarSection>
         </div>
+        <ResumeProgressFooter
+          profileLabel={profileLabel}
+          progress={resumeProgress}
+          targetRole={resume.meta.targetRole}
+        />
       </aside>
 
       <section className="workspace" aria-label="Resume workspace">
@@ -843,6 +854,46 @@ function Editor({
         </section>
       </section>
     </main>
+  );
+}
+
+function ResumeProgressFooter({
+  profileLabel,
+  progress,
+  targetRole,
+}: {
+  profileLabel: string;
+  progress: ResumeProgress;
+  targetRole?: string;
+}) {
+  return (
+    <footer className="resume-progress-footer">
+      <div className="resume-progress-copy">
+        <span>Resume progress</span>
+        <strong>{progress.percent}%</strong>
+      </div>
+      <div
+        aria-label={`Resume progress ${progress.percent}%`}
+        aria-valuemax={100}
+        aria-valuemin={0}
+        aria-valuenow={progress.percent}
+        className="resume-progress-track"
+        role="progressbar"
+      >
+        <span style={{ width: `${progress.percent}%` }} />
+      </div>
+      <div className="resume-progress-meta">
+        <span>{profileLabel}</span>
+        <span>
+          {progress.completed}/{progress.total} essentials
+        </span>
+      </div>
+      <p>
+        {targetRole?.trim()
+          ? `Tuned for ${targetRole}.`
+          : "Add a target role to tune the checklist."}
+      </p>
+    </footer>
   );
 }
 
@@ -922,6 +973,14 @@ const SECTION_PRIORITY_LABELS: Record<SectionPriority, string> = {
   useful: "Useful",
   optional: "Optional",
 };
+
+function getResumeProgress(strategyChecks: StrategyCheck[]): ResumeProgress {
+  const total = strategyChecks.length;
+  const completed = strategyChecks.filter((check) => check.met).length;
+  const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+  return { completed, percent, total };
+}
 
 function getEditorSidebarOrder(profileType: ProfileType): SidebarSectionId[] {
   if (["attachee", "graduate", "intern"].includes(profileType)) {
