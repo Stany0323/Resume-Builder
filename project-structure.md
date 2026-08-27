@@ -71,7 +71,7 @@ For the backend and sync architecture, the recommended stack is:
 - Backend framework: NestJS
 - Database: PostgreSQL
 - ORM: Prisma
-- Auth: Supabase Auth, Clerk, or NestJS JWT auth
+- Auth: Supabase Auth, starting with email and password
 - File storage: Supabase Storage or S3-compatible object storage
 
 Recommended default:
@@ -95,6 +95,17 @@ Why this stack:
 
 ```text
 apps/
+  backend/
+    src/
+      main.ts                   NestJS API entry point
+      app.module.ts             Backend module wiring
+      health.controller.ts      Health check endpoint
+      prisma.service.ts         Shared Prisma client service
+      approved/                 Approved server data search APIs
+      resumes/                  Resume create, fetch, sync, versions APIs
+    prisma/
+      schema.prisma             PostgreSQL data model
+
   web/
     src/
       main.tsx                  Main resume builder app
@@ -174,6 +185,26 @@ The app currently supports:
 - Download PDF through browser print
 - Import/export JSON
 - Local browser persistence through IndexedDB
+
+## Current Backend Foundation
+
+The backend foundation now exists in `apps/backend`.
+
+It currently supports:
+
+- NestJS API shell
+- PostgreSQL schema through Prisma
+- Supabase email/password auth foundation
+- Supabase access-token verification for resume APIs
+- Prisma client generation
+- Health check endpoint
+- Resume create, list, fetch, sync, and version-history endpoints
+- Revision-based conflict detection for sync
+- Approved skills search endpoint
+- Approved certifications search endpoint
+- Environment sample for local database setup
+
+This is not yet connected to the editor UI. The frontend still saves locally first, and the next major product step is to wire the editor to these APIs with debounced autosave and server-backed dropdowns.
 
 ## Known UI And Export Limitations
 
@@ -477,7 +508,7 @@ Early on, `resumes.content_json` can hold the resume document as JSON. Later, if
 Recommended API groups:
 
 ```text
-/auth
+/auth through Supabase email/password
 /users
 /resumes
 /resumes/:id/sync
@@ -563,4 +594,3 @@ Will this help the user create a better resume faster?
 If yes, build it carefully.
 
 If no, leave it out for now.
-

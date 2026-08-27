@@ -152,6 +152,44 @@ button {
   flex: 0 0 auto;
 }
 
+.dashboard-user {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.25rem 0.35rem 0.25rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-subtle);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dashboard-user span {
+  max-width: 15rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-user button {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.dashboard-user button:hover {
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+
 .dashboard-template-button:hover {
   border-color: color-mix(in srgb, var(--accent) 45%, var(--border-strong));
   background: var(--surface-subtle);

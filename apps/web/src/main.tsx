@@ -18,9 +18,12 @@ import {
   ChevronRight,
   FileText,
   LayoutGrid,
+  LogOut,
 } from "lucide-react";
+import type { Session } from "@supabase/supabase-js";
 import { ResumePreview, applyTemplate } from "@resume-builder/render";
 
+import { AuthGate } from "./auth/AuthGate";
 import { TemplateChooser } from "./onboarding/TemplateChooser";
 import { DesignPanel } from "./sections/DesignPanel";
 import { ExportBar } from "./sections/ExportBar";
@@ -53,6 +56,7 @@ import "./sections/panels.css";
 import "./sections/fields.css";
 import "./sections/photo.css";
 import "./sections/design.css";
+import "./auth/auth.css";
 import "./export/print.css";
 import "./onboarding/chooser.css";
 
@@ -118,6 +122,20 @@ const years = Array.from({ length: 62 }, (_, index) =>
 type Phase = "loading" | "choosing" | "editing";
 
 function Root() {
+  return (
+    <AuthGate>
+      {(session, signOut) => <ResumeApp session={session} signOut={signOut} />}
+    </AuthGate>
+  );
+}
+
+function ResumeApp({
+  session,
+  signOut,
+}: {
+  session: Session;
+  signOut: () => Promise<void>;
+}) {
   const [phase, setPhase] = useState<Phase>("loading");
   const [resume, setResume] = useState<ResumeDocument | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
@@ -176,12 +194,14 @@ function Root() {
   }
 
   return (
-    <Editor
-      onChooseTemplate={() => setPhase("choosing")}
-      resume={resume}
-      saveStatus={saveStatus}
-      setResume={setResume}
-    />
+      <Editor
+        onChooseTemplate={() => setPhase("choosing")}
+        resume={resume}
+        saveStatus={saveStatus}
+        session={session}
+        setResume={setResume}
+        signOut={signOut}
+      />
   );
 }
 
@@ -189,12 +209,16 @@ function Editor({
   onChooseTemplate,
   resume,
   saveStatus,
+  session,
   setResume,
+  signOut,
 }: {
   onChooseTemplate: () => void;
   resume: ResumeDocument;
   saveStatus: SaveStatus;
+  session: Session;
   setResume: (resume: ResumeDocument) => void;
+  signOut: () => Promise<void>;
 }) {
   const setContent = <TKey extends keyof ResumeDocument["content"]>(
     key: TKey,
@@ -337,6 +361,12 @@ function Editor({
           </div>
         </div>
         <div className="dashboard-actions">
+          <div className="dashboard-user">
+            <span>{session.user.email ?? "Signed in"}</span>
+            <button aria-label="Sign out" onClick={() => void signOut()} title="Sign out" type="button">
+              <LogOut size={15} strokeWidth={2.2} />
+            </button>
+          </div>
           <ExportBar
             onImport={setResume}
             resume={resume}

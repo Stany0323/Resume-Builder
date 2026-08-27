@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ResumeProfileType {
+  attachee
+  careerChanger
+  graduate
+  intern
+  professional
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  resumes Resume[]
+  assets  Asset[]
+
+  @@map("users")
+}
+
+model Resume {
+  id          String            @id @default(uuid())
+  userId      String            @map("user_id")
+  title       String
+  profileType ResumeProfileType @default(professional) @map("profile_type")
+  designJson  Json              @map("design_json")
+  contentJson Json              @map("content_json")
+  personalJson Json             @map("personal_json")
+  revision    Int               @default(1)
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  versions ResumeVersion[]
+
+  @@index([userId])
+  @@map("resumes")
+}
+
+model ResumeVersion {
+  id           String   @id @default(uuid())
+  resumeId     String   @map("resume_id")
+  revision     Int
+  snapshotJson Json     @map("snapshot_json")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@unique([resumeId, revision])
+  @@index([resumeId])
+  @@map("resume_versions")
+}
+
+model Asset {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  kind      String
+  url       String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("assets")
+}
+
+model ApprovedSkill {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  category  String?
+  approved  Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("skills")
+}
+
+model ApprovedCertification {
+  id        String   @id @default(uuid())
+  name      String
+  provider  String?
+  approved  Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([name, provider])
+  @@map("certifications")
+}

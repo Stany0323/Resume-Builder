@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "dev": "npm run dev --workspace @resume-builder/web",
+    "dev:backend": "npm run dev --workspace @resume-builder/backend",
     "dev:render": "npm run dev --workspace @resume-builder/render",
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",

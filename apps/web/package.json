@@ -12,6 +12,7 @@
   "dependencies": {
     "@resume-builder/core": "*",
     "@resume-builder/render": "*",
+    "@supabase/supabase-js": "^2.86.0",
     "@vitejs/plugin-react": "^5.0.1",
     "vite": "^7.1.3",
     "react": "^19.1.1",
