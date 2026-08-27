@@ -211,7 +211,24 @@ The frontend now has the first sync wiring:
 - Debounced autosave saves locally, then syncs to the backend with the Supabase access token
 - Save states distinguish local save, cloud sync, offline, and sync failure
 
-The database migration file exists, but the direct Supabase `db.*:5432` connection was not reachable from the local machine. The next operational requirement is the Supabase pooler/session connection string so Prisma can apply the migration and seed approved data.
+The database is live on Supabase and verified end to end: pooler connection, applied schema, seeded approved skills, and a working `/approved/skills` response.
+
+Connection setup that works, and why:
+
+- `DATABASE_URL` uses the **transaction** pooler (port 6543) with `pgbouncer=true`. This is what the running app uses.
+- `DIRECT_URL` uses the **session** pooler (same host, port 5432) and is wired into `schema.prisma` as `directUrl`. Migrations need it because `prisma migrate` takes advisory locks and runs DDL, neither of which survives transaction pooling.
+- Neither URL uses `db.<project-ref>.supabase.co`. That host is IPv6-only and is unreachable from most networks — it was the original cause of the `P1001` failures.
+- The initial migration was applied by hand in the Supabase SQL editor, then recorded with `prisma migrate resolve --applied 20260827093000_init`. Without that record Prisma still considers it pending, and `migrate dev` will offer to reset the database.
+
+Root-level helper scripts: `db:status`, `db:deploy`, `db:generate`, `db:seed`.
+
+### Dev-runner gotcha, do not regress this
+
+`tsx` runs on esbuild, and **esbuild does not implement `emitDecoratorMetadata`** — it ignores the tsconfig flag without warning. NestJS DI relies on that metadata, so a plain `constructor(private readonly x: Foo)` resolves to zero dependencies: the app starts cleanly and every injected property is `undefined` until the first request throws `Cannot read properties of undefined`.
+
+Every injecting constructor therefore uses an explicit token: `constructor(@Inject(Foo) private readonly x: Foo) {}`. New services and controllers must do the same, or they will fail the identical silent way. `npm run build` uses `tsc` and does emit metadata, so this only ever bites in dev.
+
+The permanent fix is replacing `tsx` with an SWC-based runner (`@swc/core` + `.swcrc` with `jsc.transform.decoratorMetadata: true`, `nest start --watch`), which implements the flag and removes the footgun.
 
 ## Known UI And Export Limitations
 

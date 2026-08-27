@@ -4,13 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/main.ts",
-    "start": "node dist/main.js",
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --pretty false",
+    "dev": "tsx watch src/main.ts",
+    "prisma:deploy": "prisma migrate deploy",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:seed": "tsx prisma/seed.ts"
+    "prisma:seed": "tsx prisma/seed.ts",
+    "prisma:status": "prisma migrate status",
+    "start": "node dist/main.js",
+    "typecheck": "tsc -p tsconfig.json --pretty false"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.9",

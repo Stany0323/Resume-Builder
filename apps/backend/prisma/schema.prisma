@@ -4,7 +4,14 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // Transaction-mode pooler (port 6543). Fine for the running app.
+  url       = env("DATABASE_URL")
+  // Migrations need a session connection: `prisma migrate` takes advisory
+  // locks and runs DDL, neither of which survives pgbouncer transaction mode.
+  // This points at the SESSION pooler (same host, port 5432) rather than
+  // db.<ref>.supabase.co — that direct host is IPv6-only, which is exactly
+  // why it was unreachable.
+  directUrl = env("DIRECT_URL")
 }
 
 enum ResumeProfileType {

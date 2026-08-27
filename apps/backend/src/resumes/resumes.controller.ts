@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Inject, Param, Patch, Post, Req, UseGuards } from "@nestjs/common";
 import { z, ZodError, type ZodType } from "zod";
 import { SupabaseAuthGuard } from "../auth/supabase-auth.guard.js";
 import type { AuthenticatedRequest } from "../auth/auth.types.js";
@@ -8,7 +8,7 @@ import { ResumesService } from "./resumes.service.js";
 @Controller("resumes")
 @UseGuards(SupabaseAuthGuard)
 export class ResumesController {
-  constructor(private readonly resumes: ResumesService) {}
+  constructor(@Inject(ResumesService) private readonly resumes: ResumesService) {}
 
   @Get()
   list(@Req() request: AuthenticatedRequest) {

@@ -14,7 +14,11 @@
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "test:spike-a": "node scripts/spike-a-parity.mjs"
+    "test:spike-a": "node scripts/spike-a-parity.mjs",
+    "db:status": "npm run prisma:status --workspace @resume-builder/backend",
+    "db:deploy": "npm run prisma:deploy --workspace @resume-builder/backend",
+    "db:generate": "npm run prisma:generate --workspace @resume-builder/backend",
+    "db:seed": "npm run prisma:seed --workspace @resume-builder/backend"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",

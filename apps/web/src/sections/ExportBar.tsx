@@ -12,10 +12,16 @@ const SAVE_LABEL: Record<SaveStatus, string> = {
   syncing: "Syncing…",
   synced: "Saved to cloud",
   offline: "Offline — saved on this device.",
-  error: "Couldn’t sync — your work is saved on this device.",
+  // A failed sync is not lost work: the local write already succeeded, so the
+  // wording must reassure rather than alarm.
+  syncFailed: "Couldn’t reach the server — saved on this device.",
+  error: "Couldn’t save on this device.",
 };
 
-const SHOW_JSON_CONTROLS = false;
+// Import/Export JSON are developer affordances, not end-user features — but
+// they're the only way to seed a document without typing it in, so they stay
+// visible while running locally and disappear from production builds.
+const SHOW_JSON_CONTROLS = import.meta.env.DEV;
 
 export function ExportBar({
   onImport,

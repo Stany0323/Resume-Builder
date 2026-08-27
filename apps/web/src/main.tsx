@@ -140,21 +140,30 @@ function ResumeApp({
   const [phase, setPhase] = useState<Phase>("loading");
   const [resume, setResume] = useState<ResumeDocument | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
-  const autosave = useRef(createAutosave(setSaveStatus, createCloudSync(session)));
+  const userId = session.user.id;
+  const autosave = useRef(createAutosave(setSaveStatus, userId, createCloudSync(session)));
 
   useEffect(() => {
     let cancelled = false;
 
     void Promise.allSettled([
-      loadWorkingDocument(),
+      loadWorkingDocument(userId),
       loadCloudDocument(session),
     ]).then((results) => {
       if (cancelled) {
         return;
       }
 
+      // Both reads are scoped to this account: the local one by `working:<id>`,
+      // the cloud one by the bearer token. Neither can surface another user's
+      // document, so a new account correctly lands on the chooser.
       const stored = results[0].status === "fulfilled" ? results[0].value : null;
       const cloud = results[1].status === "fulfilled" ? results[1].value : null;
+
+      if (results[1].status === "rejected") {
+        console.warn("Cloud load failed, using local copy:", results[1].reason);
+      }
+
       const nextDocument = cloud ?? stored ?? createBlankResume();
 
       setResume(nextDocument);
@@ -164,7 +173,7 @@ function ResumeApp({
     return () => {
       cancelled = true;
     };
-  }, [session]);
+  }, [session, userId]);
 
   useEffect(() => {
     if (phase === "editing" && resume) {

@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, Get, Query } from "@nestjs/common";
+import { BadRequestException, Controller, Get, Inject, Query } from "@nestjs/common";
 import { z, ZodError } from "zod";
 import { ApprovedService } from "./approved.service.js";
 
@@ -9,7 +9,7 @@ const searchQuerySchema = z.object({
 
 @Controller("approved")
 export class ApprovedController {
-  constructor(private readonly approved: ApprovedService) {}
+  constructor(@Inject(ApprovedService) private readonly approved: ApprovedService) {}
 
   @Get("skills")
   skills(@Query() query: unknown) {

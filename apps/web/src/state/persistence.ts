@@ -1,26 +1,39 @@
 import { migrateResumeDocument, type ResumeDocument } from "@resume-builder/core";
 
 /**
- * Local-first persistence (commitment A6). One working document, autosaved to
- * IndexedDB. No account, no network, nothing to lose on refresh.
+ * Local-first persistence (commitment A6). One working document per SIGNED-IN
+ * USER, autosaved to IndexedDB.
  *
- * Deliberately dependency-free — the raw IndexedDB API is unpleasant but this
- * is the whole of it, and a wrapper library would be more code than this file.
+ * ── Why the key is scoped by user id ──
+ *
+ * IndexedDB is scoped to the origin, not to the account. A single fixed key
+ * therefore hands whoever signs in next the previous user's resume — on a
+ * shared machine that is a privacy leak, not just a confusing default. Every
+ * read and write is keyed by `working:<userId>`.
+ *
+ * The pre-auth `working` record from earlier builds is deliberately left
+ * untouched: reading it would reintroduce the leak (whoever signs in first
+ * claims it), and deleting it would destroy work without asking. It is simply
+ * never read again. Clear site data if you want it gone.
  */
 
 const DB_NAME = "resume-builder";
 const DB_VERSION = 1;
 const STORE = "documents";
-const WORKING_KEY = "working";
+
+function workingKey(userId: string) {
+  return `working:${userId}`;
+}
 
 export type SaveStatus =
   | "idle"
   | "saving"
   | "saved"
+  | "error"
   | "syncing"
   | "synced"
   | "offline"
-  | "error";
+  | "syncFailed";
 
 function openDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -56,9 +69,9 @@ async function withStore<T>(
   }
 }
 
-export async function loadWorkingDocument(): Promise<ResumeDocument | null> {
+export async function loadWorkingDocument(userId: string): Promise<ResumeDocument | null> {
   try {
-    const stored = await withStore<unknown>("readonly", (store) => store.get(WORKING_KEY));
+    const stored = await withStore<unknown>("readonly", (store) => store.get(workingKey(userId)));
 
     if (!stored) {
       return null;
@@ -73,22 +86,27 @@ export async function loadWorkingDocument(): Promise<ResumeDocument | null> {
   }
 }
 
-export async function saveWorkingDocument(resume: ResumeDocument): Promise<void> {
-  await withStore("readwrite", (store) => store.put(resume, WORKING_KEY));
+export async function saveWorkingDocument(userId: string, resume: ResumeDocument): Promise<void> {
+  await withStore("readwrite", (store) => store.put(resume, workingKey(userId)));
 }
 
-export async function clearWorkingDocument(): Promise<void> {
-  await withStore("readwrite", (store) => store.delete(WORKING_KEY));
+export async function clearWorkingDocument(userId: string): Promise<void> {
+  await withStore("readwrite", (store) => store.delete(workingKey(userId)));
 }
 
 /**
- * Debounced autosave. Returns a `save` to call on every change and a
- * `flush` for beforeunload, so an in-flight debounce can't lose the last edit.
+ * Debounced autosave: local first, then cloud. Returns a `save` to call on
+ * every change and a `flush` for beforeunload, so an in-flight debounce can't
+ * lose the last edit.
+ *
+ * Local success and cloud success are reported separately — a failed sync must
+ * never read as lost work, because the local write already succeeded.
  */
 export function createAutosave(
   onStatus: (status: SaveStatus) => void,
-  syncToCloud?: (resume: ResumeDocument) => Promise<void>,
-  delayMs = 700,
+  userId: string,
+  syncToCloud?: (resume: ResumeDocument) => Promise<unknown>,
+  delayMs = 500,
 ) {
   let timer: ReturnType<typeof setTimeout> | null = null;
   let queued: ResumeDocument | null = null;
@@ -102,25 +120,30 @@ export function createAutosave(
       return;
     }
 
+    const stamped: ResumeDocument = {
+      ...pending,
+      meta: { ...pending.meta, updatedAt: new Date().toISOString() },
+    };
+
     onStatus("saving");
     try {
-      const nextDocument = {
-        ...pending,
-        meta: { ...pending.meta, updatedAt: new Date().toISOString() },
-      };
+      await saveWorkingDocument(userId, stamped);
+      onStatus("saved");
+    } catch {
+      onStatus("error");
+      return;
+    }
 
-      await saveWorkingDocument(nextDocument);
+    if (!syncToCloud) {
+      return;
+    }
 
-      if (!syncToCloud) {
-        onStatus("saved");
-        return;
-      }
-
-      onStatus("syncing");
-      await syncToCloud(nextDocument);
+    onStatus("syncing");
+    try {
+      await syncToCloud(stamped);
       onStatus("synced");
     } catch {
-      onStatus(navigator.onLine ? "error" : "offline");
+      onStatus(navigator.onLine ? "syncFailed" : "offline");
     }
   };
 

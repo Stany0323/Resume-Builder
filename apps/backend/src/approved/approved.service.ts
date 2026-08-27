@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma.service.js";
 
 const DEFAULT_LIMIT = 12;
@@ -6,7 +6,7 @@ const MAX_LIMIT = 30;
 
 @Injectable()
 export class ApprovedService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   async searchSkills(query = "", limit = DEFAULT_LIMIT) {
     const take = clampLimit(limit);

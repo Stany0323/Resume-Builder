@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 import type { ResumeDocument } from "@resume-builder/core";
 import type { AuthenticatedUser } from "../auth/auth.types.js";
@@ -7,7 +7,7 @@ import { PrismaService } from "../prisma.service.js";
 
 @Injectable()
 export class ResumesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   async listForUser(user: AuthenticatedUser) {
     await this.ensureUser(user);
