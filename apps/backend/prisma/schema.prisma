@@ -81,13 +81,3 @@ model Asset {
   @@index([userId])
   @@map("assets")
 }
-
-model ApprovedSkill {
-  id        String   @id @default(dbgenerated("gen_random_uuid()"))
-  name      String   @unique
-  category  String?
-  approved  Boolean  @default(true)
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@map("skills")
-}

@@ -1,6 +1,4 @@
 import { Module } from "@nestjs/common";
-import { ApprovedController } from "./approved/approved.controller.js";
-import { ApprovedService } from "./approved/approved.service.js";
 import { AssetsController } from "./assets/assets.controller.js";
 import { AssetsService } from "./assets/assets.service.js";
 import { SupabaseAuthGuard } from "./auth/supabase-auth.guard.js";
@@ -17,14 +15,12 @@ import { UsersService } from "./users/users.service.js";
     HealthController,
     UsersController,
     ResumesController,
-    ApprovedController,
     AssetsController,
   ],
   providers: [
     PrismaService,
     UsersService,
     ResumesService,
-    ApprovedService,
     AssetsService,
     SupabaseAuthService,
     SupabaseAuthGuard,

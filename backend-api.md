@@ -115,44 +115,11 @@ Sync an existing resume:
 
 If `baseRevision` is stale, the API returns a conflict instead of overwriting newer server data.
 
-## Approved Skills
-
-```text
-GET /approved/skills?query=React&limit=10
-POST /approved/skills
-PATCH /approved/skills/:id
-DELETE /approved/skills/:id
-```
-
-Search is public because approved skills are shared lookup data.
-
-Create, update, and delete require a Supabase bearer token for now. Later we should add admin roles so only admins can manage approved lists.
-
-Create a skill:
-
-```json
-{
-  "name": "React",
-  "category": "Frontend",
-  "approved": true
-}
-```
-
-Update a skill:
-
-```json
-{
-  "category": "Frontend Engineering"
-}
-```
-
 ## Notes
 
 - Certifications are free text inside each resume.
-- Approved certifications were intentionally removed.
-- `skills` are the only approved lookup table in the current backend.
+- Skills are free text inside each resume, grouped by the user.
 - Local frontend autosave still saves to IndexedDB first, then syncs to this backend.
-- Before production, add an admin role check around approved-skill create, update, and delete.
 
 ## Assets
 

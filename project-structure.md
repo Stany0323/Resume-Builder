@@ -1,6 +1,6 @@
 # Resume Builder Project Structure
 
-This document is the shared map for the resume builder. It explains what we are building, how the app is currently shaped, what the final product should become, and the architecture choices we should keep in mind as we add backend sync, approved data, and smarter resume guidance.
+This document is the shared map for the resume builder. It explains what we are building, how the app is currently shaped, what the final product should become, and the architecture choices we should keep in mind as we add backend sync and smarter resume guidance.
 
 The simple idea: this should not just be a form that exports a PDF. It should feel like a quiet professional coach that helps different kinds of users create a resume that is clean, credible, ATS-friendly, and hard to miss.
 
@@ -101,7 +101,6 @@ apps/
       app.module.ts             Backend module wiring
       health.controller.ts      Health check endpoint
       prisma.service.ts         Shared Prisma client service
-      approved/                 Approved server data search APIs
       resumes/                  Resume create, fetch, sync, versions APIs
     prisma/
       schema.prisma             PostgreSQL data model
@@ -173,7 +172,7 @@ The app currently supports:
 - Skills grouped into columns
 - Skill group validation:
   - group name must be one word
-  - maximum 4 skills per group
+  - skills per group are unlimited
 - Languages with a 5-dot level indicator
 - Hobbies
 - References:
@@ -200,8 +199,6 @@ It currently supports:
 - Health check endpoint
 - Resume create, list, fetch, sync, and version-history endpoints
 - Revision-based conflict detection for sync
-- Approved skills search endpoint
-- Approved skills create, update, and delete endpoints
 - Asset upload, list, and delete endpoints for profile photos and logos
 - Environment sample for local database setup
 
@@ -213,9 +210,7 @@ The frontend now has the first sync wiring:
 - Debounced autosave saves locally, then syncs to the backend with the Supabase access token
 - Save states distinguish local save, cloud sync, offline, and sync failure
 
-The database is live on Supabase and verified end to end: pooler connection, applied schema, seeded approved skills, and a working `/approved/skills` response.
-
-Approved-skill writes are protected by login today. Before production, they should be restricted to admin users only.
+The database is live on Supabase and verified end to end: pooler connection, applied schema, and authenticated resume sync.
 
 Asset uploads now go through the backend to Supabase Storage. The frontend still previews processed images immediately, then replaces the local data URL with the uploaded public URL once the backend returns it.
 
@@ -269,7 +264,7 @@ Core backend goals:
 - Resume autosave
 - Multiple resumes per user
 - Resume versions/history
-- Approved server-side lists for controlled fields
+- Optional server-side suggestions for controlled fields, only where they improve the user experience without blocking real content
 - Search/autocomplete APIs
 - Asset upload for photos and logos
 - Job-description matching
@@ -297,52 +292,23 @@ Recommended sync behavior:
 
 The user should feel like the resume is always safe.
 
-## Approved Server Data
+## Server Suggestions
 
-Some fields should come from approved server data so resumes stay consistent and searchable.
+For now, skills stay free text inside the resume. The user creates one-word groups and can add as many skills per group as needed.
 
-Fields that should be approved or autocomplete-driven:
+Server suggestions may come later for fields where they clearly help without blocking users:
 
-- Skills
 - Job titles
-- Industries
 - Companies
 - Education institutions
 - Degrees and qualifications
 - Fields of study
-- Languages
 - Countries, cities, and locations
 - Employment types
 - Seniority levels
 - Achievement/action verbs
 
-Fields that should stay free text:
-
-- Certifications
-- Professional summary
-- Career objective
-- Work achievement bullets
-- Project descriptions
-- Reference names
-- Phone numbers
-- Email addresses
-- Custom links
-- Personal headline, unless we decide to suggest job titles there
-
-The rule: controlled lists should improve quality, but not block the user's real story.
-
-## Skill Autocomplete Goal
-
-Skills should eventually work like this:
-
-1. User types in the skills field.
-2. Frontend calls the backend, for example `/skills/search?q=rea`.
-3. Backend returns approved matches.
-4. Dropdown appears under the field.
-5. User selects one approved skill.
-6. Resume stores the selected skill ID and display name.
-
-If we want strict quality control, users should not be able to save arbitrary skill text. If we want flexibility, we can allow "suggest new skill" and send it for approval.
+The rule: suggestions should improve quality, but not block the user's real story.
 
 ## User Profiles
 
@@ -486,12 +452,6 @@ resume_versions
   snapshot_json
   created_at
 
-skills
-  id
-  name
-  category
-  approved
-
 job_titles
   id
   name
@@ -537,7 +497,6 @@ Recommended API groups:
 /resumes
 /resumes/:id/sync
 /resumes/:id/versions
-/skills/search
 /job-titles/search
 /institutions/search
 /companies/search
@@ -601,12 +560,11 @@ Recommended order:
 2. Add backend foundation with NestJS, PostgreSQL, and Prisma.
 3. Add auth and user-owned resumes.
 4. Add server sync with local-first autosave.
-5. Add approved data tables and autocomplete.
-6. Add profile-aware resume flows.
-7. Add projects and certifications.
-8. Add resume scoring.
-9. Add job-description matching.
-10. Add AI-assisted summaries and bullet improvements.
+5. Add profile-aware resume flows.
+6. Add projects and certifications.
+7. Add resume scoring.
+8. Add job-description matching.
+9. Add AI-assisted summaries and bullet improvements.
 
 ## Guiding Principle
 

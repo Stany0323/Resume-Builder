@@ -27,8 +27,6 @@ const LANGUAGE_LEVELS: Array<{ label: string; value: LanguageLevel }> = [
   { label: "Native", value: 5 },
 ];
 
-const MAX_SKILLS_PER_GROUP = 4;
-
 /* ------------------------------------------------------------------ Skills */
 
 export function SkillsPanel({
@@ -41,7 +39,6 @@ export function SkillsPanel({
   const list = useItemList(
     items.map((item) => ({
       ...item,
-      entries: item.entries.slice(0, MAX_SKILLS_PER_GROUP),
       groupLabel: firstWord(item.groupLabel),
     })),
     onChange,
@@ -77,11 +74,10 @@ export function SkillsPanel({
           <ChipsField
             entries={item.entries}
             label="Skills"
-            maxEntries={MAX_SKILLS_PER_GROUP}
-            onChange={(entries) => list.update(item.id, { entries: entries.slice(0, MAX_SKILLS_PER_GROUP) })}
+            onChange={(entries) => list.update(item.id, { entries })}
             placeholder="Type a skill, then press Enter"
           />
-          <span className="field-hint">Group name must be one word. Add up to 4 skills.</span>
+          <span className="field-hint">Group name must be one word. Add as many skills as you need.</span>
         </div>
       ))}
       <UndoRow removal={list.removal} what="Skill group" />
