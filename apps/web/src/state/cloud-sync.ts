@@ -26,6 +26,17 @@ type ResumeEnvelope = {
     document: unknown;
   };
 };
+export type AssetKind = "profilePhoto" | "institutionLogo" | "companyLogo";
+
+type AssetEnvelope = {
+  asset: {
+    id: string;
+    kind: AssetKind;
+    storagePath: string;
+    url: string;
+    createdAt: string;
+  };
+};
 
 export async function loadCloudDocument(
   session: Session,
@@ -84,6 +95,53 @@ export function createCloudSync(session: Session) {
     revisions.set(document.meta.id, resume.revision);
     return resume.revision;
   };
+}
+
+export async function uploadAsset(
+  session: Session,
+  input: {
+    dataUrl: string;
+    fileName?: string;
+    kind: AssetKind;
+  },
+) {
+  const { asset } = await apiRequest<AssetEnvelope>(session, "/assets", {
+    body: JSON.stringify(input),
+    method: "POST",
+  });
+
+  return asset;
+}
+
+export async function replaceAsset(
+  session: Session,
+  input: {
+    dataUrl: string;
+    fileName?: string;
+    kind: AssetKind;
+    previousUrl?: string;
+  },
+) {
+  const { asset } = await apiRequest<AssetEnvelope>(session, "/assets/replace", {
+    body: JSON.stringify(input),
+    method: "POST",
+  });
+
+  return asset;
+}
+
+export async function deleteAssetByUrl(
+  session: Session,
+  input: {
+    kind: AssetKind;
+    url: string;
+  },
+) {
+  await apiRequest<{ deleted: boolean }>(
+    session,
+    `/assets?kind=${encodeURIComponent(input.kind)}&url=${encodeURIComponent(input.url)}`,
+    { method: "DELETE" },
+  );
 }
 
 async function apiRequest<T>(

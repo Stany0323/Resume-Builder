@@ -202,6 +202,7 @@ It currently supports:
 - Revision-based conflict detection for sync
 - Approved skills search endpoint
 - Approved skills create, update, and delete endpoints
+- Asset upload, list, and delete endpoints for profile photos and logos
 - Environment sample for local database setup
 
 The frontend now has the first sync wiring:
@@ -215,6 +216,8 @@ The frontend now has the first sync wiring:
 The database is live on Supabase and verified end to end: pooler connection, applied schema, seeded approved skills, and a working `/approved/skills` response.
 
 Approved-skill writes are protected by login today. Before production, they should be restricted to admin users only.
+
+Asset uploads now go through the backend to Supabase Storage. The frontend still previews processed images immediately, then replaces the local data URL with the uploaded public URL once the backend returns it.
 
 Connection setup that works, and why:
 

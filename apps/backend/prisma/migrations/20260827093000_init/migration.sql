@@ -50,6 +50,7 @@ CREATE TABLE "assets" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "user_id" TEXT NOT NULL,
     "kind" TEXT NOT NULL,
+    "storage_path" TEXT NOT NULL,
     "url" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

@@ -6,6 +6,12 @@
     "moduleResolution": "Bundler",
     "noEmit": false,
     "outDir": "dist",
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
+    "paths": {
+      "@prisma/client": ["./node_modules/@prisma/client"],
+      "@prisma/client/*": ["./node_modules/@prisma/client/*"]
+    },
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },

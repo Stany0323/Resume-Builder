@@ -1,6 +1,7 @@
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import type { AuthenticatedUser } from "../auth/auth.types.js";
 import { SupabaseAuthService } from "../auth/supabase-auth.service.js";
+import { AssetsService } from "../assets/assets.service.js";
 import { PrismaService } from "../prisma.service.js";
 import type { SignupInput, UpdateMeInput } from "./user.schemas.js";
 
@@ -9,6 +10,7 @@ export class UsersService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(SupabaseAuthService) private readonly auth: SupabaseAuthService,
+    @Inject(AssetsService) private readonly assets: AssetsService,
   ) {}
 
   async signup(input: SignupInput) {
@@ -67,6 +69,7 @@ export class UsersService {
       throw new NotFoundException("User not found.");
     }
 
+    await this.assets.deleteAllForUser(user.id);
     await this.prisma.user.delete({ where: { id: user.id } });
     await this.auth.deleteUser(user.id);
 

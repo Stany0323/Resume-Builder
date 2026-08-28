@@ -27,13 +27,17 @@ const LINK_TYPES: Array<{
 ];
 
 export function PersonalPanel({
+  deletePhoto,
   onChange,
   personal,
   templateId,
+  uploadPhoto,
 }: {
+  deletePhoto?: (url: string) => Promise<void>;
   onChange: (patch: Partial<Personal>) => void;
   personal: Personal;
   templateId: ResumeDocument["design"]["templateId"];
+  uploadPhoto?: (dataUrl: string, previousUrl?: string) => Promise<{ url: string }>;
 }) {
   const set =
     (field: "firstName" | "lastName" | "email" | "phone") => (value: string) =>
@@ -50,8 +54,10 @@ export function PersonalPanel({
   return (
     <>
       <PhotoField
+        deletePhoto={deletePhoto}
         onChange={(photo) => onChange({ photo })}
         photo={personal.photo}
+        uploadPhoto={uploadPhoto}
       />
       <PhotoTemplateNote
         hasPhoto={Boolean(personal.photo)}

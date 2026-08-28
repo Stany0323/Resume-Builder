@@ -69,11 +69,12 @@ model ResumeVersion {
 }
 
 model Asset {
-  id        String   @id @default(dbgenerated("gen_random_uuid()"))
-  userId    String   @map("user_id")
-  kind      String
-  url       String
-  createdAt DateTime @default(now()) @map("created_at")
+  id          String   @id @default(dbgenerated("gen_random_uuid()"))
+  userId      String   @map("user_id")
+  kind        String
+  storagePath String   @map("storage_path")
+  url         String
+  createdAt   DateTime @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

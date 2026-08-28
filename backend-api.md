@@ -57,7 +57,7 @@ DELETE /me
 }
 ```
 
-`DELETE /me` deletes the local user row and the Supabase Auth user. The local delete cascades to resumes, versions, and assets.
+`DELETE /me` deletes stored asset files, the local user row, and the Supabase Auth user. The local delete cascades to resumes, versions, and asset rows.
 
 ## Resumes
 
@@ -153,3 +153,69 @@ Update a skill:
 - `skills` are the only approved lookup table in the current backend.
 - Local frontend autosave still saves to IndexedDB first, then syncs to this backend.
 - Before production, add an admin role check around approved-skill create, update, and delete.
+
+## Assets
+
+```text
+GET /assets
+GET /assets?kind=profilePhoto
+POST /assets
+POST /assets/replace
+DELETE /assets?kind=profilePhoto&url=<asset-url>
+DELETE /assets/:id
+```
+
+All asset endpoints require a Supabase bearer token.
+
+Supported `kind` values:
+
+```text
+profilePhoto
+institutionLogo
+companyLogo
+```
+
+Upload a processed image data URL:
+
+```json
+{
+  "kind": "profilePhoto",
+  "fileName": "profile-photo.png",
+  "dataUrl": "data:image/png;base64,..."
+}
+```
+
+The backend uploads the file to Supabase Storage, creates the bucket if needed, stores a row in `assets`, and returns:
+
+```json
+{
+  "asset": {
+    "id": "asset-id",
+    "kind": "profilePhoto",
+    "storagePath": "user-id/profilePhoto/file.png",
+    "url": "https://...supabase.co/storage/v1/object/public/...",
+    "createdAt": "2026-08-28T..."
+  }
+}
+```
+
+Replace an existing image without stacking old files:
+
+```json
+{
+  "kind": "profilePhoto",
+  "fileName": "profile-photo.png",
+  "previousUrl": "https://...supabase.co/storage/v1/object/public/profile-photos/...",
+  "dataUrl": "data:image/png;base64,..."
+}
+```
+
+If `previousUrl` belongs to the signed-in user, the backend uploads the new file, updates the existing asset row when it can find one, and removes the old Storage object. If an older asset row cannot be matched, the backend still parses the Supabase Storage URL and deletes the old object when its path starts with the signed-in user's id.
+
+Delete by URL is useful when the user presses Remove in the editor:
+
+```text
+DELETE /assets?kind=profilePhoto&url=https%3A%2F%2F...
+```
+
+The frontend now stores the returned `url` in the resume photo/logo `assetId`, so synced resumes can render images on another device.

@@ -2,12 +2,16 @@ import { useRef, useState } from "react";
 import type { ResumeDocument } from "@resume-builder/core";
 
 type Photo = NonNullable<ResumeDocument["personal"]["photo"]>;
+type UploadedAsset = {
+  url: string;
+};
 
 /**
  * Photo upload and crop.
  *
- * The processed image is stored inline as a data URL in `photo.assetId` — not
- * as an IndexedDB blob keyed by id. Two reasons:
+ * The processed image is stored as `photo.assetId`. In local-only mode this is
+ * still a data URL; when cloud sync is configured it becomes the uploaded
+ * Supabase Storage URL returned by the backend. Two reasons:
  *
  *  1. "Your data is never trapped" is a product bet. A photo that disappears
  *     when you export your JSON would break it.
@@ -28,11 +32,15 @@ const MAX_UPLOAD_BYTES = 12 * 1024 * 1024;
 const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
 
 export function PhotoField({
+  deletePhoto,
   onChange,
   photo,
+  uploadPhoto,
 }: {
+  deletePhoto?: (url: string) => Promise<void>;
   onChange: (photo: Photo | null) => void;
   photo: Photo | null;
+  uploadPhoto?: (dataUrl: string, previousUrl?: string) => Promise<UploadedAsset>;
 }) {
   const fileInput = useRef<HTMLInputElement>(null);
   const [source, setSource] = useState<ImageBitmap | null>(null);
@@ -83,7 +91,7 @@ export function PhotoField({
     }
   };
 
-  const commit = () => {
+  const commit = async () => {
     if (!source) {
       return;
     }
@@ -94,12 +102,48 @@ export function PhotoField({
       return;
     }
 
+    const previousUrl = photo?.assetId;
+
+    setBusy(true);
     onChange({
       assetId: dataUrl,
       cropRect: { x: offset.x, y: offset.y, w: zoom, h: zoom },
       shape,
     });
-    reset();
+    try {
+      const asset = uploadPhoto ? await uploadPhoto(dataUrl, previousUrl) : null;
+      if (asset) {
+        onChange({
+          assetId: asset.url,
+          cropRect: { x: offset.x, y: offset.y, w: zoom, h: zoom },
+          shape,
+        });
+      }
+      reset();
+    } catch {
+      setError("The photo was saved here, but could not upload to cloud.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const remove = async () => {
+    const currentUrl = photo?.assetId;
+
+    onChange(null);
+    if (!deletePhoto || !currentUrl || !isRemoteUrl(currentUrl)) {
+      return;
+    }
+
+    setBusy(true);
+    setError(null);
+    try {
+      await deletePhoto(currentUrl);
+    } catch {
+      setError("The photo was removed here, but could not be deleted from cloud.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -121,7 +165,7 @@ export function PhotoField({
             <button className="link-button" onClick={() => fileInput.current?.click()} type="button">
               Replace
             </button>
-            <button className="link-button" onClick={() => onChange(null)} type="button">
+            <button className="link-button" onClick={() => void remove()} type="button">
               Remove
             </button>
           </div>
@@ -161,8 +205,8 @@ export function PhotoField({
           </div>
 
           <div className="photo-actions">
-            <button className="primary" onClick={commit} type="button">
-              Use photo
+            <button className="primary" disabled={busy} onClick={() => void commit()} type="button">
+              {busy ? "Uploading..." : "Use photo"}
             </button>
             <button className="link-button" onClick={reset} type="button">
               Cancel
@@ -193,6 +237,10 @@ export function PhotoField({
       {error ? <p className="field-message" role="alert">{error}</p> : null}
     </div>
   );
+}
+
+function isRemoteUrl(value: string) {
+  return /^https?:\/\//i.test(value);
 }
 
 /* ------------------------------------------------------------- crop stage */

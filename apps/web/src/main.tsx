@@ -44,7 +44,14 @@ import {
   useItemList,
 } from "./sections/list-controls";
 import { createBlankResume } from "./state/blank-resume";
-import { createCloudSync, loadCloudDocument } from "./state/cloud-sync";
+import {
+  createCloudSync,
+  deleteAssetByUrl,
+  loadCloudDocument,
+  replaceAsset,
+  uploadAsset,
+  type AssetKind,
+} from "./state/cloud-sync";
 import {
   createAutosave,
   loadWorkingDocument,
@@ -244,6 +251,17 @@ function Editor({
   ) => setResume({ ...resume, content: { ...resume.content, [key]: value } });
   const setMeta = (patch: Partial<ResumeDocument["meta"]>) =>
     setResume({ ...resume, meta: { ...resume.meta, ...patch } });
+  const uploadResumeAsset = (
+    kind: AssetKind,
+    dataUrl: string,
+    fileName?: string,
+    previousUrl?: string,
+  ) =>
+    previousUrl
+      ? replaceAsset(session, { dataUrl, fileName, kind, previousUrl })
+      : uploadAsset(session, { dataUrl, fileName, kind });
+  const deleteResumeAsset = (kind: AssetKind, url: string) =>
+    deleteAssetByUrl(session, { kind, url });
 
   const experience = useItemList(resume.content.experience.items, (items) =>
     setContent("experience", { items }),
@@ -429,6 +447,10 @@ function Editor({
               }
               personal={resume.personal}
               templateId={resume.design.templateId}
+              deletePhoto={(url) => deleteResumeAsset("profilePhoto", url)}
+              uploadPhoto={(dataUrl, previousUrl) =>
+                uploadResumeAsset("profilePhoto", dataUrl, "profile-photo", previousUrl)
+              }
             />
           </SidebarSection>
 
@@ -521,6 +543,10 @@ function Editor({
                   onChange={(logo) =>
                     experience.update(item.id, { organizationLogo: logo })
                   }
+                  deleteLogo={(url) => deleteResumeAsset("companyLogo", url)}
+                  uploadLogo={(dataUrl, previousUrl) =>
+                    uploadResumeAsset("companyLogo", dataUrl, item.organization || "company-logo", previousUrl)
+                  }
                 />
                 <TextField
                   label="Location"
@@ -606,6 +632,15 @@ function Editor({
                   logo={item.institutionLogo ?? null}
                   onChange={(logo) =>
                     education.update(item.id, { institutionLogo: logo })
+                  }
+                  deleteLogo={(url) => deleteResumeAsset("institutionLogo", url)}
+                  uploadLogo={(dataUrl, previousUrl) =>
+                    uploadResumeAsset(
+                      "institutionLogo",
+                      dataUrl,
+                      item.institution || "institution-logo",
+                      previousUrl,
+                    )
                   }
                 />
                 <DateRangeFields
@@ -1481,15 +1516,19 @@ function BulletsField({
 }
 
 function EntryLogoField({
+  deleteLogo,
   entity,
   label,
   logo,
   onChange,
+  uploadLogo,
 }: {
+  deleteLogo?: (url: string) => Promise<void>;
   entity: string;
   label: string;
   logo: EntryLogo | null;
   onChange: (logo: EntryLogo | null) => void;
+  uploadLogo?: (dataUrl: string, previousUrl?: string) => Promise<{ url: string }>;
 }) {
   const fileInput = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -1514,14 +1553,39 @@ function EntryLogoField({
 
     setBusy(true);
     try {
-      onChange({ assetId: await renderLogoFile(file) });
+      const dataUrl = await renderLogoFile(file);
+      const previousUrl = logo?.assetId;
+      onChange({ assetId: dataUrl });
+      const asset = uploadLogo ? await uploadLogo(dataUrl, previousUrl) : null;
+      if (asset) {
+        onChange({ assetId: asset.url });
+      }
     } catch {
-      setError("That logo could not be read.");
+      setError("That logo was saved here, but could not upload to cloud.");
     } finally {
       setBusy(false);
       if (fileInput.current) {
         fileInput.current.value = "";
       }
+    }
+  };
+
+  const remove = async () => {
+    const currentUrl = logo?.assetId;
+
+    onChange(null);
+    if (!deleteLogo || !currentUrl || !isRemoteUrl(currentUrl)) {
+      return;
+    }
+
+    setBusy(true);
+    setError(null);
+    try {
+      await deleteLogo(currentUrl);
+    } catch {
+      setError("That logo was removed here, but could not be deleted from cloud.");
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -1545,7 +1609,7 @@ function EntryLogoField({
             </button>
             <button
               className="link-button"
-              onClick={() => onChange(null)}
+              onClick={() => void remove()}
               type="button"
             >
               Remove
@@ -1581,6 +1645,10 @@ function EntryLogoField({
       ) : null}
     </div>
   );
+}
+
+function isRemoteUrl(value: string) {
+  return /^https?:\/\//i.test(value);
 }
 
 function canonicalBulletText(text: string) {
