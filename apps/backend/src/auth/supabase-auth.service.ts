@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { Injectable, InternalServerErrorException, UnauthorizedException } from "@nestjs/common";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { AuthenticatedUser } from "./auth.types.js";
 
@@ -33,5 +33,31 @@ export class SupabaseAuthService {
       id: data.user.id,
       email: data.user.email ?? null,
     };
+  }
+
+  async createUser(input: { email: string; password: string; name?: string }) {
+    const { data, error } = await this.client.auth.admin.createUser({
+      email: input.email,
+      password: input.password,
+      email_confirm: true,
+      user_metadata: input.name ? { name: input.name } : undefined,
+    });
+
+    if (error || !data.user) {
+      throw new InternalServerErrorException(error?.message ?? "Could not create user.");
+    }
+
+    return {
+      id: data.user.id,
+      email: data.user.email ?? input.email,
+    };
+  }
+
+  async deleteUser(userId: string) {
+    const { error } = await this.client.auth.admin.deleteUser(userId);
+
+    if (error) {
+      throw new InternalServerErrorException(error.message);
+    }
   }
 }

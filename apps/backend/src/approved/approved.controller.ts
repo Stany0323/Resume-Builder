@@ -1,10 +1,17 @@
-import { BadRequestException, Controller, Get, Inject, Query } from "@nestjs/common";
-import { z, ZodError } from "zod";
+import { Body, Controller, Delete, Get, Inject, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
+import { z } from "zod";
+import { SupabaseAuthGuard } from "../auth/supabase-auth.guard.js";
+import { parseInput, parseUuid } from "../common/validation.js";
 import { ApprovedService } from "./approved.service.js";
 
 const searchQuerySchema = z.object({
   query: z.string().optional().default(""),
   limit: z.coerce.number().int().min(1).max(30).optional().default(12),
+});
+const skillMutationSchema = z.object({
+  name: z.string().trim().min(1).max(80),
+  category: z.string().trim().min(1).max(80).nullable().optional(),
+  approved: z.boolean().optional().default(true),
 });
 
 @Controller("approved")
@@ -13,25 +20,25 @@ export class ApprovedController {
 
   @Get("skills")
   skills(@Query() query: unknown) {
-    const input = parseSearchQuery(query);
+    const input = parseInput(searchQuerySchema, query, "Invalid search query.");
     return this.approved.searchSkills(input.query, input.limit);
   }
-}
 
-function parseSearchQuery(query: unknown) {
-  try {
-    return searchQuerySchema.parse(query);
-  } catch (error) {
-    if (error instanceof ZodError) {
-      throw new BadRequestException({
-        message: "Invalid search query.",
-        issues: error.issues.map((issue) => ({
-          path: issue.path.join("."),
-          message: issue.message,
-        })),
-      });
-    }
+  @Post("skills")
+  @UseGuards(SupabaseAuthGuard)
+  createSkill(@Body() body: unknown) {
+    return this.approved.createSkill(parseInput(skillMutationSchema, body));
+  }
 
-    throw error;
+  @Patch("skills/:id")
+  @UseGuards(SupabaseAuthGuard)
+  updateSkill(@Param("id") id: string, @Body() body: unknown) {
+    return this.approved.updateSkill(parseUuid(id), parseInput(skillMutationSchema.partial(), body));
+  }
+
+  @Delete("skills/:id")
+  @UseGuards(SupabaseAuthGuard)
+  deleteSkill(@Param("id") id: string) {
+    return this.approved.deleteSkill(parseUuid(id));
   }
 }

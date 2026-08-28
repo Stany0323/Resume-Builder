@@ -1,7 +1,7 @@
-import { BadRequestException, Body, Controller, Get, Inject, Param, Patch, Post, Req, UseGuards } from "@nestjs/common";
-import { z, ZodError, type ZodType } from "zod";
+import { Body, Controller, Delete, Get, Inject, Param, Patch, Post, Req, UseGuards } from "@nestjs/common";
 import { SupabaseAuthGuard } from "../auth/supabase-auth.guard.js";
 import type { AuthenticatedRequest } from "../auth/auth.types.js";
+import { parseInput, parseUuid } from "../common/validation.js";
 import { createResumeSchema, syncResumeSchema } from "./resume.schemas.js";
 import { ResumesService } from "./resumes.service.js";
 
@@ -34,26 +34,9 @@ export class ResumesController {
   versions(@Req() request: AuthenticatedRequest, @Param("id") id: string) {
     return this.resumes.versions(request.user, parseUuid(id));
   }
-}
 
-function parseUuid(value: string, field = "id") {
-  return parseInput(z.string().uuid(), value, `Invalid ${field}.`);
-}
-
-function parseInput<T>(schema: ZodType<T>, value: unknown, message = "Invalid request body.") {
-  try {
-    return schema.parse(value);
-  } catch (error) {
-    if (error instanceof ZodError) {
-      throw new BadRequestException({
-        message,
-        issues: error.issues.map((issue) => ({
-          path: issue.path.join("."),
-          message: issue.message,
-        })),
-      });
-    }
-
-    throw error;
+  @Delete(":id")
+  delete(@Req() request: AuthenticatedRequest, @Param("id") id: string) {
+    return this.resumes.delete(request.user, parseUuid(id));
   }
 }

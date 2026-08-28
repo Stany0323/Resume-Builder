@@ -201,6 +201,7 @@ It currently supports:
 - Resume create, list, fetch, sync, and version-history endpoints
 - Revision-based conflict detection for sync
 - Approved skills search endpoint
+- Approved skills create, update, and delete endpoints
 - Environment sample for local database setup
 
 The frontend now has the first sync wiring:
@@ -212,6 +213,8 @@ The frontend now has the first sync wiring:
 - Save states distinguish local save, cloud sync, offline, and sync failure
 
 The database is live on Supabase and verified end to end: pooler connection, applied schema, seeded approved skills, and a working `/approved/skills` response.
+
+Approved-skill writes are protected by login today. Before production, they should be restricted to admin users only.
 
 Connection setup that works, and why:
 

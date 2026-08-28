@@ -156,6 +156,20 @@ export class ResumesService {
     return { versions };
   }
 
+  async delete(user: AuthenticatedUser, id: string) {
+    const resume = await this.prisma.resume.findFirst({
+      where: { id, userId: user.id },
+      select: { id: true },
+    });
+
+    if (!resume) {
+      throw new NotFoundException("Resume not found.");
+    }
+
+    await this.prisma.resume.delete({ where: { id } });
+    return { deleted: true };
+  }
+
   private toDocumentResponse(resume: {
     id: string;
     title: string;
